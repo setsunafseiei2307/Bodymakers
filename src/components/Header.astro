@@ -86,16 +86,8 @@ function isCurrent(href: string): boolean {
   }
 
   .site-header__nav {
-    /* スマホではロゴの下に折り返さず、ナビ自体を横スクロールさせる。
-       折り返すとヘッダーの高さが変わり、sticky 表示がガタつくため。 */
     flex: 1;
     min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .site-header__nav::-webkit-scrollbar {
-    display: none;
   }
 
   .site-header__list {
@@ -145,15 +137,33 @@ function isCurrent(href: string): boolean {
     color: var(--text-inverse);
   }
 
-  @media (max-width: 30rem) {
-    .site-header__name {
-      /* 狭い画面ではロゴマークだけにしてナビの幅を確保する */
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
+  /* スマホではナビをロゴの下の段に落とす。
+     1行に押し込むとラベルが見切れてしまい、
+     一番重要な「筋力レベル診断」が読めなくなるため。 */
+  @media (max-width: 47.99rem) {
+    .site-header__inner {
+      flex-wrap: wrap;
+      padding-block: var(--space-2);
+    }
+
+    .site-header__logo {
+      margin-right: auto;
+    }
+
+    .site-header__nav {
+      order: 3;
+      flex-basis: 100%;
+      /* リンクが3つを超えたときだけ横スクロールに逃がす */
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .site-header__nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .site-header__list {
+      justify-content: flex-start;
     }
   }
 </style>

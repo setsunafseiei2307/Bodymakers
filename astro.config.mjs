@@ -23,7 +23,8 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [
     // React は診断ツールなど「操作が要る部分」だけをアイランドとして水和する。
-    // 記事ページには一切JSを配らない。
+    // 記事ページに React は配られない（実測: 外部JS 0本。
+    // 配色切り替え用のインラインスクリプト約0.9KBのみ）。
     react(),
     sitemap(),
   ],

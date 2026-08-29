@@ -311,6 +311,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.result__hero-stronger {
+  margin-top: var(--space-1);
+  color: var(--text-body);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
 .result__hero-definition {
   margin-top: var(--space-1);
   color: var(--text-muted);
@@ -380,16 +387,13 @@
 
 .gauge__scale {
   display: flex;
+  justify-content: space-between;
 }
 
-.gauge__scale-item {
-  flex-basis: 0;
+.gauge__scale-end {
   color: var(--text-muted);
   font-size: 0.6875rem;
   font-weight: 700;
-  text-align: center;
-  /* ラベルが重ならないよう、狭い画面では折り返さず切る */
-  overflow: hidden;
   white-space: nowrap;
 }
 

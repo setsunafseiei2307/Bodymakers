@@ -39,6 +39,18 @@ function rankText(percentile: number, bound: 'in-range' | 'below' | 'above'): st
 }
 
 /**
+ * 「上位66%」は数字が大きいほど順位が低いため、方向を読み違えられやすい。
+ * 「◯%の人より強い」という平易な言い換えを添えて補う。
+ */
+function strongerThanText(
+  percentile: number,
+  bound: 'in-range' | 'below' | 'above',
+): string {
+  if (bound === 'below') return '基準表の下限（上位99%）に届いていません';
+  return `競技会出場者の ${fmt(percentile, 1)}% より強い水準です`;
+}
+
+/**
  * パーセンタイルのゲージ。
  * 5段階の帯を背景に敷き、その上に現在位置のマーカーを置く。
  */
@@ -72,16 +84,14 @@ function LevelGauge({
           <span className="gauge__marker-dot" />
         </span>
       </div>
+      {/*
+        目盛りは両端だけを出す。5段階すべてを帯の幅に比例して並べると、
+        幅の狭い帯（初心者・エリートは各10%）でラベルが見切れる。
+        5段階の内訳は帯の色と、結果カードのバッジで分かる。
+      */}
       <div className="gauge__scale" aria-hidden="true">
-        {LEVELS.map((level) => (
-          <span
-            key={level.id}
-            className="gauge__scale-item"
-            style={{ flexGrow: level.maxPercentile - level.minPercentile }}
-          >
-            {level.label}
-          </span>
-        ))}
+        <span className="gauge__scale-end">{LEVELS[0].label}</span>
+        <span className="gauge__scale-end">{LEVELS[LEVELS.length - 1].label}</span>
       </div>
     </div>
   );
@@ -224,6 +234,9 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
         </p>
         <p className="result__hero-level">{headline.level.label}</p>
         <p className="result__hero-rank">{rankText(headline.percentile, headline.bound)}</p>
+        <p className="result__hero-stronger">
+          {strongerThanText(headline.percentile, headline.bound)}
+        </p>
         <p className="result__hero-definition">{headline.level.description}</p>
         <div className="result__hero-gauge">
           <LevelGauge

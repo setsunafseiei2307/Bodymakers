@@ -1,16 +1,19 @@
-# -*- coding: utf-8 -*-
-"""選定した300食品に表示名と絵文字を付け、レビュー用リストとTSデータを生成する。"""
-import json
+#!/usr/bin/env python3
+"""食品の表示名と絵文字の規則。
+
+【表示名】
+成分表の収載名は「こめ [水稲めし] 精白米 うるち米」のような階層表記で、
+検索にも一覧にも向かない。使用頻度の高い食品だけ、探しやすい名前を手で当てている。
+ここに無い食品は収載名をそのまま表示する（言い換えや要約はしない）。
+
+【絵文字】
+キーワードの一致で機械的に付ける。部分一致で誤爆するため、
+打ち消したい食品は EMOJI_OVERRIDE に食品番号で入れる。
+誤爆の経緯は docs/food-data.md に残してある。
+"""
+
 import re
 
-from selection import SELECTION
-
-foods = {f['foodNo']: f for f in json.load(open('all_foods.json', encoding='utf-8'))}
-
-# ---------------------------------------------------------------- 表示名
-
-# 成分表の階層名は検索UIには冗長なので、読みやすい名前へ書き換える。
-# 元の収載名は officialName としてそのまま保持する（出典の追跡用）。
 DISPLAY_NAME = {
     # 穀類
     '01088': 'ごはん（精白米）', '01085': 'ごはん（玄米）', '01089': 'ごはん（胚芽精米）',
@@ -206,57 +209,3 @@ def pick_emoji(code, display_name):
         if re.search(pattern, display_name):
             return emoji
     return None
-
-
-def build():
-    out = []
-    for category, codes in SELECTION.items():
-        for code in codes:
-            src = foods[code]
-            name = DISPLAY_NAME.get(code)
-            if name is None:
-                raise SystemExit('表示名が未設定: %s %s' % (code, src['name']))
-            out.append({
-                'id': code,
-                'name': name,
-                'emoji': pick_emoji(code, name),
-                'category': category,
-                'kcal': src['kcal'],
-                'protein': src['protein'],
-                'fat': src['fat'],
-                'carbs': src['carbs'],
-                'fiber': src['fiber'],
-                'salt': src['salt'],
-                'officialName': src['name'],
-                'estimated': src['estimated'],
-            })
-    return out
-
-
-if __name__ == '__main__':
-    items = build()
-    json.dump(items, open('selected_foods.json', 'w', encoding='utf-8'),
-              ensure_ascii=False, indent=1)
-
-    n_emoji = sum(1 for i in items if i['emoji'])
-    print('件数:', len(items))
-    print('絵文字あり:', n_emoji, '/ なし:', len(items) - n_emoji)
-
-    # レビュー用 Markdown
-    lines = ['# 食品リスト（300件）レビュー用', '',
-             '日本食品標準成分表（八訂）増補2023年 本表より。数値はすべて可食部100gあたり。', '']
-    for category in SELECTION:
-        rows = [i for i in items if i['category'] == category]
-        lines.append('## %s（%d件）' % (category, len(rows)))
-        lines.append('')
-        lines.append('| 絵文字 | 表示名 | kcal | P | F | C | 食品番号 | 成分表の収載名 |')
-        lines.append('|---|---|---:|---:|---:|---:|---|---|')
-        for i in rows:
-            def n(v):
-                return '—' if v is None else ('%g' % v)
-            lines.append('| %s | %s | %s | %s | %s | %s | %s | %s |' % (
-                i['emoji'] or '—', i['name'], n(i['kcal']), n(i['protein']),
-                n(i['fat']), n(i['carbs']), i['id'], i['officialName']))
-        lines.append('')
-    open('food_review.md', 'w', encoding='utf-8').write('\n'.join(lines))
-    print('food_review.md を書き出しました')

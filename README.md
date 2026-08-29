@@ -90,7 +90,7 @@ frontmatter は `src/content.config.ts` の Zod スキーマで検証される�
 | データ | 出典 | ライセンス |
 |---|---|---|
 | 筋力の基準値 | [OpenPowerlifting](https://www.openpowerlifting.org) | パブリックドメイン |
-| 食品の栄養価（300件） | 文部科学省「日本食品標準成分表（八訂）増補2023年」 | — |
+| 食品の栄養価（2,538件） | 文部科学省「日本食品標準成分表（八訂）増補2023年」 | — |
 | 1RM推定式（7式） | Epley (1985) ほか | 公表されている計算式 |
 
 > This page uses data from the OpenPowerlifting project,

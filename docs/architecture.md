@@ -50,7 +50,7 @@ src/
 ├─ lib/                    ロジック層。UI非依存の純関数
 │  ├─ format.ts            全ロジックの土台
 │  ├─ onerm.ts rpe.ts plates.ts smolov.ts nutrition.ts
-│  ├─ foods.ts foodData.ts 食品300件
+│  ├─ foods.ts foodData.ts 食品2,538件
 │  ├─ articles.ts          記事コレクションの取得ヘルパー
 │  └─ strength/            筋力レベル診断
 │     ├─ standards.ts      型・補間・分位数の正逆引き・レベル定義
@@ -146,7 +146,7 @@ frontmatter の項目:
 
 | 予定 | 用意してあるもの |
 |---|---|
-| 食事メニュー | 食品データ300件（`src/lib/foods.ts`）とPFC計算（`src/lib/nutrition.ts`）が移植済み |
+| 食事メニュー | 食品データ2,538件（`src/lib/foods.ts`）とPFC計算（`src/lib/nutrition.ts`）が移植済み |
 | 種目解説 | 記事カテゴリを追加すれば `src/config/site.ts` の1か所で増える |
 | プラン提示 | Smolovプログラム生成（`src/lib/smolov.ts`）が移植済み |
 | 画像認識API | サーバーが要るため現構成では不可。別途エンドポイントを立てる判断になる |

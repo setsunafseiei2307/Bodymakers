@@ -28,8 +28,8 @@ const SOURCE = source as Record<string, SourceRow>;
 const NUTRIENTS: NutrientKey[] = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt'];
 
 describe('食品データと成分表の一致', () => {
-  it('300件ある', () => {
-    expect(FOODS).toHaveLength(300);
+  it('成分表の全2,538食品を収録している', () => {
+    expect(FOODS).toHaveLength(2538);
   });
 
   it('食品番号が重複していない', () => {
@@ -67,11 +67,14 @@ describe('食品データと成分表の一致', () => {
     expect(mismatches).toEqual([]);
   });
 
-  it('エネルギー・PFCが全食品で欠損していない', () => {
+  it('エネルギー・PFCが欠損しているのは成分表で未測定の1件だけ', () => {
     const missing = FOODS.filter(
       (f) => f.kcal == null || f.protein == null || f.fat == null || f.carbs == null,
     ).map((f) => f.id);
-    expect(missing).toEqual([]);
+    // 09059「わかめ カットわかめ 水煮の汁」は成分表そのものが未測定。
+    // 推測で埋めず、画面では「データなし」と表示する。
+    // 成分表が更新されて値が入ったらこのテストが落ちるので、そこで気づける。
+    expect(missing).toEqual(['09059']);
   });
 
   it('成分値が負になっていない', () => {
@@ -261,10 +264,10 @@ describe('scaleFood', () => {
 });
 
 describe('カテゴリ', () => {
-  it('16カテゴリあり、件数の合計が300になる', () => {
+  it('成分表の18食品群があり、件数の合計が2,538になる', () => {
     const cats = categorySummaries();
-    expect(cats).toHaveLength(16);
-    expect(cats.reduce((sum, c) => sum + c.count, 0)).toBe(300);
+    expect(cats).toHaveLength(18);
+    expect(cats.reduce((sum, c) => sum + c.count, 0)).toBe(2538);
   });
 
   it('件数がその カテゴリの実データと一致する', () => {
@@ -280,7 +283,7 @@ describe('カテゴリ', () => {
 
   it('foodsInCategory はそのカテゴリの食品だけを返す', () => {
     const meat = foodsInCategory('肉類');
-    expect(meat).toHaveLength(55);
+    expect(meat).toHaveLength(317);
     expect(meat.every((f) => f.category === '肉類')).toBe(true);
   });
 

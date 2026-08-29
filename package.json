@@ -1,0 +1,35 @@
+{
+  "name": "bodymakers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "筋トレ・食事・フィットネスの総合サイト — 筋力レベル診断と記事メディア",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "build:fast": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "astro check",
+    "check": "npm run typecheck && npm run test",
+    "standards:build": "python3 scripts/strength-standards/build.py"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6.0.4",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.9",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.11"
+  }
+}

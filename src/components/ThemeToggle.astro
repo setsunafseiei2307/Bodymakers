@@ -1,0 +1,131 @@
+---
+/**
+ * ライト/ダークの切り替えボタン。
+ *
+ * React を使わず素のDOM操作で書いている。全ページのヘッダーに出るため、
+ * ここでReactを水和させると、記事ページにまでReactランタイム（約184KB）が
+ * 配られてしまう。素のスクリプトなら記事ページの追加JSは1KB未満で済む。
+ *
+ * 状態は localStorage に持つ（診断の入力値は保存しないが、
+ * 表示テーマは個人情報ではなく、保存しないとページ遷移のたびに白く光って読みにくい）。
+ */
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  id="theme-toggle"
+  aria-label="配色をライトとダークで切り替える"
+>
+  <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
+    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="1.5" x2="12" y2="4"></line>
+      <line x1="12" y1="20" x2="12" y2="22.5"></line>
+      <line x1="1.5" y1="12" x2="4" y2="12"></line>
+      <line x1="20" y1="12" x2="22.5" y2="12"></line>
+      <line x1="4.2" y1="4.2" x2="6" y2="6"></line>
+      <line x1="18" y1="18" x2="19.8" y2="19.8"></line>
+      <line x1="4.2" y1="19.8" x2="6" y2="18"></line>
+      <line x1="18" y1="6" x2="19.8" y2="4.2"></line>
+    </g>
+  </svg>
+  <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"
+      fill="currentColor"
+    ></path>
+  </svg>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition:
+      background-color var(--duration) var(--ease),
+      color var(--duration) var(--ease);
+  }
+
+  .theme-toggle:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+  }
+
+  .theme-toggle__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* ライト表示中は「ダークへ切り替える」ことを示す月アイコンを見せる */
+  .theme-toggle__icon--sun {
+    display: none;
+  }
+
+  .theme-toggle__icon--moon {
+    display: block;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle__icon--sun {
+    display: block;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle__icon--moon {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .theme-toggle__icon--sun {
+      display: block;
+    }
+
+    :global(:root:not([data-theme='light'])) .theme-toggle__icon--moon {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'bodymakers:theme';
+
+  function currentlyDark(): boolean {
+    const explicit = document.documentElement.dataset.theme;
+    if (explicit === 'dark') return true;
+    if (explicit === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyLabel(button: HTMLButtonElement): void {
+    const dark = currentlyDark();
+    button.setAttribute(
+      'aria-label',
+      dark ? 'ライトモードに切り替える' : 'ダークモードに切り替える',
+    );
+  }
+
+  const button = document.getElementById('theme-toggle');
+  if (button instanceof HTMLButtonElement) {
+    applyLabel(button);
+
+    button.addEventListener('click', () => {
+      const next = currentlyDark() ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // プライベートブラウジング等で localStorage が使えなくても
+        // そのページ内での切り替えは効くので、握りつぶしてよい。
+      }
+      applyLabel(button);
+    });
+  }
+</script>

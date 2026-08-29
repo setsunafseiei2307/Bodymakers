@@ -1,0 +1,277 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StrengthForm from '../components/react/StrengthForm';
+import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
+import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
+import { getPublishedArticles } from '../lib/articles';
+import ArticleCard from '../components/ArticleCard.astro';
+import '../styles/strength.css';
+
+const totalLifters =
+  STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
+
+const title = '筋力レベル診断';
+const description =
+  'ベンチプレス・スクワット・デッドリフトの記録から、同じ性別・体重の人と比べた筋力レベルとパーセンタイルを判定します。公式競技会の実データ約' +
+  Math.floor(totalLifters / 10000) +
+  '万件が基準。登録不要・データ保存なし。';
+
+// 診断後の回遊先として最新記事を出す
+const articles = (await getPublishedArticles()).slice(0, 3);
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container page">
+    <header class="page__header">
+      <p class="page__eyebrow">登録不要・データ保存なし</p>
+      <h1>筋力レベル診断</h1>
+      <p class="page__lead">
+        挙上重量とレップ数から推定1RMを計算し、同じ性別・体重帯の競技者の中での
+        位置（パーセンタイル）と5段階のレベルを判定します。
+      </p>
+      <ul class="page__facts">
+        <li>
+          <strong>{totalLifters.toLocaleString('ja-JP')}人</strong>
+          <span>の競技記録が基準</span>
+        </li>
+        <li>
+          <strong>3種目</strong>
+          <span>ベンチ / スクワット / デッドリフト</span>
+        </li>
+        <li>
+          <strong>0件</strong>
+          <span>保存されるデータ</span>
+        </li>
+      </ul>
+    </header>
+
+    <div class="page__body">
+      <div class="page__main">
+        {/*
+          client:load を使い、ページ表示直後から操作できるようにする。
+          このページの主目的が診断であり、遅延読み込みだと
+          スクロール前にタップされて反応しない事故が起きるため。
+        */}
+        <StrengthForm client:load />
+      </div>
+
+      <aside class="page__aside">
+        <section class="card">
+          <h2 class="aside__title">5段階レベルの定義</h2>
+          <p class="aside__lead">
+            すべて「公式競技会に出場したリフターの中での相対位置」です。
+            一般のジム利用者を基準にした熟練度ではありません。
+          </p>
+          <ul class="level-legend">
+            {
+              LEVELS.map((level) => (
+                <li class={`level-legend__item level--${level.id}`}>
+                  <span class="level-legend__dot" />
+                  <span class="level-legend__label">{level.label}</span>
+                  <span class="level-legend__desc">{level.description}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2 class="aside__title">データについて</h2>
+          <p class="aside__text">
+            基準値は{STANDARDS_SOURCE.name}が公開する競技記録
+            （{STANDARDS_SOURCE.license}）から算出しています。
+            推測値による補完は行っていません。
+          </p>
+          <p class="aside__text">
+            集計日: {STRENGTH_STANDARDS.generatedAt} ／ 対象:{' '}
+            {STRENGTH_STANDARDS.sinceYear}年以降の大会
+          </p>
+          <a class="button button--secondary button--block" href="/sources">
+            集計方法をくわしく見る
+          </a>
+        </section>
+
+        {/* 広告枠（サイドバー）。960px以上でのみ表示される。 */}
+        <div class="ad-slot ad-slot--sidebar" aria-hidden="true" data-ad-slot="sidebar"></div>
+      </aside>
+    </div>
+
+    {
+      articles.length > 0 && (
+        <section class="page__related">
+          <div class="section-heading">
+            <h2>関連する記事</h2>
+            <a href="/articles">記事一覧へ</a>
+          </div>
+          <div class="card-grid">
+            {articles.map((article) => (
+              <ArticleCard article={article} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: var(--space-6) var(--space-8);
+  }
+
+  .page__header {
+    max-width: var(--width-prose);
+    margin-bottom: var(--space-6);
+  }
+
+  .page__eyebrow {
+    display: inline-block;
+    margin-bottom: var(--space-2);
+    padding: 0.15rem var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--brand-soft);
+    color: var(--brand-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+
+  .page__lead {
+    margin-top: var(--space-3);
+    color: var(--text-body);
+    font-size: 1.0625rem;
+    line-height: 1.9;
+  }
+
+  .page__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin-top: var(--space-5);
+    padding: var(--space-4) 0 0;
+    border-top: 1px solid var(--border);
+    list-style: none;
+  }
+
+  .page__facts li {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page__facts strong {
+    color: var(--text-strong);
+    font-family: var(--font-numeric);
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page__facts span {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .page__body {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 60rem) {
+    .page__body {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+      align-items: start;
+    }
+  }
+
+  .page__aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 60rem) {
+    .page__aside {
+      position: sticky;
+      top: 4.5rem;
+    }
+  }
+
+  /* サイドバー広告は横幅が取れる画面でのみ出す */
+  .page__aside :global(.ad-slot--sidebar) {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .page__aside :global(.ad-slot--sidebar) {
+      display: flex;
+      margin-block: 0;
+    }
+  }
+
+  .aside__title {
+    margin-bottom: var(--space-3);
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .aside__lead,
+  .aside__text {
+    margin-bottom: var(--space-3);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+  }
+
+  .level-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .level-legend__item {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .level-legend__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: var(--radius-full);
+    background: var(--level-color);
+  }
+
+  .level-legend__label {
+    color: var(--level-color);
+    font-size: 0.875rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .level-legend__desc {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .page__related {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .card-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 40rem) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    }
+  }
+</style>

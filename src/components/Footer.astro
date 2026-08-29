@@ -1,0 +1,104 @@
+---
+import { FOOTER_ITEMS, SITE_NAME, SITE_TAGLINE } from '../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <!-- 広告枠（フッター）。現時点では広告タグを読み込まない。
+         有効化するときはこの div の中にタグを入れる。 -->
+    <div class="ad-slot ad-slot--footer" aria-hidden="true" data-ad-slot="footer"></div>
+
+    <div class="site-footer__inner">
+      <div class="site-footer__brand">
+        <p class="site-footer__name">{SITE_NAME}</p>
+        <p class="site-footer__tagline">{SITE_TAGLINE}</p>
+      </div>
+
+      <nav class="site-footer__nav" aria-label="フッターナビゲーション">
+        <ul class="site-footer__list">
+          {
+            FOOTER_ITEMS.map((item) => (
+              <li>
+                <a class="site-footer__link" href={item.href}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+
+    <p class="site-footer__legal">
+      本サイトの内容は一般的な情報提供を目的としたものであり、医学的な診断・治療・指導を
+      行うものではありません。健康状態に不安がある場合は医療機関にご相談ください。
+    </p>
+
+    <p class="site-footer__copyright">© {year} {SITE_NAME}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    padding-block: var(--space-6) var(--space-7);
+    background: var(--surface-1);
+    border-top: 1px solid var(--border);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-footer__name {
+    color: var(--text-strong);
+    font-weight: 800;
+    font-size: 1.0625rem;
+  }
+
+  .site-footer__tagline {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .site-footer__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__link {
+    color: var(--text-body);
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+
+  .site-footer__link:hover {
+    color: var(--brand-text);
+    text-decoration: underline;
+  }
+
+  .site-footer__legal {
+    margin-top: var(--space-5);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+  }
+
+  .site-footer__copyright {
+    margin-top: var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+</style>

@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
+import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
+import { FOOD_SOURCE } from '../lib/foods';
+
+const totalLifters =
+  STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
+
+/** 体重アンカーごとの標本数。基準の厚みを読者が確認できるようにする。 */
+const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
+  male: anchor,
+  female: STRENGTH_STANDARDS.anchors.F[index] ?? null,
+}));
+---
+
+<BaseLayout
+  title="出典・データについて"
+  description="筋力レベル診断の判定基準と栄養データの出典、集計方法、利用条件を公開しています。"
+>
+  <div class="container doc-page">
+    <header class="doc-page__header">
+      <h1>出典・データについて</h1>
+      <p class="doc-page__lead">
+        このサイトが表示する数値の出どころと、その加工方法をすべて公開しています。
+        推測で補った値は一切含みません。
+      </p>
+    </header>
+
+    <div class="prose-container article-body">
+      <h2>1. 筋力レベル診断の判定基準</h2>
+
+      <h3>出典</h3>
+      <p>
+        <strong>{STANDARDS_SOURCE.name}</strong> プロジェクトが公開する公式競技会の
+        記録データを使用しています。
+      </p>
+      <ul>
+        <li>
+          プロジェクト:{' '}
+          <a href={STANDARDS_SOURCE.url} target="_blank" rel="noopener noreferrer">
+            {STANDARDS_SOURCE.url}
+          </a>
+        </li>
+        <li>
+          データ配布元:{' '}
+          <a href={STANDARDS_SOURCE.dataUrl} target="_blank" rel="noopener noreferrer">
+            {STANDARDS_SOURCE.dataUrl}
+          </a>
+        </li>
+        <li>利用条件: {STANDARDS_SOURCE.license}</li>
+      </ul>
+      <blockquote>
+        <p>{STANDARDS_SOURCE.attribution}</p>
+      </blockquote>
+      <p>
+        同プロジェクトは、CSV形式で配布される競技記録について
+        「著作権および隣接する権利を放棄する」と明示しています。
+        帰属表示は必須ではありませんが、推奨されているため上記のとおり記載しています。
+      </p>
+
+      <h3>抽出条件</h3>
+      <p>全記録から、次の条件をすべて満たすものだけを使っています。</p>
+      <ul>
+        <li>
+          <strong>ノーギア（Raw）</strong> — ベルトのみ。ニーラップやスーツを使った記録は、
+          一般のジムでの挙上と比較できないため除外しています。
+        </li>
+        <li>
+          <strong>フルパワー（3種目実施）</strong> — ベンチプレス専門の大会を混ぜると
+          ベンチの分布だけが上振れし、種目間の比較ができなくなるため除外しています。
+        </li>
+        <li><strong>3種目すべて成功</strong> — 全試技失敗・未実施の記録を除外。</li>
+        <li><strong>実測体重あり</strong> — 階級ではなく計量値が記録されているもの。</li>
+        <li>
+          <strong>{STRENGTH_STANDARDS.sinceYear}年以降の大会</strong> —
+          ノーギア競技が一般化した時期以降に限定しています。
+        </li>
+        <li>
+          <strong>選手ごとに1試合</strong> — 同じ選手が何度も出場していると、
+          出場回数の多い選手ほど分布に重く効いてしまいます。
+          氏名と性別をキーに、トータルが最大だった1試合だけを残しています。
+        </li>
+      </ul>
+      <p>
+        結果として <strong>{totalLifters.toLocaleString('ja-JP')}人</strong>
+        （男性 {STRENGTH_STANDARDS.totalLifters.M.toLocaleString('ja-JP')}人 /
+        女性 {STRENGTH_STANDARDS.totalLifters.F.toLocaleString('ja-JP')}人）の記録が
+        基準値の母集団になっています。集計日は {STRENGTH_STANDARDS.generatedAt} です。
+      </p>
+
+      <h3>体重帯の扱い</h3>
+      <p>
+        体重階級で区切ると、階級の境目で基準値が不連続に跳ねます。
+        代わりに、代表的な体重（アンカー）ごとに「その体重の前後±8%（最低±4kg）」に
+        入る選手を集めて分位数を出し、アンカーとアンカーの間は線形補間しています。
+        最軽量アンカーより軽い場合・最重量アンカーより重い場合は、
+        端の値をそのまま使い、外挿はしません。
+      </p>
+      <p>
+        1つのアンカーあたり {STRENGTH_STANDARDS.minSample}件に満たない場合は数値を出さず、
+        画面には「データなし」と表示します。推測値で埋めることはしません。
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <caption class="visually-hidden">体重アンカーごとの標本数</caption>
+          <thead>
+            <tr>
+              <th scope="col">男性の体重</th>
+              <th scope="col">標本数</th>
+              <th scope="col">女性の体重</th>
+              <th scope="col">標本数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              anchorRows.map((row) => (
+                <tr>
+                  <td>{row.male.bodyweightKg} kg</td>
+                  <td>{row.male.sample.toLocaleString('ja-JP')}人</td>
+                  <td>{row.female ? `${row.female.bodyweightKg} kg` : '—'}</td>
+                  <td>
+                    {row.female ? `${row.female.sample.toLocaleString('ja-JP')}人` : '—'}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h3>5段階レベルの区切り</h3>
+      <p>
+        レベルは、上で作った分位数表の上に置いた区切りです。
+        区切り位置は分位点そのもの（10 / 30 / 65 / 90パーセンタイル）に合わせてあり、
+        補間せずに実データの値を境界に使えるようにしています。
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">レベル</th>
+              <th scope="col">定義</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              LEVELS.map((level) => (
+                <tr>
+                  <th scope="row">{level.label}</th>
+                  <td>{level.description}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note note--warning">
+        <span class="note__title">母集団の性格について</span>
+        <p>
+          基準となるのは<strong>公式競技会に出場した人たち</strong>の記録です。
+          一般のジム利用者を無作為に集めたデータではないため、全体に高い水準にあります。
+          「初心者」と判定されても、ジムでの標準より弱いという意味ではありません。
+        </p>
+        <p style="margin-top:0.5rem">
+          また、競技会のスクワットは規定の深さ、ベンチプレスは静止が求められるため、
+          同じ重量でもジムでの挙上より条件が厳しくなります。
+        </p>
+      </div>
+
+      <h3>推定1RMの算出式</h3>
+      <p>
+        挙上重量とレップ数からの1RM推定には、以下7つの換算式の平均値を使っています。
+        いずれも公表されている計算式です。
+      </p>
+      <ul>
+        <li>Epley（1985）</li>
+        <li>Brzycki（1993）</li>
+        <li>Lander（1985）</li>
+        <li>Lombardi（1989）</li>
+        <li>O'Conner（1989）</li>
+        <li>Mayhew（1992）</li>
+        <li>Wathen（1994）</li>
+      </ul>
+      <p>
+        レップ数が増えるほど式の間の差が広がるため、
+        1〜12回までを計算対象とし、それ以上は計算しません。
+        結果画面には式による差（最大値と最小値の幅）も表示しています。
+      </p>
+
+      <h2>2. 栄養データ</h2>
+      <p>
+        食品の栄養価は <strong>{FOOD_SOURCE.publisher}「{FOOD_SOURCE.title}」</strong>
+        {FOOD_SOURCE.section}の収載値をそのまま使用しています
+        （{FOOD_SOURCE.basis}）。
+      </p>
+      <ul>
+        <li>
+          出典:{' '}
+          <a href={FOOD_SOURCE.url} target="_blank" rel="noopener noreferrer">
+            {FOOD_SOURCE.url}
+          </a>
+        </li>
+        <li>収録件数: 300件</li>
+        <li>
+          各食品に成分表の<strong>食品番号</strong>と<strong>収載名</strong>を保持しており、
+          元データまで遡って確認できます。
+        </li>
+      </ul>
+      <p>
+        成分表の記号は次のように扱っています。
+        <code>-</code>（未測定）は「データなし」、<code>Tr</code>（微量）は0、
+        括弧付きの推定値はその数値を採用したうえで「推定」と明示します。
+        空欄は「データなし」です。
+      </p>
+      <p>
+        エネルギー値はPFCから再計算していません。八訂ではエネルギーを組成成分ベースで
+        算出しており、たんぱく質×4＋脂質×9＋炭水化物×4 では収載値と一致しないためです。
+      </p>
+
+      <h2>3. データに関する方針</h2>
+      <ul>
+        <li>AIによる推測値・補完値をデータに加えることはしません。</li>
+        <li>すべての数値に出典を記録し、画面上にも表示します。</li>
+        <li>該当するデータが存在しない場合は「データなし」と表示します。</li>
+        <li>
+          集計スクリプトはリポジトリに含めており、同じ手順で同じ数値を再現できます。
+        </li>
+      </ul>
+
+      <h2>4. 免責</h2>
+      <p>
+        本サイトの内容は一般的な情報提供を目的としたものであり、
+        医学的な診断・治療・指導を行うものではありません。
+        診断結果は統計上の位置を示す目安であり、
+        個人の健康状態やトレーニングの適切さを評価するものではありません。
+        詳細は<a href="/disclaimer">免責事項</a>をご確認ください。
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .doc-page {
+    padding-block: var(--space-6) var(--space-8);
+  }
+
+  .doc-page__header {
+    max-width: var(--width-prose);
+    margin-inline: auto;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .doc-page__lead {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+</style>

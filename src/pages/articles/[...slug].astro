@@ -1,0 +1,28 @@
+---
+import { render } from 'astro:content';
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getPublishedArticles, getRelatedArticles } from '../../lib/articles';
+
+/**
+ * 記事ページを静的に生成する。
+ * src/content/articles/ にファイルを足せば、次のビルドでページが増える。
+ * ファイル名（拡張子を除いた部分）がそのままURLになる。
+ */
+export async function getStaticPaths() {
+  const articles = await getPublishedArticles();
+  return Promise.all(
+    articles.map(async (article) => ({
+      params: { slug: article.id },
+      props: { article, related: await getRelatedArticles(article) },
+    })),
+  );
+}
+
+const { article, related } = Astro.props;
+const { Content } = await render(article);
+---
+
+<ArticleLayout article={article} related={related}>
+  <Content />
+</ArticleLayout>

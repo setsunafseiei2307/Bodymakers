@@ -1,6 +1,6 @@
 /** 1RM（1回挙上できる最大重量）の推定と、%1RM換算 */
 
-import { isFiniteNumber, roundTo } from './format';
+import { isFiniteNumber } from './format';
 
 export type FormulaName =
   | 'Epley'
@@ -91,11 +91,8 @@ export interface RepRow {
   percent: number;
 }
 
-/**
- * 1RM から各レップ数の目安重量を出す。
- * increment を渡すとその刻みに丸める（例: 2.5kg プレート運用なら 2.5）。
- */
-export function repTableFromOneRM(oneRM: number, increment = 0): RepRow[] {
+/** 1RM から各レップ数の目安重量を出す。 */
+export function repTableFromOneRM(oneRM: number): RepRow[] {
   if (!isFiniteNumber(oneRM) || oneRM <= 0) return [];
   return Object.keys(REP_PERCENT_TABLE)
     .map(Number)
@@ -103,16 +100,15 @@ export function repTableFromOneRM(oneRM: number, increment = 0): RepRow[] {
     .map((reps) => {
       const percent = REP_PERCENT_TABLE[reps];
       const raw = (oneRM * percent) / 100;
-      return { reps, percent, weight: increment > 0 ? roundTo(raw, increment) : raw };
+      return { reps, percent, weight: raw };
     });
 }
 
 /** 1RM の指定パーセントの重量 */
-export function weightAtPercent(oneRM: number, percent: number, increment = 0): number | null {
+export function weightAtPercent(oneRM: number, percent: number): number | null {
   if (!isFiniteNumber(oneRM) || oneRM <= 0) return null;
   if (!isFiniteNumber(percent) || percent <= 0) return null;
-  const raw = (oneRM * percent) / 100;
-  return increment > 0 ? roundTo(raw, increment) : raw;
+  return (oneRM * percent) / 100;
 }
 
 /** ある重量が1RMの何%に当たるか */

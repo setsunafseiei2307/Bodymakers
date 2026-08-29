@@ -49,7 +49,7 @@ src/
 │  └─ react/               Reactアイランド。ここだけJSが配られる
 ├─ lib/                    ロジック層。UI非依存の純関数
 │  ├─ format.ts            全ロジックの土台
-│  ├─ onerm.ts rpe.ts plates.ts smolov.ts nutrition.ts
+│  ├─ onerm.ts rpe.ts smolov.ts nutrition.ts
 │  ├─ foods.ts foodData.ts 食品2,538件
 │  ├─ articles.ts          記事コレクションの取得ヘルパー
 │  └─ strength/            筋力レベル診断
@@ -75,7 +75,7 @@ pages/  →  layouts/  →  components/  →  lib/
 `lib/` 内部の依存は `format.ts` を末端とする木構造:
 
 - `format.ts` … 依存なし
-- `onerm.ts` / `rpe.ts` / `plates.ts` / `smolov.ts` / `nutrition.ts` → `format.ts`
+- `onerm.ts` / `rpe.ts` / `smolov.ts` / `nutrition.ts` → `format.ts`
 - `foods.ts` → `format.ts` + `foodData.ts`、`foodData.ts` → `foods.ts`（型のみ）
 - `strength/standards.ts` → `format.ts`
 - `strength/diagnose.ts` → `standards.ts` + `standardsData.ts` + `onerm.ts` + `format.ts`

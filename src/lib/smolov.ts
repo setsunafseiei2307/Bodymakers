@@ -3,7 +3,7 @@
  * 1RM と週ごとの増加量を入れると、日ごとのセット×レップ×重量まで確定させる。
  */
 
-import { isFiniteNumber, roundTo } from './format';
+import { isFiniteNumber } from './format';
 
 export type SmolovVariant = 'jr' | 'base';
 
@@ -55,7 +55,6 @@ export interface SmolovPlan {
   variant: SmolovVariant;
   oneRM: number;
   increment: number;
-  roundingIncrement: number;
   weeks: SmolovWeek[];
   tonnage: number;
   totalReps: number;
@@ -64,8 +63,6 @@ export interface SmolovPlan {
 export interface SmolovOptions {
   /** 週ごとに working max へ加算する重量（kg）。ベンチ 2.5kg / スクワット 5kg が目安 */
   weeklyIncrement?: number;
-  /** 重量の丸め刻み */
-  roundingIncrement?: number;
   /** 最終週をテスト週にするか。false なら4週目も通常トレーニング */
   testWeek?: boolean;
 }
@@ -88,7 +85,6 @@ export function buildSmolov(
   if (!isFiniteNumber(oneRM) || oneRM <= 0) return null;
 
   const weeklyIncrement = options.weeklyIncrement ?? 2.5;
-  const roundingIncrement = options.roundingIncrement ?? 2.5;
   const testWeek = options.testWeek ?? true;
   const template = variant === 'jr' ? JR_DAYS : BASE_DAYS;
 
@@ -96,7 +92,7 @@ export function buildSmolov(
 
   for (let w = 0; w < 4; w++) {
     const isTestWeek = testWeek && w === 3;
-    const workingMax = roundTo(oneRM + weeklyIncrement * w, roundingIncrement);
+    const workingMax = oneRM + weeklyIncrement * w;
 
     if (isTestWeek) {
       weeks.push({
@@ -110,12 +106,12 @@ export function buildSmolov(
             sets: 1,
             reps: 1,
             percent: 100,
-            weight: roundTo(oneRM + weeklyIncrement * 3, roundingIncrement),
-            tonnage: roundTo(oneRM + weeklyIncrement * 3, roundingIncrement),
+            weight: oneRM + weeklyIncrement * 3,
+            tonnage: oneRM + weeklyIncrement * 3,
             totalReps: 1,
           },
         ],
-        tonnage: roundTo(oneRM + weeklyIncrement * 3, roundingIncrement),
+        tonnage: oneRM + weeklyIncrement * 3,
         totalReps: 1,
         isTestWeek: true,
       });
@@ -123,7 +119,7 @@ export function buildSmolov(
     }
 
     const days: SmolovDay[] = template.map((d) => {
-      const weight = roundTo((workingMax * d.percent) / 100, roundingIncrement);
+      const weight = (workingMax * d.percent) / 100;
       const totalReps = d.sets * d.reps;
       return {
         label: d.label,
@@ -132,7 +128,7 @@ export function buildSmolov(
         percent: d.percent,
         weight,
         totalReps,
-        tonnage: Number((weight * totalReps).toFixed(1)),
+        tonnage: weight * totalReps,
       };
     });
 
@@ -142,7 +138,7 @@ export function buildSmolov(
       note: WEEK_NOTES[Math.min(w, 2)],
       workingMax,
       days,
-      tonnage: Number(days.reduce((s, d) => s + d.tonnage, 0).toFixed(1)),
+      tonnage: days.reduce((sum, d) => sum + d.tonnage, 0),
       totalReps: days.reduce((s, d) => s + d.totalReps, 0),
       isTestWeek: false,
     });
@@ -152,9 +148,8 @@ export function buildSmolov(
     variant,
     oneRM,
     increment: weeklyIncrement,
-    roundingIncrement,
     weeks,
-    tonnage: Number(weeks.reduce((s, w) => s + w.tonnage, 0).toFixed(1)),
+    tonnage: weeks.reduce((sum, w) => sum + w.tonnage, 0),
     totalReps: weeks.reduce((s, w) => s + w.totalReps, 0),
   };
 }

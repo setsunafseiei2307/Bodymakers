@@ -37,14 +37,6 @@ describe('buildSmolov — 重量計算', () => {
     expect(new Set(plan.weeks.map((w) => w.workingMax)).size).toBe(1);
   });
 
-  it('全ての重量が丸め刻みの倍数になっている', () => {
-    const plan = buildSmolov(137, 'jr', { roundingIncrement: 2.5 })!;
-    for (const week of plan.weeks) {
-      for (const day of week.days) {
-        expect(Math.abs(day.weight / 2.5 - Math.round(day.weight / 2.5))).toBeLessThan(1e-9);
-      }
-    }
-  });
 
   it('1日の tonnage = 重量 × セット × レップ', () => {
     const plan = buildSmolov(100, 'jr')!;

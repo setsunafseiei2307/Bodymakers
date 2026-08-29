@@ -44,35 +44,6 @@ describe('parseNumber', () => {
   });
 });
 
-describe('roundTo', () => {
-  it('nearest がデフォルト', () => {
-    expect(roundTo(61.3, 2.5)).toBe(62.5);
-    expect(roundTo(61.2, 2.5)).toBe(60);
-  });
-
-  it('down / up が効く', () => {
-    expect(roundTo(61.3, 2.5, 'down')).toBe(60);
-    expect(roundTo(61.3, 2.5, 'up')).toBe(62.5);
-    expect(roundTo(60, 2.5, 'up')).toBe(60);
-  });
-
-  it('浮動小数点誤差が残らない（62.50000000000001 を出さない）', () => {
-    expect(roundTo(62.5, 2.5)).toBe(62.5);
-    expect(roundTo(0.1 + 0.2, 0.1)).toBe(0.3);
-  });
-
-  it('increment が 0 以下・不正なら値をそのまま返す', () => {
-    expect(roundTo(61.3, 0)).toBe(61.3);
-    expect(roundTo(61.3, -1)).toBe(61.3);
-    expect(roundTo(61.3, NaN)).toBe(61.3);
-  });
-
-  it('大きな値・小さな値でも壊れない', () => {
-    expect(roundTo(1_000_000.4, 1)).toBe(1_000_000);
-    expect(roundTo(0.004, 0.005)).toBe(0.005);
-  });
-});
-
 describe('fmt / fmtComma', () => {
   it('末尾の 0 を落とす', () => {
     expect(fmt(62.5)).toBe('62.5');

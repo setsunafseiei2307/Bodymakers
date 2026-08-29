@@ -97,10 +97,6 @@ describe('weightForRepsAtRpe', () => {
     expect(weightForRepsAtRpe(oneRM, 5, 8)).toBeCloseTo(100, 6);
   });
 
-  it('increment で刻みに丸まる', () => {
-    const w = weightForRepsAtRpe(200, 5, 8, 2.5)!;
-    expect((w / 2.5) % 1).toBe(0);
-  });
 
   it('不正入力は null', () => {
     expect(weightForRepsAtRpe(0, 5, 8)).toBeNull();
@@ -134,12 +130,4 @@ describe('buildRpeMatrix', () => {
     expect(bottomRight).toBeLessThan(topLeft);
   });
 
-  it('increment を渡すと刻みに丸まる', () => {
-    const m = buildRpeMatrix(187, 8, 2.5);
-    for (const row of m) {
-      for (const cell of row) {
-        expect(Math.abs(cell.weight! / 2.5 - Math.round(cell.weight! / 2.5))).toBeLessThan(1e-9);
-      }
-    }
-  });
 });

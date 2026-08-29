@@ -191,17 +191,37 @@ export function validateInput(input: DiagnosisInput): ValidationError[] {
   return errors;
 }
 
-/** 指定の体重・種目について、5段階それぞれの下限重量を求める。 */
+/**
+ * 指定の体重・種目について、5段階それぞれの下限重量を求める。
+ *
+ * 最下位レベル（初心者）には「到達に必要な重量」が存在しないので 0 を入れる。
+ * 画面側は 0 のとき「—」と表示する。ここに基準表の下限値を入れてしまうと、
+ * 初級の下限と同じ値になり、表の並びが不自然になる。
+ */
 function buildThresholds(
   curve: number[],
   grid: number[],
 ): LevelThreshold[] {
   return LEVELS.map((level) => {
-    // 最下位レベルの下限は基準表そのものの下限値を使う（0kg では意味がないため）
-    const percentile = level.minPercentile === 0 ? grid[0] : level.minPercentile;
-    const weightKg = weightForPercentile(curve, grid, percentile);
+    if (level.minPercentile === 0) return { level, weightKg: 0 };
+    const weightKg = weightForPercentile(curve, grid, level.minPercentile);
     return { level, weightKg: weightKg ?? 0 };
   });
+}
+
+/**
+ * 順位とレンジ外判定からレベルを決める。
+ *
+ * 基準表の下限を下回った場合、percentileForWeight は表の最小分位（1）を
+ * 返してくる。そのまま levelForPercentile に渡すと初級と判定されてしまうため、
+ * レンジ外は必ず最下位レベルとして扱う。
+ */
+function levelFor(
+  percentile: number,
+  bound: 'in-range' | 'below' | 'above',
+): LevelDefinition {
+  if (bound === 'below') return LEVELS[0];
+  return levelForPercentile(percentile);
 }
 
 /** 現在のレベルの次に到達するレベルと、そこまでの不足分を求める。 */
@@ -239,7 +259,7 @@ function diagnoseLift(
   if (ranked == null) return null;
 
   const thresholds = buildThresholds(curve, grid);
-  const level = levelForPercentile(ranked.percentile);
+  const level = levelFor(ranked.percentile, ranked.bound);
 
   return {
     lift,
@@ -340,7 +360,7 @@ function diagnoseTotal(
     oneRmKg,
     percentile: ranked.percentile,
     bound: ranked.bound,
-    level: levelForPercentile(ranked.percentile),
+    level: levelFor(ranked.percentile, ranked.bound),
     thresholds: buildThresholds(curve, grid),
   };
 }

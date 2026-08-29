@@ -134,9 +134,13 @@ function ThresholdTable({
                   {threshold.level.label}
                   {isCurrent && <span className="threshold-table__current">現在</span>}
                 </th>
-                <td className="threshold-table__weight">{fmt(threshold.weightKg, 1)} kg</td>
+                <td className="threshold-table__weight">
+                  {threshold.weightKg > 0 ? `${fmt(threshold.weightKg, 1)} kg` : '—'}
+                </td>
                 <td className="threshold-table__delta">
-                  {delta <= 0 ? (
+                  {threshold.weightKg <= 0 ? (
+                    '—'
+                  ) : delta <= 0 ? (
                     <span className="threshold-table__cleared">到達済み</span>
                   ) : (
                     <>+{fmt(delta, 1)} kg</>

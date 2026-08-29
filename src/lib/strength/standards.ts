@@ -84,47 +84,58 @@ export interface LevelDefinition {
 /**
  * 5段階レベルの定義。
  *
- * 区切りは standardsData.ts の percentileGrid 上の点（10 / 30 / 65 / 90）に合わせてある。
+ * 区切りは standardsData.ts の percentileGrid 上の点（1 / 10 / 30 / 70）に合わせてある。
  * 補間せずに実データの分位数をそのまま境界値として使えるようにするため。
  *
- * ラベルはあくまで「競技者集団の中での相対位置」であり、
- * 一般のジム利用者を基準にした熟練度ではない。画面では description を必ず並べて出す。
+ * 【区切りをこの位置にした理由】
+ * 基準データの母集団は公式競技会の出場者で、一般のジム利用者より全体に高い水準にある。
+ * 区切りを中央寄り（10/30/65/90）に置くと、普通にトレーニングしている人がほぼ全員
+ * 最下位レベルに落ちてしまい、指標として機能しない。
+ *
+ * 分布の下側を細かく切ると、データから出てくる境界値が現場で使われている
+ * 体重比の目安とほぼ一致する。男性の場合:
+ *   ベンチプレス   初級 体重0.75倍 / 中級 1.1倍 / 上級 1.3倍 / エリート 1.6倍
+ *   スクワット     初級 1.0倍     / 中級 1.65倍 / 上級 2.0倍 / エリート 2.5倍
+ *   デッドリフト   初級 1.4倍     / 中級 2.0倍  / 上級 2.4倍 / エリート 2.9倍
+ *
+ * 数値そのものは実データの分位数であり、加工していない。
+ * 区切り位置の選択だけが編集上の判断であることを docs/strength-standards.md に明記する。
  */
 export const LEVELS: readonly LevelDefinition[] = [
   {
     id: 'beginner',
     label: '初心者',
     minPercentile: 0,
-    maxPercentile: 10,
-    description: '競技会出場者の中では下位10%未満',
+    maxPercentile: 1,
+    description: '競技会の記録としては基準表の範囲外',
   },
   {
     id: 'novice',
     label: '初級',
-    minPercentile: 10,
-    maxPercentile: 30,
-    description: '競技会出場者の中で下位10〜30%',
+    minPercentile: 1,
+    maxPercentile: 10,
+    description: '競技会出場者の下位1〜10%に相当',
   },
   {
     id: 'intermediate',
     label: '中級',
-    minPercentile: 30,
-    maxPercentile: 65,
-    description: '競技会出場者の中で下位30〜65%',
+    minPercentile: 10,
+    maxPercentile: 30,
+    description: '競技会出場者の下位10〜30%に相当',
   },
   {
     id: 'advanced',
     label: '上級',
-    minPercentile: 65,
-    maxPercentile: 90,
-    description: '競技会出場者の中で上位10〜35%',
+    minPercentile: 30,
+    maxPercentile: 70,
+    description: '競技会出場者の中位30〜70%に相当',
   },
   {
     id: 'elite',
     label: 'エリート',
-    minPercentile: 90,
+    minPercentile: 70,
     maxPercentile: 100,
-    description: '競技会出場者の中で上位10%以内',
+    description: '競技会出場者の中で上位30%以内',
   },
 ] as const;
 

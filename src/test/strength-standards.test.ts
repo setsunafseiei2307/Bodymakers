@@ -175,14 +175,14 @@ describe('レベル定義', () => {
 
   it('levelForPercentile が境界値で正しいレベルを返す', () => {
     expect(levelForPercentile(0).id).toBe('beginner');
-    expect(levelForPercentile(9.99).id).toBe('beginner');
-    expect(levelForPercentile(10).id).toBe('novice');
-    expect(levelForPercentile(29.99).id).toBe('novice');
-    expect(levelForPercentile(30).id).toBe('intermediate');
-    expect(levelForPercentile(64.99).id).toBe('intermediate');
-    expect(levelForPercentile(65).id).toBe('advanced');
-    expect(levelForPercentile(89.99).id).toBe('advanced');
-    expect(levelForPercentile(90).id).toBe('elite');
+    expect(levelForPercentile(0.99).id).toBe('beginner');
+    expect(levelForPercentile(1).id).toBe('novice');
+    expect(levelForPercentile(9.99).id).toBe('novice');
+    expect(levelForPercentile(10).id).toBe('intermediate');
+    expect(levelForPercentile(29.99).id).toBe('intermediate');
+    expect(levelForPercentile(30).id).toBe('advanced');
+    expect(levelForPercentile(69.99).id).toBe('advanced');
+    expect(levelForPercentile(70).id).toBe('elite');
     expect(levelForPercentile(100).id).toBe('elite');
   });
 

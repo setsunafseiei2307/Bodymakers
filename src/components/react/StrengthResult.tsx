@@ -419,7 +419,6 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
               <a href="/sources">この診断の集計方法と出典をくわしく見る</a>
             </li>
           </ul>
-          <div className="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="result" />
         </div>
       </div>
 

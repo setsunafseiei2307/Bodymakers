@@ -7,6 +7,7 @@ import { getPublishedArticles } from '../lib/articles';
 import ArticleCard from '../components/ArticleCard.astro';
 import '../styles/tools.css';
 import '../styles/strength.css';
+import AdSlot from '../components/AdSlot.astro';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -93,7 +94,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
         </section>
 
         {/* 広告枠（サイドバー）。960px以上でのみ表示される。 */}
-        <div class="ad-slot ad-slot--sidebar" aria-hidden="true" data-ad-slot="sidebar"></div>
+        <AdSlot id="sidebar" variant="sidebar" />
       </aside>
     </div>
 

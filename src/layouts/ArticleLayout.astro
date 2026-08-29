@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { CATEGORIES, SITE_NAME, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
+import AdSlot from '../components/AdSlot.astro';
 
 interface Props {
   article: Article;
@@ -116,7 +117,7 @@ const structuredData = {
       {/* 広告枠（記事末尾）。現時点では広告タグを読み込まない。
           アフィリエイトリンク（書籍・器具・サプリメント等）を差し込む場合も、
           本文とは区別できるようこのブロック内に置き、PR表記を添えること。 */}
-      <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="article-end"></div>
+      <AdSlot id="article-end" />
 
       {/* --- 診断への回遊導線。記事からツールへ送る --- */}
       <aside class="cta-card">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOOLS } from '../../config/tools';
+import AdSlot from '../../components/AdSlot.astro';
 
 const title = 'ツール一覧';
 const description =
@@ -32,7 +33,7 @@ const description =
       }
     </ul>
 
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="tools-bottom"></div>
+    <AdSlot id="tools-bottom" />
   </div>
 </BaseLayout>
 

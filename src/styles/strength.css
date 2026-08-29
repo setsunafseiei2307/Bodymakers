@@ -438,3 +438,71 @@
 
 /* 判定後の結果が入る領域。中身が無いときは高さを持たせない */
 .strength__result:empty { display: none; }
+
+/* ============================================================
+   簡易モードから3種目へ広げる導線
+   ============================================================ */
+
+.upgrade {
+  margin-top: var(--s5);
+  padding: var(--s5) var(--s4);
+  border: 1px solid var(--signal);
+  border-top: 4px solid var(--signal);
+  background: var(--signal-soft);
+  text-align: center;
+}
+
+.upgrade__title {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  font-weight: 900;
+}
+
+.upgrade__text {
+  margin: var(--s2) 0 var(--s4);
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.85;
+}
+
+/* ============================================================
+   結果が出る瞬間の演出
+   ============================================================
+   派手なアニメーションは入れない。計測機器が値を確定させる感じだけを出す。
+   0.35秒で終わらせ、reduced-motion 指定があれば動かさない。 */
+
+.record {
+  animation: record-in 0.35s var(--ease) both;
+}
+
+.record__level {
+  animation: level-in 0.45s var(--ease) 0.1s both;
+}
+
+.record__bar {
+  transform-origin: left center;
+  animation: bar-in 0.5s var(--ease) 0.15s both;
+}
+
+@keyframes record-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes level-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes bar-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record,
+  .record__level,
+  .record__bar {
+    animation: none;
+  }
+}

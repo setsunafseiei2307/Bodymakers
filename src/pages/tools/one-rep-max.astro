@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import OneRmTool from '../../components/react/OneRmTool';
 import '../../styles/tools.css';
+import AdSlot from '../../components/AdSlot.astro';
 
 const title = '1RM換算';
 const description = '挙上重量とレップ数から、7つの換算式で1RM（1回だけ挙げられる最大重量）を推定します。式ごとの値と推定の幅も表示します。';
@@ -27,7 +28,7 @@ const description = '挙上重量とレップ数から、7つの換算式で1RM�
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <OneRmTool client:load />
 
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="tool-bottom"></div>
+    <AdSlot id="tool-bottom" />
   </div>
 </BaseLayout>
 

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FoodTool from '../../components/react/FoodTool';
 import '../../styles/tools.css';
+import AdSlot from '../../components/AdSlot.astro';
 
 const title = '食品の栄養価を調べる';
 const description = '日本食品標準成分表の全2,538食品から、カロリーとPFCを調べます。分量を変えると成分値も変わります。';
@@ -27,7 +28,7 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <FoodTool client:load />
 
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="tool-bottom"></div>
+    <AdSlot id="tool-bottom" />
   </div>
 </BaseLayout>
 

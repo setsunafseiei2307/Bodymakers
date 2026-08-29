@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 import { getPublishedArticles } from '../../lib/articles';
 import { CATEGORIES } from '../../config/site';
+import AdSlot from '../../components/AdSlot.astro';
 
 const articles = await getPublishedArticles();
 ---
@@ -52,7 +53,7 @@ const articles = await getPublishedArticles();
     }
 
     {/* 広告枠（一覧下部）。現時点では広告タグを読み込まない。 */}
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="list-bottom"></div>
+    <AdSlot id="list-bottom" />
   </div>
 </BaseLayout>
 

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import NutritionTool from '../../components/react/NutritionTool';
 import '../../styles/tools.css';
+import AdSlot from '../../components/AdSlot.astro';
 
 const title = 'PFC・カロリー計算';
 const description = '基礎代謝と活動量から1日の消費カロリーを求め、目標に応じたカロリーとPFC（たんぱく質・脂質・炭水化物）の配分を計算します。';
@@ -27,7 +28,7 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <NutritionTool client:load />
 
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="tool-bottom"></div>
+    <AdSlot id="tool-bottom" />
   </div>
 </BaseLayout>
 

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RpeTool from '../../components/react/RpeTool';
 import '../../styles/tools.css';
+import AdSlot from '../../components/AdSlot.astro';
 
 const title = 'RPE換算';
 const description = 'RPE（あと何回できたか）と実施したセットから1RMを逆算し、次のセットの目安重量表を出します。';
@@ -27,7 +28,7 @@ const description = 'RPE（あと何回できたか）と実施したセット�
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <RpeTool client:load />
 
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="tool-bottom"></div>
+    <AdSlot id="tool-bottom" />
   </div>
 </BaseLayout>
 

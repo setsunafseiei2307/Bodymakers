@@ -1,5 +1,6 @@
 ---
 import { FOOTER_ITEMS, SITE_NAME, SITE_TAGLINE } from '../config/site';
+import AdSlot from './AdSlot.astro';
 
 const year = new Date().getFullYear();
 ---
@@ -8,7 +9,7 @@ const year = new Date().getFullYear();
   <div class="container">
     <!-- 広告枠（フッター）。現時点では広告タグを読み込まない。
          有効化するときはこの div の中にタグを入れる。 -->
-    <div class="ad-slot ad-slot--footer" aria-hidden="true" data-ad-slot="footer"></div>
+    <AdSlot id="footer" variant="footer" />
 
     <div class="site-footer__inner">
       <div class="site-footer__brand">

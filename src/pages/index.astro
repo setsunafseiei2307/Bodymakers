@@ -6,6 +6,10 @@ import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { CATEGORIES, SITE_DESCRIPTION } from '../config/site';
 import { TOOLS } from '../config/tools';
+import AdSlot from '../components/AdSlot.astro';
+import StrengthForm from '../components/react/StrengthForm';
+import '../styles/tools.css';
+import '../styles/strength.css';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -13,49 +17,26 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 ---
 
 <BaseLayout description={SITE_DESCRIPTION}>
-  {/* --- ヒーロー。診断への導線を最優先で置く --- */}
+  {/* --- ヒーロー。説明を読ませてから遷移させるのではなく、その場で測ってもらう --- */}
   <section class="hero">
     <div class="container hero__inner">
-      <p class="hero__eyebrow">登録不要・データ保存なし</p>
+      <p class="hero__eyebrow">登録不要・入力内容は送信されません</p>
       <h1 class="hero__title">
         あなたの筋力は<br />
         <span class="hero__accent">上位何%</span>ですか？
       </h1>
       <p class="hero__lead">
-        ベンチプレス・スクワット・デッドリフトの記録を入れるだけ。
-        同じ性別・体重の人と比べたレベルとパーセンタイルが、その場で分かります。
+        競技会の記録 {totalLifters.toLocaleString('ja-JP')}人分と比較。
+        まずはベンチプレスだけで測れます。
       </p>
 
-      <div class="hero__actions">
-        <a class="button button--lg" href="/strength-standards">
-          筋力レベルを診断する
-          <svg class="hero__arrow" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M4 10h11M10.5 5.5 15 10l-4.5 4.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"></path>
-          </svg>
-        </a>
-        <p class="hero__actions-note">所要時間およそ30秒 / 入力内容は送信されません</p>
+      {/*
+        client:load にしているのは、ここが「開いた直後に触られる」場所だから。
+        遅延させるとタップに反応せず、体験そのものが壊れる。
+      */}
+      <div class="hero__tool">
+        <StrengthForm client:load quickStart />
       </div>
-
-      <dl class="hero__stats">
-        <div class="hero__stat">
-          <dt>基準となる競技記録</dt>
-          <dd>{totalLifters.toLocaleString('ja-JP')}<span>人</span></dd>
-        </div>
-        <div class="hero__stat">
-          <dt>判定できる種目</dt>
-          <dd>3<span>種目</span></dd>
-        </div>
-        <div class="hero__stat">
-          <dt>保存されるデータ</dt>
-          <dd>0<span>件</span></dd>
-        </div>
-      </dl>
     </div>
   </section>
 
@@ -126,7 +107,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
     </section>
 
     {/* 広告枠（トップページ中段）。現時点では広告タグを読み込まない。 */}
-    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="home-mid"></div>
+    <AdSlot id="home-mid" />
 
     {/* --- ツール --- */}
     <section class="section">
@@ -197,40 +178,29 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   /* --- ヒーロー --- */
 
   .hero {
-    padding-block: var(--s7) var(--s7);
-    background:
-      radial-gradient(
-        ellipse 80% 60% at 50% 0%,
-        var(--signal-soft),
-        transparent 70%
-      ),
-      var(--paper);
-    border-bottom: 1px solid var(--hair);
+    padding-block: var(--s6) var(--s7);
+    border-bottom: 3px solid var(--rule);
   }
 
   .hero__inner {
-    max-width: 48rem;
-    text-align: center;
+    max-width: 40rem;
   }
 
   .hero__eyebrow {
     display: inline-block;
-    padding: 0.2rem var(--s4);
-    border: 1px solid color-mix(in srgb, var(--signal) 30%, transparent);
-    border-radius: var(--r-full);
-    background: var(--surface);
+    padding: 0.15rem var(--s3);
+    border: 1px solid var(--signal);
     color: var(--signal);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
   }
 
   .hero__title {
     margin-top: var(--s4);
-    font-size: clamp(2rem, 8.5vw, 3.25rem);
+    font-size: clamp(2rem, 9vw, 3rem);
     font-weight: 900;
-    line-height: 1.25;
-    letter-spacing: 0.01em;
+    line-height: 1.2;
   }
 
   .hero__accent {
@@ -238,67 +208,15 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   }
 
   .hero__lead {
-    max-width: 34rem;
-    margin: var(--s4) auto 0;
+    margin-top: var(--s4);
     color: var(--body);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.9;
   }
 
-  .hero__actions {
-    margin-top: var(--s6);
-  }
-
-  .hero__actions .button {
-    width: 100%;
-    max-width: 22rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  .hero__arrow {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  .hero__actions-note {
-    margin-top: var(--s3);
-    color: var(--muted);
-    font-size: 0.8125rem;
-  }
-
-  .hero__stats {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--s4) var(--s6);
-    margin: var(--s7) 0 0;
-    padding-top: var(--s5);
-    border-top: 1px solid var(--hair);
-  }
-
-  .hero__stat {
-    min-width: 6rem;
-  }
-
-  .hero__stat dt {
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .hero__stat dd {
-    margin: var(--s1) 0 0;
-    color: var(--ink);
-    font-family: var(--f-mono);
-    font-size: 1.375rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .hero__stat dd span {
-    margin-left: 0.1em;
-    color: var(--muted);
-    font-size: 0.8125rem;
+  /* 診断フォームはヒーローの中に置く。遷移を挟まない */
+  .hero__tool {
+    margin-top: var(--s5);
   }
 
   /* --- セクション共通 --- */

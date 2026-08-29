@@ -12,33 +12,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
     <div class="not-found__actions">
       <a class="button" href="/strength-standards">筋力レベル診断へ</a>
-      <a class="button button--secondary" href="/articles">記事一覧へ</a>
+      <a class="button button--ghost" href="/articles">記事一覧へ</a>
     </div>
   </div>
 </BaseLayout>
 
 <style>
   .not-found {
-    padding-block: var(--space-8);
+    padding-block: var(--s8);
     text-align: center;
   }
 
   .not-found__code {
-    color: var(--brand);
-    font-family: var(--font-numeric);
+    color: var(--signal);
+    font-family: var(--f-mono);
     font-size: clamp(3.5rem, 18vw, 6rem);
     font-weight: 900;
     line-height: 1;
   }
 
   .not-found__title {
-    margin-top: var(--space-4);
+    margin-top: var(--s4);
   }
 
   .not-found__text {
     max-width: 32rem;
-    margin: var(--space-4) auto 0;
-    color: var(--text-muted);
+    margin: var(--s4) auto 0;
+    color: var(--muted);
     line-height: 1.9;
   }
 
@@ -46,7 +46,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
+    gap: var(--s3);
+    margin-top: var(--s6);
   }
 </style>

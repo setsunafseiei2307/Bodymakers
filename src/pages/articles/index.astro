@@ -42,8 +42,8 @@ const articles = await getPublishedArticles();
           ))}
         </div>
       ) : (
-        <div class="empty-state">
-          <strong class="empty-state__title">記事はまだありません</strong>
+        <div class="empty">
+          <strong class="empty__title">記事はまだありません</strong>
           <p>
             src/content/articles/ に Markdown ファイルを置くと、ここに一覧が出ます。
           </p>
@@ -58,59 +58,59 @@ const articles = await getPublishedArticles();
 
 <style>
   .list-page {
-    padding-block: var(--space-6) var(--space-8);
+    padding-block: var(--s6) var(--s8);
   }
 
   .list-page__header {
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--s5);
   }
 
   .list-page__lead {
-    margin-top: var(--space-3);
-    color: var(--text-muted);
+    margin-top: var(--s3);
+    color: var(--muted);
     font-size: 1rem;
   }
 
   .category-nav ul {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-6);
+    gap: var(--s2);
+    margin: 0 0 var(--s6);
     padding: 0;
     list-style: none;
   }
 
   .category-nav__link {
     display: inline-block;
-    padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-full);
-    color: var(--text-body);
+    padding: var(--s2) var(--s4);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-full);
+    color: var(--body);
     font-size: 0.875rem;
     font-weight: 700;
     text-decoration: none;
   }
 
   .category-nav__link:hover {
-    border-color: var(--brand);
-    background: var(--brand-soft);
-    color: var(--brand-text);
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    color: var(--signal);
   }
 
   .category-nav__link--active {
-    background: var(--brand);
-    border-color: var(--brand);
-    color: var(--text-inverse);
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--paper);
   }
 
   .category-nav__link--active:hover {
-    background: var(--brand-hover);
-    color: var(--text-inverse);
+    background: var(--signal);
+    color: var(--paper);
   }
 
   .card-grid {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--s4);
   }
 
   @media (min-width: 40rem) {

@@ -26,7 +26,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
       </p>
 
       <div class="hero__actions">
-        <a class="button button--large" href="/strength-standards">
+        <a class="button button--lg" href="/strength-standards">
           筋力レベルを診断する
           <svg class="hero__arrow" viewBox="0 0 20 20" aria-hidden="true">
             <path
@@ -61,11 +61,11 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   <div class="container">
     {/* --- 診断の中身の説明 --- */}
     <section class="section">
-      <div class="section-heading">
+      <div class="section-head">
         <h2>診断で分かること</h2>
       </div>
       <div class="feature-grid">
-        <div class="feature card">
+        <div class="feature slip">
           <span class="feature__number">01</span>
           <h3 class="feature__title">推定1RM</h3>
           <p class="feature__text">
@@ -73,7 +73,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
             7つの換算式の平均を使い、式ごとのばらつきも表示します。
           </p>
         </div>
-        <div class="feature card">
+        <div class="feature slip">
           <span class="feature__number">02</span>
           <h3 class="feature__title">体重帯内パーセンタイル</h3>
           <p class="feature__text">
@@ -81,7 +81,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
             体重階級で区切らず、実測体重に合わせて基準値を補間します。
           </p>
         </div>
-        <div class="feature card">
+        <div class="feature slip">
           <span class="feature__number">03</span>
           <h3 class="feature__title">5段階レベル</h3>
           <p class="feature__text">
@@ -89,7 +89,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
             次のレベルまであと何kg必要かも示します。
           </p>
         </div>
-        <div class="feature card">
+        <div class="feature slip">
           <span class="feature__number">04</span>
           <h3 class="feature__title">弱点部位の指摘</h3>
           <p class="feature__text">
@@ -102,14 +102,14 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
     {/* --- レベルの見え方（診断前に期待値を合わせる） --- */}
     <section class="section">
-      <div class="section-heading">
+      <div class="section-head">
         <h2>5段階レベル</h2>
         <a href="/sources">判定基準の詳細</a>
       </div>
       <ol class="level-ladder">
         {
           LEVELS.map((level) => (
-            <li class={`level-ladder__item level--${level.id}`}>
+            <li class={`level-ladder__item lv-${level.id}`}>
               <span class="level-ladder__bar" />
               <span class="level-ladder__label">{level.label}</span>
               <span class="level-ladder__desc">{level.description}</span>
@@ -129,7 +129,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
     {/* --- 記事 --- */}
     <section class="section">
-      <div class="section-heading">
+      <div class="section-head">
         <h2>新着記事</h2>
         <a href="/articles">記事一覧へ</a>
       </div>
@@ -141,8 +141,8 @@ const articles = (await getPublishedArticles()).slice(0, 6);
             ))}
           </div>
         ) : (
-          <div class="empty-state">
-            <strong class="empty-state__title">記事はまだありません</strong>
+          <div class="empty">
+            <strong class="empty__title">記事はまだありません</strong>
             <p>src/content/articles/ に Markdown を置くと、ここに一覧が出ます。</p>
           </div>
         )
@@ -151,7 +151,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
     {/* --- カテゴリ --- */}
     <section class="section">
-      <div class="section-heading">
+      <div class="section-head">
         <h2>カテゴリから探す</h2>
       </div>
       <ul class="category-list">
@@ -173,15 +173,15 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   /* --- ヒーロー --- */
 
   .hero {
-    padding-block: var(--space-7) var(--space-7);
+    padding-block: var(--s7) var(--s7);
     background:
       radial-gradient(
         ellipse 80% 60% at 50% 0%,
-        var(--brand-soft),
+        var(--signal-soft),
         transparent 70%
       ),
-      var(--surface-0);
-    border-bottom: 1px solid var(--border);
+      var(--paper);
+    border-bottom: 1px solid var(--hair);
   }
 
   .hero__inner {
@@ -191,18 +191,18 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .hero__eyebrow {
     display: inline-block;
-    padding: 0.2rem var(--space-4);
-    border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
-    border-radius: var(--radius-full);
-    background: var(--surface-1);
-    color: var(--brand-text);
+    padding: 0.2rem var(--s4);
+    border: 1px solid color-mix(in srgb, var(--signal) 30%, transparent);
+    border-radius: var(--r-full);
+    background: var(--surface);
+    color: var(--signal);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.06em;
   }
 
   .hero__title {
-    margin-top: var(--space-4);
+    margin-top: var(--s4);
     font-size: clamp(2rem, 8.5vw, 3.25rem);
     font-weight: 900;
     line-height: 1.25;
@@ -210,19 +210,19 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   }
 
   .hero__accent {
-    color: var(--brand);
+    color: var(--signal);
   }
 
   .hero__lead {
     max-width: 34rem;
-    margin: var(--space-4) auto 0;
-    color: var(--text-body);
+    margin: var(--s4) auto 0;
+    color: var(--body);
     font-size: 1.0625rem;
     line-height: 1.9;
   }
 
   .hero__actions {
-    margin-top: var(--space-6);
+    margin-top: var(--s6);
   }
 
   .hero__actions .button {
@@ -237,8 +237,8 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   }
 
   .hero__actions-note {
-    margin-top: var(--space-3);
-    color: var(--text-muted);
+    margin-top: var(--s3);
+    color: var(--muted);
     font-size: 0.8125rem;
   }
 
@@ -246,10 +246,10 @@ const articles = (await getPublishedArticles()).slice(0, 6);
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--space-4) var(--space-6);
-    margin: var(--space-7) 0 0;
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--border);
+    gap: var(--s4) var(--s6);
+    margin: var(--s7) 0 0;
+    padding-top: var(--s5);
+    border-top: 1px solid var(--hair);
   }
 
   .hero__stat {
@@ -257,15 +257,15 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   }
 
   .hero__stat dt {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.75rem;
     font-weight: 700;
   }
 
   .hero__stat dd {
-    margin: var(--space-1) 0 0;
-    color: var(--text-strong);
-    font-family: var(--font-numeric);
+    margin: var(--s1) 0 0;
+    color: var(--ink);
+    font-family: var(--f-mono);
     font-size: 1.375rem;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
@@ -273,23 +273,23 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .hero__stat dd span {
     margin-left: 0.1em;
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.8125rem;
   }
 
   /* --- セクション共通 --- */
 
   .section {
-    padding-block: var(--space-7);
+    padding-block: var(--s7);
   }
 
   .section + .section {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--hair);
   }
 
   .section__note {
-    margin-top: var(--space-4);
-    color: var(--text-muted);
+    margin-top: var(--s4);
+    color: var(--muted);
     font-size: 0.8125rem;
     line-height: 1.8;
   }
@@ -298,7 +298,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .feature-grid {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--s4);
   }
 
   @media (min-width: 40rem) {
@@ -309,21 +309,21 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .feature__number {
     display: block;
-    margin-bottom: var(--space-2);
-    color: var(--brand);
-    font-family: var(--font-numeric);
+    margin-bottom: var(--s2);
+    color: var(--signal);
+    font-family: var(--f-mono);
     font-size: 0.8125rem;
     font-weight: 800;
     letter-spacing: 0.1em;
   }
 
   .feature__title {
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--s2);
     font-size: 1.0625rem;
   }
 
   .feature__text {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.9375rem;
     line-height: 1.85;
   }
@@ -333,7 +333,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   .level-ladder {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--s2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -344,28 +344,28 @@ const articles = (await getPublishedArticles()).slice(0, 6);
     display: grid;
     grid-template-columns: 0.5rem 5rem 1fr;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--surface-1);
+    gap: var(--s3);
+    padding: var(--s3) var(--s4);
+    border: 1px solid var(--hair);
+    border-radius: var(--r-md);
+    background: var(--surface);
   }
 
   .level-ladder__bar {
     width: 0.5rem;
     height: 2rem;
-    border-radius: var(--radius-full);
-    background: var(--level-color);
+    border-radius: var(--r-full);
+    background: var(--lv);
   }
 
   .level-ladder__label {
-    color: var(--level-color);
+    color: var(--lv);
     font-size: 1rem;
     font-weight: 800;
   }
 
   .level-ladder__desc {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.8125rem;
     line-height: 1.6;
   }
@@ -374,7 +374,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .card-grid {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--s4);
   }
 
   @media (min-width: 40rem) {
@@ -388,7 +388,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
   .category-list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--s3);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -396,19 +396,19 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
   .category-list__link {
     display: inline-block;
-    padding: var(--space-3) var(--space-5);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-full);
-    background: var(--surface-1);
-    color: var(--text-body);
+    padding: var(--s3) var(--s5);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-full);
+    background: var(--surface);
+    color: var(--body);
     font-size: 0.9375rem;
     font-weight: 700;
     text-decoration: none;
   }
 
   .category-list__link:hover {
-    border-color: var(--brand);
-    background: var(--brand-soft);
-    color: var(--brand-text);
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    color: var(--signal);
   }
 </style>

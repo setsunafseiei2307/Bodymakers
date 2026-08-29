@@ -334,3 +334,25 @@ export function levelById(id: LevelId): LevelDefinition {
   // LevelId は LEVELS から導出した型なので、実行時に見つからないことはない
   return found ?? LEVELS[0];
 }
+
+/**
+ * パーセンタイルを「5段階のどこまで進んだか」（0〜5）に変換する。
+ *
+ * パーセンタイルをそのまま半径に使うと、分布の下側に区切りが密集している
+ * （1 / 10 / 30 / 70）ため、初心者〜中級の差がチャート上でほぼ潰れてしまう。
+ * レベル内の進捗を等間隔に引き伸ばすことで、どの段でも同じだけ動いて見える。
+ *
+ * 例: 初級のちょうど真ん中なら 1.5、上級に入りたてなら 3.0。
+ */
+export function tierProgress(percentile: number): number {
+  if (!isFiniteNumber(percentile)) return 0;
+  for (let i = 0; i < LEVELS.length; i += 1) {
+    const level = LEVELS[i];
+    if (percentile < level.maxPercentile) {
+      const span = level.maxPercentile - level.minPercentile;
+      const within = span === 0 ? 0 : (percentile - level.minPercentile) / span;
+      return i + Math.min(1, Math.max(0, within));
+    }
+  }
+  return LEVELS.length;
+}

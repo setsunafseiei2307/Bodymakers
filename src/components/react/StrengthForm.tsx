@@ -141,7 +141,7 @@ export default function StrengthForm() {
 
   return (
     <div className="strength">
-      <form className="strength__form card" onSubmit={handleSubmit} noValidate>
+      <form className="strength__form" onSubmit={handleSubmit} noValidate>
         <fieldset className="strength__fieldset">
           <legend className="strength__legend">あなたについて</legend>
 
@@ -233,7 +233,7 @@ export default function StrengthForm() {
                 </div>
 
                 <div className="lift-input__fields">
-                  <div className="field field--compact">
+                  <div className="field">
                     <label className="field__label" htmlFor={weightId}>
                       重量
                       <span className="field__unit">kg</span>
@@ -252,7 +252,7 @@ export default function StrengthForm() {
                     />
                   </div>
 
-                  <div className="field field--compact">
+                  <div className="field">
                     <label className="field__label" htmlFor={repsId}>
                       レップ数
                       <span className="field__unit">回</span>
@@ -296,13 +296,13 @@ export default function StrengthForm() {
         <div className="strength__actions">
           <button
             type="submit"
-            className="button button--large button--block"
+            className="button button--lg button--block"
             disabled={!canSubmit}
           >
             レベルを判定する
           </button>
           {(result || submitted) && (
-            <button type="button" className="button button--secondary" onClick={handleReset}>
+            <button type="button" className="button button--ghost" onClick={handleReset}>
               入力をクリア
             </button>
           )}
@@ -321,8 +321,8 @@ export default function StrengthForm() {
         {result ? (
           <StrengthResult diagnosis={result} />
         ) : submitted && errors.length > 0 ? (
-          <div className="empty-state">
-            <strong className="empty-state__title">入力を確認してください</strong>
+          <div className="empty">
+            <strong className="empty__title">入力を確認してください</strong>
             <p>上のフォームに表示されているエラーを直すと判定できます。</p>
           </div>
         ) : null}

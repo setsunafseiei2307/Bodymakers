@@ -1,9 +1,9 @@
 /**
  * 診断結果の表示。
  *
- * スクリーンショットで共有されることを前提に、
- * 「レベル」「上位何%」「推定1RM」がひと目で読めるようにしている。
- * 数値だけが独り歩きしないよう、出典と注記もカード内に含める。
+ * 見せ方は「計測機器のリザルト票」。スクリーンショットで共有される前提なので、
+ * 上端の帯・レベル・体重比・3種目の三角チャートまでが1画面に収まるようにしている。
+ * 数字だけが独り歩きしないよう、出典と注記も同じ票の中に含める。
  */
 
 import { fmt } from '../../lib/format';
@@ -11,93 +11,140 @@ import {
   LEVELS,
   LIFT_LABELS,
   STANDARDS_SOURCE,
+  tierProgress,
   type LevelId,
   type LiftId,
 } from '../../lib/strength/standards';
 import {
   topPercent,
   type Diagnosis,
-  type LiftDiagnosis,
   type LevelThreshold,
+  type LiftDiagnosis,
 } from '../../lib/strength/diagnose';
 
-/** レベルIDごとのCSSクラス修飾子。色はCSS側のトークンで持つ。 */
+/** レベルIDごとのCSSクラス。色はCSS側のトークンで持つ。 */
 const LEVEL_CLASS: Record<LevelId, string> = {
-  beginner: 'level--beginner',
-  novice: 'level--novice',
-  intermediate: 'level--intermediate',
-  advanced: 'level--advanced',
-  elite: 'level--elite',
+  beginner: 'lv-beginner',
+  novice: 'lv-novice',
+  intermediate: 'lv-intermediate',
+  advanced: 'lv-advanced',
+  elite: 'lv-elite',
 };
 
-/** 順位を「上位◯%」の文字列にする。範囲外のときは断定しない書き方にする。 */
+/** 三角チャートの軸の並び。上・右下・左下の順に置く。 */
+const RADAR_AXES: readonly LiftId[] = ['squat', 'deadlift', 'bench'] as const;
+
+/** 順位の言い換え。数字の向きを読み違えられないよう「◯%より強い」で出す。 */
 function rankText(percentile: number, bound: 'in-range' | 'below' | 'above'): string {
-  const top = topPercent(percentile);
-  if (bound === 'below') return `上位${fmt(top, 0)}%より下（基準表の範囲外）`;
-  if (bound === 'above') return `上位${fmt(top, 0)}%以内`;
-  return `上位${fmt(top, 1)}%`;
+  if (bound === 'below') return '基準表の範囲外（上位99%未満）';
+  if (bound === 'above') return `上位${fmt(topPercent(percentile), 0)}%以内`;
+  return `競技者の${fmt(percentile, 1)}%より上`;
 }
 
 /**
- * 「上位66%」は数字が大きいほど順位が低いため、方向を読み違えられやすい。
- * 「◯%の人より強い」という平易な言い換えを添えて補う。
+ * 3種目のバランスを示す三角チャート。
+ *
+ * 半径にはパーセンタイルではなく tierProgress（0〜5）を使う。
+ * 区切りが分布の下側に密集しているため、パーセンタイルをそのまま使うと
+ * 初心者〜中級の差が中心付近で潰れて読めなくなる。
  */
-function strongerThanText(
-  percentile: number,
-  bound: 'in-range' | 'below' | 'above',
-): string {
-  if (bound === 'below') return '基準表の下限（上位99%）に届いていません';
-  return `競技会出場者の ${fmt(percentile, 1)}% より強い水準です`;
-}
+function Radar({ lifts }: { lifts: LiftDiagnosis[] }) {
+  // 三角形は正方形を使い切らないので、viewBox は実際に描く範囲だけにする。
+  // 余らせるとラベルが頂点から離れて浮いて見える。
+  const size = 168;
+  const height = 122;
+  const cx = size / 2;
+  const cy = 74;
+  const maxR = 56;
 
-/**
- * パーセンタイルのゲージ。
- * 5段階の帯を背景に敷き、その上に現在位置のマーカーを置く。
- */
-function LevelGauge({
-  percentile,
-  bound,
-  label,
-}: {
-  percentile: number;
-  bound: 'in-range' | 'below' | 'above';
-  label: string;
-}) {
-  // マーカーが端で見切れないよう 1〜99% の範囲に収める
-  const position = Math.min(99, Math.max(1, percentile));
+  // 上(-90°) → 右下(30°) → 左下(150°)
+  const angles = [-90, 30, 150].map((deg) => (deg * Math.PI) / 180);
+
+  const point = (index: number, ratio: number): [number, number] => [
+    cx + Math.cos(angles[index]) * maxR * ratio,
+    cy + Math.sin(angles[index]) * maxR * ratio,
+  ];
+
+  const ring = (ratio: number): string =>
+    [0, 1, 2]
+      .map((i) => point(i, ratio).map((n) => n.toFixed(1)).join(','))
+      .join(' ');
+
+  const byLift = new Map(lifts.map((lift) => [lift.lift, lift]));
+  const values = RADAR_AXES.map((axis) => {
+    const lift = byLift.get(axis);
+    return lift ? tierProgress(lift.percentile) / LEVELS.length : 0;
+  });
+
+  // 面積が0にならないよう、最小の半径を確保する（未入力の種目は中心に寄る）
+  const shape = values
+    .map((v, i) => point(i, Math.max(0.06, v)).map((n) => n.toFixed(1)).join(','))
+    .join(' ');
+
+  const weakest = lifts.reduce<LiftDiagnosis | null>(
+    (worst, lift) => (worst == null || lift.percentile < worst.percentile ? lift : worst),
+    null,
+  );
+
+  const label = RADAR_AXES.map((axis) => {
+    const lift = byLift.get(axis);
+    return lift ? `${LIFT_LABELS[axis]}は${lift.level.label}` : `${LIFT_LABELS[axis]}は未入力`;
+  }).join('、');
 
   return (
-    <div className="gauge">
-      <div
-        className="gauge__track"
-        role="img"
-        aria-label={`${label}：${rankText(percentile, bound)}`}
-      >
-        {LEVELS.map((level) => (
-          <span
-            key={level.id}
-            className={`gauge__band ${LEVEL_CLASS[level.id]}`}
-            style={{ flexGrow: level.maxPercentile - level.minPercentile }}
+    <svg className="radar" viewBox={`0 0 ${size} ${height}`} role="img" aria-label={label}>
+      {/* 5段階ぶんの目盛り */}
+      {[1, 2, 3, 4, 5].map((tier) => (
+        <polygon
+          key={tier}
+          points={ring(tier / 5)}
+          className={tier === 5 ? 'radar__ring radar__ring--outer' : 'radar__ring'}
+        />
+      ))}
+
+      {/* 軸 */}
+      {[0, 1, 2].map((i) => {
+        const [x, y] = point(i, 1);
+        return (
+          <line key={i} className="radar__axis" x1={cx} y1={cy} x2={x} y2={y} />
+        );
+      })}
+
+      {/* 実測の面 */}
+      <polygon className="radar__shape" points={shape} />
+
+      {/* 頂点。最も弱い種目だけ色を変える */}
+      {RADAR_AXES.map((axis, i) => {
+        const lift = byLift.get(axis);
+        if (lift == null) return null;
+        const [x, y] = point(i, Math.max(0.06, values[i]));
+        const isWeak = weakest != null && lifts.length > 1 && weakest.lift === axis;
+        return (
+          <circle
+            key={axis}
+            className={isWeak ? 'radar__dot radar__dot--weak' : 'radar__dot'}
+            cx={x}
+            cy={y}
+            r={isWeak ? 5 : 3.5}
           />
-        ))}
-        <span className="gauge__marker" style={{ left: `${position}%` }} aria-hidden="true">
-          <span className="gauge__marker-dot" />
-        </span>
-      </div>
-      {/*
-        目盛りは両端だけを出す。5段階すべてを帯の幅に比例して並べると、
-        幅の狭い帯（初心者・エリートは各10%）でラベルが見切れる。
-        5段階の内訳は帯の色と、結果カードのバッジで分かる。
-      */}
-      <div className="gauge__scale" aria-hidden="true">
-        <span className="gauge__scale-end">{LEVELS[0].label}</span>
-        <span className="gauge__scale-end">{LEVELS[LEVELS.length - 1].label}</span>
-      </div>
-    </div>
+        );
+      })}
+
+      {/* 軸ラベル。各頂点のすぐ外側に置く */}
+      <text className="radar__label" x={cx} y={10} textAnchor="middle">
+        スクワット
+      </text>
+      <text className="radar__label" x={size} y={height - 2} textAnchor="end">
+        デッド
+      </text>
+      <text className="radar__label" x={0} y={height - 2} textAnchor="start">
+        ベンチ
+      </text>
+    </svg>
   );
 }
 
-/** 5段階それぞれの到達重量表。 */
+/** 5段階それぞれの到達重量。 */
 function ThresholdTable({
   thresholds,
   currentLevelId,
@@ -109,7 +156,7 @@ function ThresholdTable({
 }) {
   return (
     <div className="table-scroll">
-      <table className="threshold-table">
+      <table className="ledger">
         <caption className="visually-hidden">
           この体重帯でそれぞれのレベルに到達するのに必要な推定1RM
         </caption>
@@ -117,7 +164,7 @@ function ThresholdTable({
           <tr>
             <th scope="col">レベル</th>
             <th scope="col">必要な推定1RM</th>
-            <th scope="col">現在との差</th>
+            <th scope="col">差</th>
           </tr>
         </thead>
         <tbody>
@@ -125,25 +172,22 @@ function ThresholdTable({
             const isCurrent = threshold.level.id === currentLevelId;
             const delta = threshold.weightKg - oneRmKg;
             return (
-              <tr
-                key={threshold.level.id}
-                className={isCurrent ? 'threshold-table__row--current' : undefined}
-              >
+              <tr key={threshold.level.id} className={isCurrent ? 'ledger__row--now' : undefined}>
                 <th scope="row">
-                  <span className={`level-dot ${LEVEL_CLASS[threshold.level.id]}`} />
+                  <span className={`dot ${LEVEL_CLASS[threshold.level.id]}`} />
                   {threshold.level.label}
-                  {isCurrent && <span className="threshold-table__current">現在</span>}
+                  {isCurrent && <span className="ledger__now">現在</span>}
                 </th>
-                <td className="threshold-table__weight">
+                <td className="num">
                   {threshold.weightKg > 0 ? `${fmt(threshold.weightKg, 1)} kg` : '—'}
                 </td>
-                <td className="threshold-table__delta">
+                <td className="num">
                   {threshold.weightKg <= 0 ? (
                     '—'
                   ) : delta <= 0 ? (
-                    <span className="threshold-table__cleared">到達済み</span>
+                    <span className="ledger__cleared">到達済み</span>
                   ) : (
-                    <>+{fmt(delta, 1)} kg</>
+                    <>+{fmt(delta, 1)}</>
                   )}
                 </td>
               </tr>
@@ -155,226 +199,232 @@ function ThresholdTable({
   );
 }
 
-/** 1種目分の結果カード。 */
-function LiftCard({ lift }: { lift: LiftDiagnosis }) {
+/** 種目1行ぶんの台帳表示。 */
+function LiftRow({ lift }: { lift: LiftDiagnosis }) {
   return (
-    <article className="lift-result">
-      <header className="lift-result__header">
-        <h3 className="lift-result__name">{LIFT_LABELS[lift.lift]}</h3>
-        <span className={`level-badge ${LEVEL_CLASS[lift.level.id]}`}>{lift.level.label}</span>
-      </header>
-
-      <div className="lift-result__numbers">
-        <div className="stat">
-          <span className="stat__label">推定1RM</span>
-          <span className="stat__value">
+    <details className={`lift ${LEVEL_CLASS[lift.level.id]}`}>
+      <summary className="lift__row">
+        <span className="lift__name">{LIFT_LABELS[lift.lift]}</span>
+        <span className="lift__nums">
+          <span className="lift__kg num">
             {fmt(lift.oneRmKg, 1)}
-            <span className="stat__unit">kg</span>
+            <small> kg</small>
           </span>
-        </div>
-        <div className="stat">
-          <span className="stat__label">順位</span>
-          <span className="stat__value stat__value--small">
-            {rankText(lift.percentile, lift.bound)}
-          </span>
-        </div>
-        <div className="stat">
-          <span className="stat__label">体重比</span>
-          <span className="stat__value stat__value--small">
-            {fmt(lift.bodyweightRatio, 2)}
-            <span className="stat__unit">倍</span>
-          </span>
-        </div>
-      </div>
+          <span className="lift__ratio num">体重の {fmt(lift.bodyweightRatio, 2)} 倍</span>
+        </span>
+        <span className="lift__tag">{lift.level.label}</span>
+      </summary>
 
-      <LevelGauge
-        percentile={lift.percentile}
-        bound={lift.bound}
-        label={LIFT_LABELS[lift.lift]}
-      />
-
-      <p className="lift-result__definition">{lift.level.description}</p>
-
-      {lift.nextLevel && lift.nextLevel.deltaKg > 0 ? (
-        <p className="lift-result__next">
-          <strong>{lift.nextLevel.level.label}</strong>まであと
-          <strong className="lift-result__delta"> {fmt(lift.nextLevel.deltaKg, 1)} kg</strong>
-          （{fmt(lift.nextLevel.weightKg, 1)} kg で到達）
+      <div className="lift__detail">
+        <p className="lift__line">
+          {rankText(lift.percentile, lift.bound)}。
+          {lift.nextLevel && lift.nextLevel.deltaKg > 0 ? (
+            <>
+              <strong>{lift.nextLevel.level.label}</strong>まであと
+              <strong className="lift__delta"> {fmt(lift.nextLevel.deltaKg, 1)}kg</strong>
+              （{fmt(lift.nextLevel.weightKg, 1)}kg で到達）
+            </>
+          ) : lift.nextLevel == null ? (
+            <>最上位レベルに到達しています。</>
+          ) : null}
         </p>
-      ) : lift.nextLevel == null ? (
-        <p className="lift-result__next">最上位レベルに到達しています。</p>
-      ) : null}
 
-      <details className="lift-result__details">
-        <summary>この体重帯のレベル別到達重量を見る</summary>
         <ThresholdTable
           thresholds={lift.thresholds}
           currentLevelId={lift.level.id}
           oneRmKg={lift.oneRmKg}
         />
+
         <p className="source-note">
-          入力は {fmt(lift.input.weightKg, 1)}kg × {lift.input.reps}回。
-          推定1RMは7つの換算式（Epley・Brzycki・Lander・Lombardi・O'Conner・Mayhew・Wathen）
-          の平均値です
-          {lift.oneRmSpreadKg > 0 && `（式による差は ${fmt(lift.oneRmSpreadKg, 1)}kg）`}。
+          入力 {fmt(lift.input.weightKg, 1)}kg × {lift.input.reps}回。推定1RMは7式
+          （Epley・Brzycki・Lander・Lombardi・O&apos;Conner・Mayhew・Wathen）の平均
+          {lift.oneRmSpreadKg > 0 && `／式による差 ${fmt(lift.oneRmSpreadKg, 1)}kg`}。
         </p>
-      </details>
-    </article>
+      </div>
+    </details>
   );
 }
 
 export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) {
-  const { total, lifts, weaknesses, sampleSize, bodyweightKg, sex } = diagnosis;
-  // 3種目そろっていれば合計を、そうでなければ入力された最初の種目を主表示にする
+  const { total, lifts, weaknesses, sampleSize, bodyweightKg, sex, generatedAt } = diagnosis;
   const headline = total ?? lifts[0];
   const headlineLabel = total ? '3種目合計' : LIFT_LABELS[lifts[0].lift];
+  const headlineRatio = headline.oneRmKg / bodyweightKg;
+
+  // 合計評価には nextLevel を持たせていないので、しきい値表から同じ形を作る。
+  const headlineIndex = LEVELS.findIndex((level) => level.id === headline.level.id);
+  const nextThreshold =
+    headlineIndex >= 0 && headlineIndex < LEVELS.length - 1
+      ? headline.thresholds[headlineIndex + 1]
+      : null;
 
   return (
     <section className="result" aria-label="診断結果">
-      {/* --- 主表示。スクリーンショットで一番読まれる部分 --- */}
-      <div className={`result__hero ${LEVEL_CLASS[headline.level.id]}`}>
-        <p className="result__hero-context">
-          {sex === 'M' ? '男性' : '女性'} / 体重 {fmt(bodyweightKg, 1)}kg / {headlineLabel}
-        </p>
-        <p className="result__hero-level">{headline.level.label}</p>
-        <p className="result__hero-rank">{rankText(headline.percentile, headline.bound)}</p>
-        <p className="result__hero-stronger">
-          {strongerThanText(headline.percentile, headline.bound)}
-        </p>
-        <p className="result__hero-definition">{headline.level.description}</p>
-        <div className="result__hero-gauge">
-          <LevelGauge
-            percentile={headline.percentile}
-            bound={headline.bound}
-            label={headlineLabel}
-          />
+      {/* --- リザルト票。スクリーンショットで一番読まれる部分 --- */}
+      <div className={`slip record ${LEVEL_CLASS[headline.level.id]}`}>
+        <div className="slip__band">
+          <span>STRENGTH RECORD</span>
+          <span>{generatedAt.replace(/-/g, '.')}</span>
         </div>
-        {total && (
-          <p className="result__hero-total">
-            推定トータル {fmt(total.oneRmKg, 1)} kg（3種目の推定1RMの合計）
-          </p>
-        )}
-      </div>
 
-      {/* --- 種目別 --- */}
-      <div className="result__lifts">
-        {lifts.map((lift) => (
-          <LiftCard key={lift.lift} lift={lift} />
-        ))}
+        <div className="record__body">
+          <p className="record__meta">
+            <span>{sex === 'M' ? '男性' : '女性'}</span>
+            <span>体重 {fmt(bodyweightKg, 1)}kg</span>
+            <span>{headlineLabel}</span>
+          </p>
+
+          <div className="record__head">
+            <p className="record__level">{headline.level.label}</p>
+            <p className="record__ratio">
+              <span>{total ? '合計 / 体重' : '体重比'}</span>
+              <em className="num">{fmt(headlineRatio, 2)}</em>
+            </p>
+          </div>
+
+          <div className="record__bar" aria-hidden="true" />
+
+          <p className="record__total">
+            {total ? '合計' : '推定1RM'}{' '}
+            <b className="num">{fmt(headline.oneRmKg, 1)}</b> kg
+            <span className="record__sep">/</span>
+            {nextThreshold == null ? (
+              <>最上位レベル</>
+            ) : (
+              <>
+                {nextThreshold.level.label}まで{' '}
+                <b className="num">
+                  +{fmt(Math.max(0, nextThreshold.weightKg - headline.oneRmKg), 1)}
+                </b>{' '}
+                kg
+              </>
+            )}
+          </p>
+
+          <div className="record__rule" />
+
+          <div className="record__grid">
+            <Radar lifts={lifts} />
+            <div className="record__lifts">
+              {lifts.map((lift) => (
+                <LiftRow key={lift.lift} lift={lift} />
+              ))}
+              <p className="record__hint">種目名を押すと内訳が開きます</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* --- 弱点 --- */}
-      <div className="result__section">
-        <h2 className="result__section-title">種目間のバランス</h2>
-        {weaknesses.length === 0 ? (
-          <div className="note">
-            {lifts.length < 2
-              ? '2種目以上を入力すると、種目間のバランスを比較できます。'
-              : '3種目の順位に大きな偏りはありません。バランスは取れています。'}
-          </div>
-        ) : (
-          <ul className="weakness-list">
-            {weaknesses.map((weakness) => (
-              <li className="weakness" key={weakness.lift}>
-                <p className="weakness__title">
-                  <span className="badge">相対的に弱い</span>
-                  {LIFT_LABELS[weakness.lift as LiftId]}
-                </p>
-                <p className="weakness__body">
-                  他の種目より
-                  <strong> 約{fmt(weakness.percentileGap, 0)}ポイント </strong>
-                  順位が低くなっています。主に使われるのは
-                  <strong>{weakness.muscles}</strong>です。
-                  {weakness.balancedKg != null && (
-                    <>
-                      {' '}
-                      同水準の選手の種目間比率（中央値）に当てはめると
-                      <strong> {fmt(weakness.balancedKg, 1)}kg </strong>
-                      前後が目安になります。
-                    </>
-                  )}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="source-note">
-          種目間比率は基準データと同じ母集団から算出した中央値です。
-          個人の体格や競技特性によって最適な比率は変わるため、目安として扱ってください。
-        </p>
+      <div className="slip">
+        <div className="slip__band">
+          <span>BALANCE</span>
+          <span>種目間のバランス</span>
+        </div>
+        <div className="slip__body">
+          {weaknesses.length === 0 ? (
+            <p className="note">
+              {lifts.length < 2
+                ? '2種目以上を入力すると、種目間のバランスを比較できます。'
+                : '3種目の順位に大きな偏りはありません。バランスは取れています。'}
+            </p>
+          ) : (
+            <ul className="weak-list">
+              {weaknesses.map((weakness) => (
+                <li className="weak" key={weakness.lift}>
+                  <p className="weak__head">
+                    <span className="tag tag--signal">弱点</span>
+                    <span>{LIFT_LABELS[weakness.lift as LiftId]}</span>
+                  </p>
+                  <p className="weak__body">
+                    他の種目より <b className="num">{fmt(weakness.percentileGap, 0)}</b>{' '}
+                    ポイント順位が低くなっています。主に使われるのは
+                    <strong>{weakness.muscles}</strong>です。
+                    {weakness.balancedKg != null && (
+                      <>
+                        {' '}
+                        同水準の選手の種目間比率に当てはめると
+                        <b className="num"> {fmt(weakness.balancedKg, 1)}kg </b>
+                        前後が目安になります。
+                      </>
+                    )}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="source-note">
+            種目間比率は基準データと同じ母集団から算出した中央値です。
+            体格や競技特性によって最適な比率は変わるため、目安として扱ってください。
+          </p>
+        </div>
       </div>
 
       {/* --- 出典。データを出す画面には必ず添える --- */}
-      <div className="result__section">
-        <h2 className="result__section-title">判定基準の出典</h2>
-        <div className="note">
-          <span className="note__title">
-            {STANDARDS_SOURCE.name}（{STANDARDS_SOURCE.license}）
-          </span>
-          <p>
+      <div className="slip">
+        <div className="slip__band">
+          <span>SOURCE</span>
+          <span>判定基準の出典</span>
+        </div>
+        <div className="slip__body">
+          <p className="note">
+            <span className="note__title">
+              {STANDARDS_SOURCE.name}（{STANDARDS_SOURCE.license}）
+            </span>
             公式競技会の記録データ
             {sampleSize != null && (
               <>
                 のうち、この体重帯に該当する
-                <strong> 約{sampleSize.toLocaleString('ja-JP')}人 </strong>
+                <b className="num"> 約{sampleSize.toLocaleString('ja-JP')}人 </b>
                 の記録
               </>
             )}
-            をもとに算出しています。対象はノーギア（Raw）・3種目実施（フルパワー）・
-            {diagnosis.generatedAt.slice(0, 4)}年時点で集計した2010年以降の大会で、
+            をもとに算出しています。対象はノーギア（Raw）・3種目実施のフルパワー大会で、
             選手ごとに最高記録の1試合のみを使用しています。
           </p>
-          <p className="source-note" style={{ marginTop: '0.5rem' }}>
+
+          <p className="source-note" style={{ marginTop: 'var(--s3)' }}>
             {STANDARDS_SOURCE.attribution}{' '}
             <a href={STANDARDS_SOURCE.url} target="_blank" rel="noopener noreferrer">
               openpowerlifting.org
             </a>
             {' / '}
-            <a href={STANDARDS_SOURCE.dataUrl} target="_blank" rel="noopener noreferrer">
-              データ配布元
-            </a>
-            {' / '}
             <a href="/sources">当サイトの集計方法</a>
           </p>
-        </div>
 
-        <div className="note note--warning">
-          <span className="note__title">結果の読み方</span>
-          <p>
-            この判定は<strong>あくまで目安</strong>です。比較対象は競技会に出場した人たちで、
-            一般のトレーニング人口より全体に高い水準にあります。順位が低く出ても、
-            ジムでの標準より弱いという意味ではありません。
-          </p>
-          <p style={{ marginTop: '0.5rem' }}>
-            推定1RMは換算式による計算値で、実測とは差が出ます。
-            体調・睡眠・フォーム・計測日によっても変動します。
+          <p className="note note--warn" style={{ marginTop: 'var(--s4)' }}>
+            <span className="note__title">結果の読み方</span>
+            この判定は<strong>あくまで目安</strong>です。推定1RMは換算式による計算値で、
+            実測とは差が出ます。体調・睡眠・フォーム・計測日によっても変動します。
             健康状態に不安がある場合は、無理に高重量を試さず医療機関にご相談ください。
           </p>
         </div>
       </div>
 
-      {/* --- 回遊導線。診断結果から記事へ送る。
-              アフィリエイトリンクを差し込む場合もこのブロックに追加する
-              （例: プロテイン・トレーニングギアの紹介）。 --- */}
-      <div className="result__section">
-        <h2 className="result__section-title">次に読む</h2>
-        <ul className="next-links">
-          <li>
-            <a href="/articles/category/training">トレーニングの記事を読む</a>
-          </li>
-          <li>
-            <a href="/articles/category/nutrition">栄養・食事の記事を読む</a>
-          </li>
-          <li>
-            <a href="/sources">この診断の集計方法と出典をくわしく見る</a>
-          </li>
-        </ul>
-        {/* 広告枠（診断結果下）。現時点では広告タグを読み込まない。 */}
-        <div className="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="result" />
+      {/* --- 回遊導線。アフィリエイトリンクを入れる場合もこのブロックに置き、PR表記を添える --- */}
+      <div className="slip">
+        <div className="slip__band">
+          <span>NEXT</span>
+          <span>次に読む</span>
+        </div>
+        <div className="slip__body">
+          <ul className="next">
+            <li>
+              <a href="/articles/category/training">トレーニングの記事を読む</a>
+            </li>
+            <li>
+              <a href="/articles/category/nutrition">栄養・食事の記事を読む</a>
+            </li>
+            <li>
+              <a href="/sources">この診断の集計方法と出典をくわしく見る</a>
+            </li>
+          </ul>
+          <div className="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="result" />
+        </div>
       </div>
 
-      <p className="result__save-hint">
-        結果は保存されません。残しておきたい場合はスクリーンショットを撮ってください。
+      <p className="result__save">
+        結果は保存されません。残したい場合はスクリーンショットを撮ってください。
       </p>
     </section>
   );

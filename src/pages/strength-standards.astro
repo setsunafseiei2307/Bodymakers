@@ -56,7 +56,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
       </div>
 
       <aside class="page__aside">
-        <section class="card">
+        <section class="slip">
           <h2 class="aside__title">5段階レベルの定義</h2>
           <p class="aside__lead">
             すべて「公式競技会に出場したリフターの中での相対位置」です。
@@ -65,7 +65,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
           <ul class="level-legend">
             {
               LEVELS.map((level) => (
-                <li class={`level-legend__item level--${level.id}`}>
+                <li class={`level-legend__item lv-${level.id}`}>
                   <span class="level-legend__dot" />
                   <span class="level-legend__label">{level.label}</span>
                   <span class="level-legend__desc">{level.description}</span>
@@ -75,7 +75,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
           </ul>
         </section>
 
-        <section class="card">
+        <section class="slip">
           <h2 class="aside__title">データについて</h2>
           <p class="aside__text">
             基準値は{STANDARDS_SOURCE.name}が公開する競技記録
@@ -86,7 +86,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
             集計日: {STRENGTH_STANDARDS.generatedAt} ／ 対象:{' '}
             {STRENGTH_STANDARDS.sinceYear}年以降の大会
           </p>
-          <a class="button button--secondary button--block" href="/sources">
+          <a class="button button--ghost button--block" href="/sources">
             集計方法をくわしく見る
           </a>
         </section>
@@ -99,7 +99,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
     {
       articles.length > 0 && (
         <section class="page__related">
-          <div class="section-heading">
+          <div class="section-head">
             <h2>関連する記事</h2>
             <a href="/articles">記事一覧へ</a>
           </div>
@@ -116,29 +116,29 @@ const articles = (await getPublishedArticles()).slice(0, 3);
 
 <style>
   .page {
-    padding-block: var(--space-6) var(--space-8);
+    padding-block: var(--s6) var(--s8);
   }
 
   .page__header {
-    max-width: var(--width-prose);
-    margin-bottom: var(--space-6);
+    max-width: var(--w-prose);
+    margin-bottom: var(--s6);
   }
 
   .page__eyebrow {
     display: inline-block;
-    margin-bottom: var(--space-2);
-    padding: 0.15rem var(--space-3);
-    border-radius: var(--radius-full);
-    background: var(--brand-soft);
-    color: var(--brand-text);
+    margin-bottom: var(--s2);
+    padding: 0.15rem var(--s3);
+    border-radius: var(--r-full);
+    background: var(--signal-soft);
+    color: var(--signal);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.04em;
   }
 
   .page__lead {
-    margin-top: var(--space-3);
-    color: var(--text-body);
+    margin-top: var(--s3);
+    color: var(--body);
     font-size: 1.0625rem;
     line-height: 1.9;
   }
@@ -146,10 +146,10 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   .page__facts {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3) var(--space-6);
-    margin-top: var(--space-5);
-    padding: var(--space-4) 0 0;
-    border-top: 1px solid var(--border);
+    gap: var(--s3) var(--s6);
+    margin-top: var(--s5);
+    padding: var(--s4) 0 0;
+    border-top: 1px solid var(--hair);
     list-style: none;
   }
 
@@ -159,21 +159,21 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   }
 
   .page__facts strong {
-    color: var(--text-strong);
-    font-family: var(--font-numeric);
+    color: var(--ink);
+    font-family: var(--f-mono);
     font-size: 1.25rem;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
   }
 
   .page__facts span {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.8125rem;
   }
 
   .page__body {
     display: grid;
-    gap: var(--space-6);
+    gap: var(--s6);
   }
 
   @media (min-width: 60rem) {
@@ -186,7 +186,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   .page__aside {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--s4);
   }
 
   @media (min-width: 60rem) {
@@ -209,15 +209,15 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   }
 
   .aside__title {
-    margin-bottom: var(--space-3);
+    margin-bottom: var(--s3);
     font-size: 1rem;
     font-weight: 800;
   }
 
   .aside__lead,
   .aside__text {
-    margin-bottom: var(--space-3);
-    color: var(--text-muted);
+    margin-bottom: var(--s3);
+    color: var(--muted);
     font-size: 0.8125rem;
     line-height: 1.8;
   }
@@ -225,7 +225,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   .level-legend {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--s3);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -235,38 +235,38 @@ const articles = (await getPublishedArticles()).slice(0, 3);
     display: grid;
     grid-template-columns: auto auto 1fr;
     align-items: baseline;
-    gap: var(--space-2);
+    gap: var(--s2);
   }
 
   .level-legend__dot {
     width: 0.625rem;
     height: 0.625rem;
-    border-radius: var(--radius-full);
-    background: var(--level-color);
+    border-radius: var(--r-full);
+    background: var(--lv);
   }
 
   .level-legend__label {
-    color: var(--level-color);
+    color: var(--lv);
     font-size: 0.875rem;
     font-weight: 800;
     white-space: nowrap;
   }
 
   .level-legend__desc {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.75rem;
     line-height: 1.6;
   }
 
   .page__related {
-    margin-top: var(--space-8);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--border);
+    margin-top: var(--s8);
+    padding-top: var(--s6);
+    border-top: 1px solid var(--hair);
   }
 
   .card-grid {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--s4);
   }
 
   @media (min-width: 40rem) {

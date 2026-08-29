@@ -1,0 +1,2702 @@
+{
+ "01004": {
+  "carbs": 69.1,
+  "fat": 5.7,
+  "fiber": 9.4,
+  "kcal": 350.0,
+  "officialName": "えんばく オートミール",
+  "protein": 13.7,
+  "salt": 0.0
+ },
+ "01015": {
+  "carbs": 75.8,
+  "fat": 1.5,
+  "fiber": 2.5,
+  "kcal": 349.0,
+  "officialName": "こむぎ [小麦粉] 薄力粉 1等",
+  "protein": 8.3,
+  "salt": 0.0
+ },
+ "01020": {
+  "carbs": 71.7,
+  "fat": 1.5,
+  "fiber": 2.7,
+  "kcal": 337.0,
+  "officialName": "こむぎ [小麦粉] 強力粉 1等",
+  "protein": 11.8,
+  "salt": 0.0
+ },
+ "01026": {
+  "carbs": 46.4,
+  "fat": 4.1,
+  "fiber": 4.2,
+  "kcal": 248.0,
+  "officialName": "こむぎ [パン類] 角形食パン 食パン",
+  "protein": 8.9,
+  "salt": 1.2
+ },
+ "01032": {
+  "carbs": 52.7,
+  "fat": 2.2,
+  "fiber": 5.6,
+  "kcal": 252.0,
+  "officialName": "こむぎ [パン類] ライ麦パン",
+  "protein": 8.4,
+  "salt": 1.2
+ },
+ "01034": {
+  "carbs": 48.6,
+  "fat": 9.0,
+  "fiber": 2.0,
+  "kcal": 309.0,
+  "officialName": "こむぎ [パン類] ロールパン",
+  "protein": 10.1,
+  "salt": 1.2
+ },
+ "01035": {
+  "carbs": 43.9,
+  "fat": 26.8,
+  "fiber": 1.8,
+  "kcal": 438.0,
+  "officialName": "こむぎ [パン類] クロワッサン リッチタイプ",
+  "protein": 7.9,
+  "salt": 1.2
+ },
+ "01037": {
+  "carbs": 47.6,
+  "fat": 3.4,
+  "fiber": 2.0,
+  "kcal": 257.0,
+  "officialName": "こむぎ [パン類] ナン",
+  "protein": 10.3,
+  "salt": 1.3
+ },
+ "01038": {
+  "carbs": 56.8,
+  "fat": 0.6,
+  "fiber": 3.6,
+  "kcal": 249.0,
+  "officialName": "こむぎ [うどん・そうめん類] うどん 生",
+  "protein": 6.1,
+  "salt": 2.5
+ },
+ "01039": {
+  "carbs": 21.6,
+  "fat": 0.4,
+  "fiber": 1.3,
+  "kcal": 95.0,
+  "officialName": "こむぎ [うどん・そうめん類] うどん ゆで",
+  "protein": 2.6,
+  "salt": 0.3
+ },
+ "01043": {
+  "carbs": 72.7,
+  "fat": 1.1,
+  "fiber": 2.5,
+  "kcal": 333.0,
+  "officialName": "こむぎ [うどん・そうめん類] そうめん・ひやむぎ 乾",
+  "protein": 9.5,
+  "salt": 3.8
+ },
+ "01044": {
+  "carbs": 25.8,
+  "fat": 0.4,
+  "fiber": 0.9,
+  "kcal": 114.0,
+  "officialName": "こむぎ [うどん・そうめん類] そうめん・ひやむぎ ゆで",
+  "protein": 3.5,
+  "salt": 0.2
+ },
+ "01047": {
+  "carbs": 55.7,
+  "fat": 1.2,
+  "fiber": 5.4,
+  "kcal": 249.0,
+  "officialName": "こむぎ [中華めん類] 中華めん 生",
+  "protein": 8.6,
+  "salt": 1.0
+ },
+ "01048": {
+  "carbs": 29.2,
+  "fat": 0.6,
+  "fiber": 2.8,
+  "kcal": 133.0,
+  "officialName": "こむぎ [中華めん類] 中華めん ゆで",
+  "protein": 4.9,
+  "salt": 0.2
+ },
+ "01049": {
+  "carbs": 35.6,
+  "fat": 1.7,
+  "fiber": 3.1,
+  "kcal": 162.0,
+  "officialName": "こむぎ [中華めん類] 蒸し中華めん 蒸し中華めん",
+  "protein": 4.9,
+  "salt": 0.3
+ },
+ "01056": {
+  "carbs": 63.5,
+  "fat": 16.7,
+  "fiber": 2.5,
+  "kcal": 424.0,
+  "officialName": "こむぎ [即席めん類] 即席中華めん 油揚げ味付け",
+  "protein": 10.1,
+  "salt": 6.4
+ },
+ "01063": {
+  "carbs": 73.1,
+  "fat": 1.8,
+  "fiber": 5.4,
+  "kcal": 347.0,
+  "officialName": "こむぎ [マカロニ・スパゲッティ類] マカロニ・スパゲッティ 乾",
+  "protein": 12.9,
+  "salt": 0.0
+ },
+ "01064": {
+  "carbs": 32.2,
+  "fat": 0.9,
+  "fiber": 3.0,
+  "kcal": 150.0,
+  "officialName": "こむぎ [マカロニ・スパゲッティ類] マカロニ・スパゲッティ ゆで",
+  "protein": 5.8,
+  "salt": 1.2
+ },
+ "01079": {
+  "carbs": 67.4,
+  "fat": 4.1,
+  "fiber": 6.5,
+  "kcal": 349.0,
+  "officialName": "こむぎ [その他] パン粉 乾燥",
+  "protein": 14.9,
+  "salt": 1.4
+ },
+ "01085": {
+  "carbs": 35.6,
+  "fat": 1.0,
+  "fiber": 1.4,
+  "kcal": 152.0,
+  "officialName": "こめ [水稲めし] 玄米",
+  "protein": 2.8,
+  "salt": 0.0
+ },
+ "01088": {
+  "carbs": 37.1,
+  "fat": 0.3,
+  "fiber": 1.5,
+  "kcal": 156.0,
+  "officialName": "こめ [水稲めし] 精白米 うるち米",
+  "protein": 2.5,
+  "salt": 0.0
+ },
+ "01089": {
+  "carbs": 36.4,
+  "fat": 0.6,
+  "fiber": 0.8,
+  "kcal": 159.0,
+  "officialName": "こめ [水稲めし] はいが精米",
+  "protein": 2.7,
+  "salt": 0.0
+ },
+ "01093": {
+  "carbs": 15.7,
+  "fat": 0.1,
+  "fiber": 0.1,
+  "kcal": 65.0,
+  "officialName": "こめ [水稲全かゆ] 精白米",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "01111": {
+  "carbs": 39.4,
+  "fat": 0.3,
+  "fiber": 0.4,
+  "kcal": 170.0,
+  "officialName": "こめ [うるち米製品] おにぎり",
+  "protein": 2.7,
+  "salt": 0.5
+ },
+ "01117": {
+  "carbs": 50.8,
+  "fat": 0.6,
+  "fiber": 0.5,
+  "kcal": 223.0,
+  "officialName": "こめ [もち米製品] もち",
+  "protein": 4.0,
+  "salt": 0.0
+ },
+ "01118": {
+  "carbs": 41.9,
+  "fat": 0.6,
+  "fiber": 1.6,
+  "kcal": 186.0,
+  "officialName": "こめ [もち米製品] 赤飯",
+  "protein": 4.3,
+  "salt": 0.0
+ },
+ "01127": {
+  "carbs": 54.5,
+  "fat": 1.9,
+  "fiber": 6.0,
+  "kcal": 271.0,
+  "officialName": "そば そば 生",
+  "protein": 9.8,
+  "salt": 0.0
+ },
+ "01128": {
+  "carbs": 26.0,
+  "fat": 1.0,
+  "fiber": 2.9,
+  "kcal": 130.0,
+  "officialName": "そば そば ゆで",
+  "protein": 4.8,
+  "salt": 0.0
+ },
+ "01129": {
+  "carbs": 66.7,
+  "fat": 2.3,
+  "fiber": 3.7,
+  "kcal": 344.0,
+  "officialName": "そば 干しそば 乾",
+  "protein": 14.0,
+  "salt": 2.2
+ },
+ "01137": {
+  "carbs": 83.6,
+  "fat": 1.7,
+  "fiber": 2.4,
+  "kcal": 380.0,
+  "officialName": "とうもろこし コーンフレーク",
+  "protein": 7.8,
+  "salt": 2.1
+ },
+ "01155": {
+  "carbs": 35.0,
+  "fat": 1.4,
+  "fiber": 1.8,
+  "kcal": 161.0,
+  "officialName": "こめ [水稲めし] 発芽玄米",
+  "protein": 3.0,
+  "salt": 0.0
+ },
+ "01205": {
+  "carbs": 47.9,
+  "fat": 3.5,
+  "fiber": 1.8,
+  "kcal": 246.0,
+  "officialName": "こむぎ [パン類] 山形食パン 食パン",
+  "protein": 7.8,
+  "salt": 1.3
+ },
+ "02003": {
+  "carbs": 2.3,
+  "fat": 0.0,
+  "fiber": 2.2,
+  "kcal": 5.0,
+  "officialName": "こんにゃく 板こんにゃく 精粉こんにゃく",
+  "protein": 0.1,
+  "salt": 0.0
+ },
+ "02005": {
+  "carbs": 3.0,
+  "fat": 0.0,
+  "fiber": 2.9,
+  "kcal": 7.0,
+  "officialName": "こんにゃく しらたき",
+  "protein": 0.2,
+  "salt": 0.0
+ },
+ "02006": {
+  "carbs": 31.9,
+  "fat": 0.2,
+  "fiber": 2.2,
+  "kcal": 126.0,
+  "officialName": "(さつまいも類) さつまいも 塊根 皮なし 生",
+  "protein": 1.2,
+  "salt": 0.0
+ },
+ "02008": {
+  "carbs": 39.0,
+  "fat": 0.2,
+  "fiber": 4.5,
+  "kcal": 151.0,
+  "officialName": "(さつまいも類) さつまいも 塊根 皮なし 焼き",
+  "protein": 1.4,
+  "salt": 0.0
+ },
+ "02010": {
+  "carbs": 13.1,
+  "fat": 0.1,
+  "fiber": 2.3,
+  "kcal": 53.0,
+  "officialName": "(さといも類) さといも 球茎 生",
+  "protein": 1.5,
+  "salt": 0.0
+ },
+ "02017": {
+  "carbs": 17.3,
+  "fat": 0.1,
+  "fiber": 8.9,
+  "kcal": 59.0,
+  "officialName": "じゃがいも 塊茎 皮なし 生",
+  "protein": 1.8,
+  "salt": 0.0
+ },
+ "02018": {
+  "carbs": 18.1,
+  "fat": 0.3,
+  "fiber": 3.5,
+  "kcal": 76.0,
+  "officialName": "じゃがいも 塊茎 皮なし 蒸し",
+  "protein": 1.9,
+  "salt": 0.0
+ },
+ "02023": {
+  "carbs": 13.9,
+  "fat": 0.3,
+  "fiber": 1.0,
+  "kcal": 64.0,
+  "officialName": "(やまのいも類) ながいも ながいも 塊根 生",
+  "protein": 2.2,
+  "salt": 0.0
+ },
+ "02067": {
+  "carbs": 26.2,
+  "fat": 5.9,
+  "fiber": 3.9,
+  "kcal": 159.0,
+  "officialName": "じゃがいも 塊茎 皮なし フライドポテト (生を揚げたもの)",
+  "protein": 2.7,
+  "salt": 0.0
+ },
+ "03001": {
+  "carbs": 90.3,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 352.0,
+  "officialName": "(砂糖類) 黒砂糖",
+  "protein": 1.7,
+  "salt": 0.1
+ },
+ "03003": {
+  "carbs": 99.3,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 391.0,
+  "officialName": "(砂糖類) 車糖 上白糖",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "03022": {
+  "carbs": 81.9,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 329.0,
+  "officialName": "(その他) はちみつ",
+  "protein": 0.3,
+  "salt": 0.0
+ },
+ "04002": {
+  "carbs": 25.6,
+  "fat": 0.8,
+  "fiber": 8.7,
+  "kcal": 124.0,
+  "officialName": "あずき 全粒 ゆで",
+  "protein": 8.6,
+  "salt": 0.0
+ },
+ "04008": {
+  "carbs": 24.5,
+  "fat": 1.2,
+  "fiber": 13.6,
+  "kcal": 127.0,
+  "officialName": "いんげんまめ 全粒 ゆで",
+  "protein": 9.3,
+  "salt": 0.0
+ },
+ "04023": {
+  "carbs": 29.5,
+  "fat": 19.7,
+  "fiber": 21.5,
+  "kcal": 372.0,
+  "officialName": "だいず [全粒・全粒製品] 全粒 黄大豆 国産 乾",
+  "protein": 33.8,
+  "salt": 0.0
+ },
+ "04024": {
+  "carbs": 8.4,
+  "fat": 9.8,
+  "fiber": 8.5,
+  "kcal": 163.0,
+  "officialName": "だいず [全粒・全粒製品] 全粒 黄大豆 国産 ゆで",
+  "protein": 14.8,
+  "salt": 0.0
+ },
+ "04029": {
+  "carbs": 28.5,
+  "fat": 25.7,
+  "fiber": 18.1,
+  "kcal": 451.0,
+  "officialName": "だいず [全粒・全粒製品] きな粉 黄大豆 全粒大豆",
+  "protein": 36.7,
+  "salt": 0.0
+ },
+ "04032": {
+  "carbs": 1.5,
+  "fat": 4.9,
+  "fiber": 1.1,
+  "kcal": 73.0,
+  "officialName": "だいず [豆腐・油揚げ類] 木綿豆腐",
+  "protein": 7.0,
+  "salt": 0.0
+ },
+ "04033": {
+  "carbs": 2.0,
+  "fat": 3.5,
+  "fiber": 0.9,
+  "kcal": 56.0,
+  "officialName": "だいず [豆腐・油揚げ類] 絹ごし豆腐",
+  "protein": 5.3,
+  "salt": 0.0
+ },
+ "04038": {
+  "carbs": 1.0,
+  "fat": 5.7,
+  "fiber": 0.5,
+  "kcal": 82.0,
+  "officialName": "だいず [豆腐・油揚げ類] 焼き豆腐",
+  "protein": 7.8,
+  "salt": 0.0
+ },
+ "04039": {
+  "carbs": 0.9,
+  "fat": 11.3,
+  "fiber": 0.8,
+  "kcal": 143.0,
+  "officialName": "だいず [豆腐・油揚げ類] 生揚げ",
+  "protein": 10.7,
+  "salt": 0.0
+ },
+ "04040": {
+  "carbs": 0.4,
+  "fat": 34.4,
+  "fiber": 1.3,
+  "kcal": 377.0,
+  "officialName": "だいず [豆腐・油揚げ類] 油揚げ 生",
+  "protein": 23.4,
+  "salt": 0.0
+ },
+ "04041": {
+  "carbs": 1.6,
+  "fat": 17.8,
+  "fiber": 1.4,
+  "kcal": 223.0,
+  "officialName": "だいず [豆腐・油揚げ類] がんもどき",
+  "protein": 15.3,
+  "salt": 0.5
+ },
+ "04042": {
+  "carbs": 4.2,
+  "fat": 34.1,
+  "fiber": 2.5,
+  "kcal": 496.0,
+  "officialName": "だいず [豆腐・油揚げ類] 凍り豆腐 乾",
+  "protein": 50.5,
+  "salt": 1.1
+ },
+ "04046": {
+  "carbs": 12.1,
+  "fat": 10.0,
+  "fiber": 9.5,
+  "kcal": 184.0,
+  "officialName": "だいず [納豆類] 糸引き納豆",
+  "protein": 16.5,
+  "salt": 0.0
+ },
+ "04047": {
+  "carbs": 10.5,
+  "fat": 10.0,
+  "fiber": 5.9,
+  "kcal": 185.0,
+  "officialName": "だいず [納豆類] 挽きわり納豆",
+  "protein": 16.6,
+  "salt": 0.0
+ },
+ "04051": {
+  "carbs": 13.8,
+  "fat": 3.6,
+  "fiber": 11.5,
+  "kcal": 88.0,
+  "officialName": "だいず [その他] おから 生",
+  "protein": 6.1,
+  "salt": 0.0
+ },
+ "04052": {
+  "carbs": 2.3,
+  "fat": 2.8,
+  "fiber": 0.9,
+  "kcal": 43.0,
+  "officialName": "だいず [その他] 豆乳 豆乳",
+  "protein": 3.6,
+  "salt": 0.0
+ },
+ "04053": {
+  "carbs": 4.8,
+  "fat": 3.6,
+  "fiber": 1.1,
+  "kcal": 61.0,
+  "officialName": "だいず [その他] 豆乳 調製豆乳",
+  "protein": 3.2,
+  "salt": 0.1
+ },
+ "04066": {
+  "carbs": 27.4,
+  "fat": 2.5,
+  "fiber": 11.6,
+  "kcal": 149.0,
+  "officialName": "ひよこまめ 全粒 ゆで",
+  "protein": 9.5,
+  "salt": 0.0
+ },
+ "04078": {
+  "carbs": 33.3,
+  "fat": 21.6,
+  "fiber": 19.4,
+  "kcal": 429.0,
+  "officialName": "だいず [全粒・全粒製品] いり大豆 黄大豆",
+  "protein": 37.5,
+  "salt": 0.0
+ },
+ "05001": {
+  "carbs": 20.9,
+  "fat": 51.8,
+  "fiber": 10.1,
+  "kcal": 609.0,
+  "officialName": "アーモンド 乾",
+  "protein": 19.6,
+  "salt": 0.0
+ },
+ "05005": {
+  "carbs": 26.7,
+  "fat": 47.6,
+  "fiber": 6.7,
+  "kcal": 591.0,
+  "officialName": "カシューナッツ フライ 味付け",
+  "protein": 19.8,
+  "salt": 0.6
+ },
+ "05006": {
+  "carbs": 12.0,
+  "fat": 51.8,
+  "fiber": 7.3,
+  "kcal": 590.0,
+  "officialName": "かぼちゃ いり 味付け",
+  "protein": 26.5,
+  "salt": 0.1
+ },
+ "05014": {
+  "carbs": 11.7,
+  "fat": 68.8,
+  "fiber": 7.5,
+  "kcal": 713.0,
+  "officialName": "くるみ いり",
+  "protein": 14.6,
+  "salt": 0.0
+ },
+ "05018": {
+  "carbs": 18.5,
+  "fat": 54.2,
+  "fiber": 12.6,
+  "kcal": 605.0,
+  "officialName": "ごま いり",
+  "protein": 20.3,
+  "salt": 0.0
+ },
+ "05026": {
+  "carbs": 20.9,
+  "fat": 56.1,
+  "fiber": 9.2,
+  "kcal": 617.0,
+  "officialName": "ピスタチオ いり 味付け",
+  "protein": 17.4,
+  "salt": 0.7
+ },
+ "05034": {
+  "carbs": 19.4,
+  "fat": 47.0,
+  "fiber": 8.5,
+  "kcal": 572.0,
+  "officialName": "らっかせい 大粒種 乾",
+  "protein": 25.2,
+  "salt": 0.0
+ },
+ "05040": {
+  "carbs": 20.7,
+  "fat": 54.1,
+  "fiber": 11.0,
+  "kcal": 608.0,
+  "officialName": "アーモンド いり 無塩",
+  "protein": 20.3,
+  "salt": 0.0
+ },
+ "06007": {
+  "carbs": 3.9,
+  "fat": 0.2,
+  "fiber": 1.8,
+  "kcal": 21.0,
+  "officialName": "アスパラガス 若茎 生",
+  "protein": 2.6,
+  "salt": 0.0
+ },
+ "06010": {
+  "carbs": 5.1,
+  "fat": 0.1,
+  "fiber": 2.4,
+  "kcal": 23.0,
+  "officialName": "いんげんまめ さやいんげん 若ざや 生",
+  "protein": 1.8,
+  "salt": 0.0
+ },
+ "06015": {
+  "carbs": 8.8,
+  "fat": 6.2,
+  "fiber": 5.0,
+  "kcal": 125.0,
+  "officialName": "えだまめ 生",
+  "protein": 11.7,
+  "salt": 0.0
+ },
+ "06016": {
+  "carbs": 8.9,
+  "fat": 6.1,
+  "fiber": 4.6,
+  "kcal": 118.0,
+  "officialName": "えだまめ ゆで",
+  "protein": 11.5,
+  "salt": 0.0
+ },
+ "06032": {
+  "carbs": 6.6,
+  "fat": 0.2,
+  "fiber": 5.0,
+  "kcal": 26.0,
+  "officialName": "オクラ 果実 生",
+  "protein": 2.1,
+  "salt": 0.0
+ },
+ "06048": {
+  "carbs": 20.6,
+  "fat": 0.3,
+  "fiber": 3.5,
+  "kcal": 78.0,
+  "officialName": "(かぼちゃ類) 西洋かぼちゃ 果実 生",
+  "protein": 1.9,
+  "salt": 0.0
+ },
+ "06054": {
+  "carbs": 5.2,
+  "fat": 0.1,
+  "fiber": 2.9,
+  "kcal": 28.0,
+  "officialName": "カリフラワー 花序 生",
+  "protein": 3.0,
+  "salt": 0.0
+ },
+ "06061": {
+  "carbs": 5.2,
+  "fat": 0.1,
+  "fiber": 1.8,
+  "kcal": 23.0,
+  "officialName": "(キャベツ類) キャベツ 結球葉 生",
+  "protein": 1.2,
+  "salt": 0.0
+ },
+ "06065": {
+  "carbs": 3.0,
+  "fat": 0.1,
+  "fiber": 1.1,
+  "kcal": 13.0,
+  "officialName": "きゅうり 果実 生",
+  "protein": 1.0,
+  "salt": 0.0
+ },
+ "06072": {
+  "carbs": 4.8,
+  "fat": 0.1,
+  "fiber": 3.0,
+  "kcal": 23.0,
+  "officialName": "みずな 葉 生",
+  "protein": 2.2,
+  "salt": 0.1
+ },
+ "06084": {
+  "carbs": 15.4,
+  "fat": 0.1,
+  "fiber": 5.7,
+  "kcal": 58.0,
+  "officialName": "(ごぼう類) ごぼう 根 生",
+  "protein": 1.8,
+  "salt": 0.0
+ },
+ "06086": {
+  "carbs": 2.4,
+  "fat": 0.2,
+  "fiber": 1.9,
+  "kcal": 13.0,
+  "officialName": "こまつな 葉 生",
+  "protein": 1.5,
+  "salt": 0.0
+ },
+ "06103": {
+  "carbs": 6.6,
+  "fat": 0.3,
+  "fiber": 2.1,
+  "kcal": 28.0,
+  "officialName": "(しょうが類) しょうが 根茎 皮なし 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "06119": {
+  "carbs": 3.6,
+  "fat": 0.1,
+  "fiber": 1.5,
+  "kcal": 12.0,
+  "officialName": "セロリ 葉柄 生",
+  "protein": 0.4,
+  "salt": 0.1
+ },
+ "06132": {
+  "carbs": 4.1,
+  "fat": 0.1,
+  "fiber": 1.4,
+  "kcal": 15.0,
+  "officialName": "(だいこん類) だいこん 根 皮つき 生",
+  "protein": 0.5,
+  "salt": 0.0
+ },
+ "06134": {
+  "carbs": 4.1,
+  "fat": 0.1,
+  "fiber": 1.3,
+  "kcal": 15.0,
+  "officialName": "(だいこん類) だいこん 根 皮なし 生",
+  "protein": 0.4,
+  "salt": 0.0
+ },
+ "06153": {
+  "carbs": 8.4,
+  "fat": 0.1,
+  "fiber": 1.5,
+  "kcal": 33.0,
+  "officialName": "(たまねぎ類) たまねぎ りん茎 生",
+  "protein": 1.0,
+  "salt": 0.0
+ },
+ "06160": {
+  "carbs": 2.0,
+  "fat": 0.1,
+  "fiber": 1.2,
+  "kcal": 9.0,
+  "officialName": "チンゲンサイ 葉 生",
+  "protein": 0.6,
+  "salt": 0.1
+ },
+ "06175": {
+  "carbs": 16.8,
+  "fat": 1.7,
+  "fiber": 3.0,
+  "kcal": 89.0,
+  "officialName": "(とうもろこし類) スイートコーン 未熟種子 生",
+  "protein": 3.6,
+  "salt": 0.0
+ },
+ "06180": {
+  "carbs": 17.8,
+  "fat": 0.5,
+  "fiber": 3.3,
+  "kcal": 78.0,
+  "officialName": "(とうもろこし類) スイートコーン 缶詰 ホールカーネルスタイル",
+  "protein": 2.3,
+  "salt": 0.5
+ },
+ "06182": {
+  "carbs": 4.7,
+  "fat": 0.1,
+  "fiber": 1.0,
+  "kcal": 20.0,
+  "officialName": "(トマト類) 赤色トマト 果実 生",
+  "protein": 0.7,
+  "salt": 0.0
+ },
+ "06183": {
+  "carbs": 7.2,
+  "fat": 0.1,
+  "fiber": 1.4,
+  "kcal": 30.0,
+  "officialName": "(トマト類) 赤色ミニトマト 果実 生",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "06184": {
+  "carbs": 4.4,
+  "fat": 0.2,
+  "fiber": 1.3,
+  "kcal": 21.0,
+  "officialName": "(トマト類) 加工品 ホール 食塩無添加",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "06191": {
+  "carbs": 5.1,
+  "fat": 0.1,
+  "fiber": 2.2,
+  "kcal": 18.0,
+  "officialName": "(なす類) なす 果実 生",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "06207": {
+  "carbs": 4.0,
+  "fat": 0.3,
+  "fiber": 2.7,
+  "kcal": 18.0,
+  "officialName": "(にら類) にら 葉 生",
+  "protein": 1.7,
+  "salt": 0.0
+ },
+ "06212": {
+  "carbs": 9.3,
+  "fat": 0.2,
+  "fiber": 2.8,
+  "kcal": 35.0,
+  "officialName": "(にんじん類) にんじん 根 皮つき 生",
+  "protein": 0.7,
+  "salt": 0.1
+ },
+ "06214": {
+  "carbs": 8.8,
+  "fat": 0.2,
+  "fiber": 2.8,
+  "kcal": 32.0,
+  "officialName": "(にんじん類) にんじん 根 皮なし 生",
+  "protein": 0.7,
+  "salt": 0.1
+ },
+ "06215": {
+  "carbs": 8.5,
+  "fat": 0.1,
+  "fiber": 2.8,
+  "kcal": 28.0,
+  "officialName": "(にんじん類) にんじん 根 皮なし ゆで",
+  "protein": 0.7,
+  "salt": 0.1
+ },
+ "06223": {
+  "carbs": 27.5,
+  "fat": 0.9,
+  "fiber": 6.2,
+  "kcal": 129.0,
+  "officialName": "(にんにく類) にんにく りん茎 生",
+  "protein": 6.4,
+  "salt": 0.0
+ },
+ "06226": {
+  "carbs": 8.3,
+  "fat": 0.1,
+  "fiber": 2.5,
+  "kcal": 35.0,
+  "officialName": "(ねぎ類) 根深ねぎ 葉 軟白 生",
+  "protein": 1.4,
+  "salt": 0.0
+ },
+ "06227": {
+  "carbs": 6.5,
+  "fat": 0.3,
+  "fiber": 3.2,
+  "kcal": 29.0,
+  "officialName": "(ねぎ類) 葉ねぎ 葉 生",
+  "protein": 1.9,
+  "salt": 0.0
+ },
+ "06233": {
+  "carbs": 3.2,
+  "fat": 0.1,
+  "fiber": 1.3,
+  "kcal": 13.0,
+  "officialName": "はくさい 結球葉 生",
+  "protein": 0.8,
+  "salt": 0.0
+ },
+ "06245": {
+  "carbs": 5.1,
+  "fat": 0.2,
+  "fiber": 2.3,
+  "kcal": 20.0,
+  "officialName": "(ピーマン類) 青ピーマン 果実 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "06247": {
+  "carbs": 7.2,
+  "fat": 0.2,
+  "fiber": 1.6,
+  "kcal": 28.0,
+  "officialName": "(ピーマン類) 赤ピーマン 果実 生",
+  "protein": 1.0,
+  "salt": 0.0
+ },
+ "06263": {
+  "carbs": 6.6,
+  "fat": 0.6,
+  "fiber": 5.1,
+  "kcal": 37.0,
+  "officialName": "ブロッコリー 花序 生",
+  "protein": 5.4,
+  "salt": 0.0
+ },
+ "06264": {
+  "carbs": 5.2,
+  "fat": 0.4,
+  "fiber": 4.3,
+  "kcal": 30.0,
+  "officialName": "ブロッコリー 花序 ゆで",
+  "protein": 3.9,
+  "salt": 0.0
+ },
+ "06267": {
+  "carbs": 3.1,
+  "fat": 0.4,
+  "fiber": 2.8,
+  "kcal": 18.0,
+  "officialName": "ほうれんそう 葉 通年平均 生",
+  "protein": 2.2,
+  "salt": 0.0
+ },
+ "06268": {
+  "carbs": 4.0,
+  "fat": 0.5,
+  "fiber": 3.6,
+  "kcal": 23.0,
+  "officialName": "ほうれんそう 葉 通年平均 ゆで",
+  "protein": 2.6,
+  "salt": 0.0
+ },
+ "06287": {
+  "carbs": 2.5,
+  "fat": 1.4,
+  "fiber": 2.3,
+  "kcal": 29.0,
+  "officialName": "(もやし類) だいずもやし 生",
+  "protein": 3.6,
+  "salt": 0.0
+ },
+ "06291": {
+  "carbs": 2.4,
+  "fat": 0.1,
+  "fiber": 1.3,
+  "kcal": 15.0,
+  "officialName": "(もやし類) りょくとうもやし 生",
+  "protein": 1.8,
+  "salt": 0.0
+ },
+ "06293": {
+  "carbs": 6.3,
+  "fat": 0.5,
+  "fiber": 5.9,
+  "kcal": 36.0,
+  "officialName": "モロヘイヤ 茎葉 生",
+  "protein": 4.8,
+  "salt": 0.0
+ },
+ "06312": {
+  "carbs": 2.8,
+  "fat": 0.1,
+  "fiber": 1.1,
+  "kcal": 11.0,
+  "officialName": "(レタス類) レタス 土耕栽培 結球葉 生",
+  "protein": 0.6,
+  "salt": 0.0
+ },
+ "06336": {
+  "carbs": 12.0,
+  "fat": 5.9,
+  "fiber": 2.7,
+  "kcal": 100.0,
+  "officialName": "(たまねぎ類) たまねぎ りん茎 油いため",
+  "protein": 1.4,
+  "salt": 0.0
+ },
+ "07006": {
+  "carbs": 7.9,
+  "fat": 17.5,
+  "fiber": 5.6,
+  "kcal": 176.0,
+  "officialName": "アボカド 生",
+  "protein": 2.1,
+  "salt": 0.0
+ },
+ "07012": {
+  "carbs": 8.5,
+  "fat": 0.1,
+  "fiber": 1.4,
+  "kcal": 31.0,
+  "officialName": "いちご 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "07027": {
+  "carbs": 12.0,
+  "fat": 0.1,
+  "fiber": 1.0,
+  "kcal": 49.0,
+  "officialName": "(かんきつ類) うんしゅうみかん じょうのう 普通 生",
+  "protein": 0.7,
+  "salt": 0.0
+ },
+ "07040": {
+  "carbs": 11.8,
+  "fat": 0.1,
+  "fiber": 1.0,
+  "kcal": 48.0,
+  "officialName": "(かんきつ類) オレンジ ネーブル 砂じょう 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "07049": {
+  "carbs": 15.9,
+  "fat": 0.2,
+  "fiber": 1.6,
+  "kcal": 63.0,
+  "officialName": "かき 甘がき 生",
+  "protein": 0.4,
+  "salt": 0.0
+ },
+ "07054": {
+  "carbs": 13.4,
+  "fat": 0.2,
+  "fiber": 2.6,
+  "kcal": 51.0,
+  "officialName": "キウイフルーツ 緑肉種 生",
+  "protein": 1.0,
+  "salt": 0.0
+ },
+ "07062": {
+  "carbs": 9.6,
+  "fat": 0.1,
+  "fiber": 0.6,
+  "kcal": 40.0,
+  "officialName": "(かんきつ類) グレープフルーツ 白肉種 砂じょう 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "07077": {
+  "carbs": 9.5,
+  "fat": 0.1,
+  "fiber": 0.3,
+  "kcal": 41.0,
+  "officialName": "すいか 赤肉種 生",
+  "protein": 0.6,
+  "salt": 0.0
+ },
+ "07088": {
+  "carbs": 11.3,
+  "fat": 0.1,
+  "fiber": 0.9,
+  "kcal": 38.0,
+  "officialName": "(なし類) 日本なし 生",
+  "protein": 0.3,
+  "salt": 0.0
+ },
+ "07097": {
+  "carbs": 13.7,
+  "fat": 0.1,
+  "fiber": 1.2,
+  "kcal": 54.0,
+  "officialName": "パインアップル 生",
+  "protein": 0.6,
+  "salt": 0.0
+ },
+ "07107": {
+  "carbs": 22.5,
+  "fat": 0.2,
+  "fiber": 1.1,
+  "kcal": 93.0,
+  "officialName": "バナナ 生",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "07116": {
+  "carbs": 15.7,
+  "fat": 0.1,
+  "fiber": 0.5,
+  "kcal": 58.0,
+  "officialName": "ぶどう 皮なし 生",
+  "protein": 0.4,
+  "salt": 0.0
+ },
+ "07124": {
+  "carbs": 12.9,
+  "fat": 0.1,
+  "fiber": 3.3,
+  "kcal": 48.0,
+  "officialName": "ブルーベリー 生",
+  "protein": 0.5,
+  "salt": 0.0
+ },
+ "07134": {
+  "carbs": 10.3,
+  "fat": 0.1,
+  "fiber": 0.5,
+  "kcal": 40.0,
+  "officialName": "メロン 温室メロン 生",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "07136": {
+  "carbs": 10.2,
+  "fat": 0.1,
+  "fiber": 1.3,
+  "kcal": 38.0,
+  "officialName": "(もも類) もも 白肉種 生",
+  "protein": 0.6,
+  "salt": 0.0
+ },
+ "07148": {
+  "carbs": 15.5,
+  "fat": 0.2,
+  "fiber": 1.4,
+  "kcal": 53.0,
+  "officialName": "りんご 皮なし 生",
+  "protein": 0.1,
+  "salt": 0.0
+ },
+ "07155": {
+  "carbs": 12.5,
+  "fat": 0.7,
+  "fiber": 4.9,
+  "kcal": 43.0,
+  "officialName": "(かんきつ類) レモン 全果 生",
+  "protein": 0.9,
+  "salt": 0.0
+ },
+ "07168": {
+  "carbs": 14.9,
+  "fat": 0.2,
+  "fiber": 1.4,
+  "kcal": 63.0,
+  "officialName": "キウイフルーツ 黄肉種 生",
+  "protein": 1.1,
+  "salt": 0.0
+ },
+ "07176": {
+  "carbs": 16.2,
+  "fat": 0.3,
+  "fiber": 1.9,
+  "kcal": 56.0,
+  "officialName": "りんご 皮つき 生",
+  "protein": 0.2,
+  "salt": 0.0
+ },
+ "08001": {
+  "carbs": 7.6,
+  "fat": 0.2,
+  "fiber": 3.9,
+  "kcal": 34.0,
+  "officialName": "えのきたけ 生",
+  "protein": 2.7,
+  "salt": 0.0
+ },
+ "08007": {
+  "carbs": 5.2,
+  "fat": 0.2,
+  "fiber": 5.2,
+  "kcal": 14.0,
+  "officialName": "(きくらげ類) きくらげ ゆで",
+  "protein": 0.6,
+  "salt": 0.0
+ },
+ "08016": {
+  "carbs": 4.8,
+  "fat": 0.5,
+  "fiber": 3.0,
+  "kcal": 26.0,
+  "officialName": "(しめじ類) ぶなしめじ 生",
+  "protein": 2.7,
+  "salt": 0.0
+ },
+ "08020": {
+  "carbs": 5.4,
+  "fat": 0.2,
+  "fiber": 3.4,
+  "kcal": 21.0,
+  "officialName": "なめこ 株採り 生",
+  "protein": 1.8,
+  "salt": 0.0
+ },
+ "08025": {
+  "carbs": 6.0,
+  "fat": 0.4,
+  "fiber": 3.4,
+  "kcal": 31.0,
+  "officialName": "(ひらたけ類) エリンギ 生",
+  "protein": 2.8,
+  "salt": 0.0
+ },
+ "08028": {
+  "carbs": 4.4,
+  "fat": 0.5,
+  "fiber": 3.5,
+  "kcal": 22.0,
+  "officialName": "まいたけ 生",
+  "protein": 2.0,
+  "salt": 0.0
+ },
+ "08031": {
+  "carbs": 2.1,
+  "fat": 0.3,
+  "fiber": 2.0,
+  "kcal": 15.0,
+  "officialName": "マッシュルーム 生",
+  "protein": 2.9,
+  "salt": 0.0
+ },
+ "08039": {
+  "carbs": 6.4,
+  "fat": 0.3,
+  "fiber": 4.9,
+  "kcal": 25.0,
+  "officialName": "しいたけ 生しいたけ 菌床栽培 生",
+  "protein": 3.1,
+  "salt": 0.0
+ },
+ "09004": {
+  "carbs": 44.3,
+  "fat": 3.7,
+  "fiber": 36.0,
+  "kcal": 297.0,
+  "officialName": "あまのり 焼きのり",
+  "protein": 41.4,
+  "salt": 1.3
+ },
+ "09017": {
+  "carbs": 64.3,
+  "fat": 1.3,
+  "fiber": 32.1,
+  "kcal": 170.0,
+  "officialName": "(こんぶ類) まこんぶ 素干し 乾",
+  "protein": 5.8,
+  "salt": 6.6
+ },
+ "09038": {
+  "carbs": 1.4,
+  "fat": 0.1,
+  "fiber": 1.4,
+  "kcal": 4.0,
+  "officialName": "(もずく類) もずく 塩蔵 塩抜き",
+  "protein": 0.2,
+  "salt": 0.2
+ },
+ "09039": {
+  "carbs": 5.6,
+  "fat": 0.2,
+  "fiber": 3.6,
+  "kcal": 24.0,
+  "officialName": "わかめ 原藻 生",
+  "protein": 1.9,
+  "salt": 1.5
+ },
+ "09044": {
+  "carbs": 42.1,
+  "fat": 4.0,
+  "fiber": 39.2,
+  "kcal": 186.0,
+  "officialName": "わかめ カットわかめ 乾",
+  "protein": 17.9,
+  "salt": 23.5
+ },
+ "09050": {
+  "carbs": 58.4,
+  "fat": 3.2,
+  "fiber": 51.8,
+  "kcal": 180.0,
+  "officialName": "ひじき ほしひじき ステンレス釜 乾",
+  "protein": 9.2,
+  "salt": 4.7
+ },
+ "09051": {
+  "carbs": 3.4,
+  "fat": 0.3,
+  "fiber": 3.7,
+  "kcal": 11.0,
+  "officialName": "ひじき ほしひじき ステンレス釜 ゆで",
+  "protein": 0.7,
+  "salt": 0.1
+ },
+ "10003": {
+  "carbs": 0.1,
+  "fat": 4.5,
+  "fiber": 0.0,
+  "kcal": 112.0,
+  "officialName": "(あじ類) まあじ 皮つき 生",
+  "protein": 19.7,
+  "salt": 0.3
+ },
+ "10006": {
+  "carbs": 0.1,
+  "fat": 8.8,
+  "fiber": 0.0,
+  "kcal": 150.0,
+  "officialName": "(あじ類) まあじ 開き干し 生",
+  "protein": 20.2,
+  "salt": 1.7
+ },
+ "10047": {
+  "carbs": 0.2,
+  "fat": 9.2,
+  "fiber": 0.0,
+  "kcal": 156.0,
+  "officialName": "(いわし類) まいわし 生",
+  "protein": 19.2,
+  "salt": 0.2
+ },
+ "10055": {
+  "carbs": 0.1,
+  "fat": 2.1,
+  "fiber": 0.0,
+  "kcal": 113.0,
+  "officialName": "(いわし類) しらす干し 微乾燥品",
+  "protein": 24.5,
+  "salt": 4.2
+ },
+ "10060": {
+  "carbs": 0.1,
+  "fat": 10.6,
+  "fiber": 0.0,
+  "kcal": 168.0,
+  "officialName": "(いわし類) 缶詰 水煮",
+  "protein": 20.7,
+  "salt": 0.8
+ },
+ "10067": {
+  "carbs": 0.3,
+  "fat": 19.3,
+  "fiber": 0.0,
+  "kcal": 228.0,
+  "officialName": "うなぎ 養殖 生",
+  "protein": 17.1,
+  "salt": 0.2
+ },
+ "10070": {
+  "carbs": 3.1,
+  "fat": 21.0,
+  "fiber": 0.0,
+  "kcal": 285.0,
+  "officialName": "うなぎ かば焼",
+  "protein": 23.0,
+  "salt": 1.3
+ },
+ "10086": {
+  "carbs": 0.1,
+  "fat": 0.5,
+  "fiber": 0.0,
+  "kcal": 108.0,
+  "officialName": "(かつお類) かつお 春獲り 生",
+  "protein": 25.8,
+  "salt": 0.1
+ },
+ "10087": {
+  "carbs": 0.2,
+  "fat": 6.2,
+  "fiber": 0.0,
+  "kcal": 150.0,
+  "officialName": "(かつお類) かつお 秋獲り 生",
+  "protein": 25.0,
+  "salt": 0.1
+ },
+ "10091": {
+  "carbs": 0.8,
+  "fat": 2.9,
+  "fiber": 0.0,
+  "kcal": 332.0,
+  "officialName": "(かつお類) 加工品 かつお節",
+  "protein": 77.1,
+  "salt": 0.3
+ },
+ "10134": {
+  "carbs": 0.1,
+  "fat": 4.1,
+  "fiber": 0.0,
+  "kcal": 124.0,
+  "officialName": "(さけ・ます類) しろさけ 生",
+  "protein": 22.3,
+  "salt": 0.2
+ },
+ "10136": {
+  "carbs": 0.1,
+  "fat": 5.1,
+  "fiber": 0.0,
+  "kcal": 160.0,
+  "officialName": "(さけ・ます類) しろさけ 焼き",
+  "protein": 29.1,
+  "salt": 0.2
+ },
+ "10139": {
+  "carbs": 0.1,
+  "fat": 11.1,
+  "fiber": 0.0,
+  "kcal": 183.0,
+  "officialName": "(さけ・ます類) しろさけ 塩ざけ",
+  "protein": 22.4,
+  "salt": 1.8
+ },
+ "10144": {
+  "carbs": 0.1,
+  "fat": 16.5,
+  "fiber": 0.0,
+  "kcal": 218.0,
+  "officialName": "(さけ・ます類) たいせいようさけ 養殖 皮つき 生",
+  "protein": 20.1,
+  "salt": 0.1
+ },
+ "10149": {
+  "carbs": 0.1,
+  "fat": 4.5,
+  "fiber": 0.0,
+  "kcal": 127.0,
+  "officialName": "(さけ・ます類) べにざけ 生",
+  "protein": 22.5,
+  "salt": 0.1
+ },
+ "10154": {
+  "carbs": 0.3,
+  "fat": 16.8,
+  "fiber": 0.0,
+  "kcal": 211.0,
+  "officialName": "(さば類) まさば 生",
+  "protein": 20.6,
+  "salt": 0.3
+ },
+ "10156": {
+  "carbs": 0.4,
+  "fat": 22.4,
+  "fiber": 0.0,
+  "kcal": 264.0,
+  "officialName": "(さば類) まさば 焼き",
+  "protein": 25.2,
+  "salt": 0.3
+ },
+ "10164": {
+  "carbs": 0.2,
+  "fat": 10.7,
+  "fiber": 0.0,
+  "kcal": 174.0,
+  "officialName": "(さば類) 缶詰 水煮",
+  "protein": 20.9,
+  "salt": 0.9
+ },
+ "10171": {
+  "carbs": 0.1,
+  "fat": 9.7,
+  "fiber": 0.0,
+  "kcal": 161.0,
+  "officialName": "さわら 生",
+  "protein": 20.1,
+  "salt": 0.2
+ },
+ "10173": {
+  "carbs": 0.1,
+  "fat": 25.6,
+  "fiber": 0.0,
+  "kcal": 287.0,
+  "officialName": "さんま 皮つき 生",
+  "protein": 18.1,
+  "salt": 0.4
+ },
+ "10180": {
+  "carbs": 0.2,
+  "fat": 8.1,
+  "fiber": 0.0,
+  "kcal": 152.0,
+  "officialName": "(ししゃも類) ししゃも 生干し 生",
+  "protein": 21.0,
+  "salt": 1.2
+ },
+ "10199": {
+  "carbs": 0.1,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 72.0,
+  "officialName": "(たら類) すけとうだら 生",
+  "protein": 17.4,
+  "salt": 0.3
+ },
+ "10202": {
+  "carbs": 0.4,
+  "fat": 4.7,
+  "fiber": 0.0,
+  "kcal": 131.0,
+  "officialName": "(たら類) すけとうだら たらこ 生",
+  "protein": 24.0,
+  "salt": 4.6
+ },
+ "10205": {
+  "carbs": 0.1,
+  "fat": 0.2,
+  "fiber": 0.0,
+  "kcal": 72.0,
+  "officialName": "(たら類) まだら 生",
+  "protein": 17.6,
+  "salt": 0.3
+ },
+ "10241": {
+  "carbs": 0.3,
+  "fat": 17.6,
+  "fiber": 0.0,
+  "kcal": 222.0,
+  "officialName": "ぶり 成魚 生",
+  "protein": 21.4,
+  "salt": 0.1
+ },
+ "10243": {
+  "carbs": 0.3,
+  "fat": 17.2,
+  "fiber": 0.0,
+  "kcal": 217.0,
+  "officialName": "ぶり はまち 養殖 皮つき 生",
+  "protein": 20.7,
+  "salt": 0.1
+ },
+ "10246": {
+  "carbs": 0.1,
+  "fat": 4.4,
+  "fiber": 0.0,
+  "kcal": 103.0,
+  "officialName": "ほっけ 生",
+  "protein": 17.3,
+  "salt": 0.2
+ },
+ "10252": {
+  "carbs": 0.0,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 102.0,
+  "officialName": "(まぐろ類) きはだ 生",
+  "protein": 24.3,
+  "salt": 0.1
+ },
+ "10253": {
+  "carbs": 0.1,
+  "fat": 1.4,
+  "fiber": 0.0,
+  "kcal": 115.0,
+  "officialName": "(まぐろ類) くろまぐろ 天然 赤身 生",
+  "protein": 26.4,
+  "salt": 0.1
+ },
+ "10254": {
+  "carbs": 0.1,
+  "fat": 27.5,
+  "fiber": 0.0,
+  "kcal": 308.0,
+  "officialName": "(まぐろ類) くろまぐろ 天然 脂身 生",
+  "protein": 20.1,
+  "salt": 0.2
+ },
+ "10255": {
+  "carbs": 0.2,
+  "fat": 0.7,
+  "fiber": 0.0,
+  "kcal": 111.0,
+  "officialName": "(まぐろ類) びんなが 生",
+  "protein": 26.0,
+  "salt": 0.1
+ },
+ "10260": {
+  "carbs": 0.2,
+  "fat": 0.7,
+  "fiber": 0.0,
+  "kcal": 70.0,
+  "officialName": "(まぐろ類) 缶詰 水煮 フレーク ライト",
+  "protein": 16.0,
+  "salt": 0.5
+ },
+ "10263": {
+  "carbs": 0.1,
+  "fat": 21.7,
+  "fiber": 0.0,
+  "kcal": 265.0,
+  "officialName": "(まぐろ類) 缶詰 油漬 フレーク ライト",
+  "protein": 17.7,
+  "salt": 0.9
+ },
+ "10281": {
+  "carbs": 0.4,
+  "fat": 0.7,
+  "fiber": 0.0,
+  "kcal": 29.0,
+  "officialName": "あさり 生",
+  "protein": 5.7,
+  "salt": 2.0
+ },
+ "10292": {
+  "carbs": 4.9,
+  "fat": 2.2,
+  "fiber": 0.0,
+  "kcal": 58.0,
+  "officialName": "かき 養殖 生",
+  "protein": 6.9,
+  "salt": 1.2
+ },
+ "10311": {
+  "carbs": 1.5,
+  "fat": 0.9,
+  "fiber": 0.0,
+  "kcal": 66.0,
+  "officialName": "ほたてがい 生",
+  "protein": 13.5,
+  "salt": 0.8
+ },
+ "10313": {
+  "carbs": 3.5,
+  "fat": 0.3,
+  "fiber": 0.0,
+  "kcal": 82.0,
+  "officialName": "ほたてがい 貝柱 生",
+  "protein": 16.9,
+  "salt": 0.3
+ },
+ "10321": {
+  "carbs": 0.0,
+  "fat": 0.6,
+  "fiber": 0.0,
+  "kcal": 90.0,
+  "officialName": "(えび類) くるまえび 養殖 生",
+  "protein": 21.6,
+  "salt": 0.4
+ },
+ "10345": {
+  "carbs": 0.1,
+  "fat": 0.8,
+  "fiber": 0.0,
+  "kcal": 76.0,
+  "officialName": "(いか類) するめいか 生",
+  "protein": 17.9,
+  "salt": 0.5
+ },
+ "10361": {
+  "carbs": 0.2,
+  "fat": 0.9,
+  "fiber": 0.0,
+  "kcal": 70.0,
+  "officialName": "(たこ類) まだこ 皮つき 生",
+  "protein": 16.1,
+  "salt": 1.0
+ },
+ "10376": {
+  "carbs": 9.2,
+  "fat": 0.5,
+  "fiber": 0.0,
+  "kcal": 89.0,
+  "officialName": "かに風味かまぼこ",
+  "protein": 12.1,
+  "salt": 2.2
+ },
+ "10379": {
+  "carbs": 9.7,
+  "fat": 0.9,
+  "fiber": 0.0,
+  "kcal": 93.0,
+  "officialName": "蒸しかまぼこ",
+  "protein": 12.0,
+  "salt": 2.5
+ },
+ "10381": {
+  "carbs": 13.3,
+  "fat": 0.4,
+  "fiber": 0.0,
+  "kcal": 107.0,
+  "officialName": "焼き竹輪",
+  "protein": 13.2,
+  "salt": 2.5
+ },
+ "10385": {
+  "carbs": 11.4,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 93.0,
+  "officialName": "はんぺん",
+  "protein": 9.9,
+  "salt": 1.5
+ },
+ "10386": {
+  "carbs": 12.6,
+  "fat": 2.4,
+  "fiber": 0.0,
+  "kcal": 116.0,
+  "officialName": "さつま揚げ",
+  "protein": 11.3,
+  "salt": 2.0
+ },
+ "10388": {
+  "carbs": 12.6,
+  "fat": 7.2,
+  "fiber": 0.0,
+  "kcal": 158.0,
+  "officialName": "魚肉ソーセージ",
+  "protein": 11.5,
+  "salt": 2.1
+ },
+ "10396": {
+  "carbs": 0.1,
+  "fat": 1.3,
+  "fiber": 0.0,
+  "kcal": 67.0,
+  "officialName": "(いわし類) しらす 生",
+  "protein": 15.0,
+  "salt": 1.0
+ },
+ "10415": {
+  "carbs": 0.7,
+  "fat": 0.6,
+  "fiber": 0.0,
+  "kcal": 82.0,
+  "officialName": "(えび類) バナメイえび 養殖 生",
+  "protein": 19.6,
+  "salt": 0.3
+ },
+ "11029": {
+  "carbs": 0.3,
+  "fat": 15.0,
+  "fiber": 0.0,
+  "kcal": 207.0,
+  "officialName": "うし [和牛肉] ヒレ 赤肉 生",
+  "protein": 19.1,
+  "salt": 0.1
+ },
+ "11030": {
+  "carbs": 0.3,
+  "fat": 19.8,
+  "fiber": 0.0,
+  "kcal": 231.0,
+  "officialName": "うし [乳用肥育牛肉] かた 脂身つき 生",
+  "protein": 17.1,
+  "salt": 0.2
+ },
+ "11032": {
+  "carbs": 0.2,
+  "fat": 6.7,
+  "fiber": 0.0,
+  "kcal": 138.0,
+  "officialName": "うし [乳用肥育牛肉] かた 赤肉 生",
+  "protein": 20.4,
+  "salt": 0.2
+ },
+ "11037": {
+  "carbs": 0.2,
+  "fat": 37.1,
+  "fiber": 0.0,
+  "kcal": 380.0,
+  "officialName": "うし [乳用肥育牛肉] リブロース 脂身つき 生",
+  "protein": 14.1,
+  "salt": 0.1
+ },
+ "11043": {
+  "carbs": 0.4,
+  "fat": 27.9,
+  "fiber": 0.0,
+  "kcal": 313.0,
+  "officialName": "うし [乳用肥育牛肉] サーロイン 脂身つき 生",
+  "protein": 16.5,
+  "salt": 0.1
+ },
+ "11046": {
+  "carbs": 0.3,
+  "fat": 39.4,
+  "fiber": 0.0,
+  "kcal": 381.0,
+  "officialName": "うし [乳用肥育牛肉] ばら 脂身つき 生",
+  "protein": 12.8,
+  "salt": 0.1
+ },
+ "11047": {
+  "carbs": 0.4,
+  "fat": 13.3,
+  "fiber": 0.0,
+  "kcal": 196.0,
+  "officialName": "うし [乳用肥育牛肉] もも 脂身つき 生",
+  "protein": 19.5,
+  "salt": 0.1
+ },
+ "11048": {
+  "carbs": 0.4,
+  "fat": 9.9,
+  "fiber": 0.0,
+  "kcal": 169.0,
+  "officialName": "うし [乳用肥育牛肉] もも 皮下脂肪なし 生",
+  "protein": 20.5,
+  "salt": 0.1
+ },
+ "11051": {
+  "carbs": 0.4,
+  "fat": 4.9,
+  "fiber": 0.0,
+  "kcal": 130.0,
+  "officialName": "うし [乳用肥育牛肉] もも 赤肉 生",
+  "protein": 21.9,
+  "salt": 0.1
+ },
+ "11059": {
+  "carbs": 0.5,
+  "fat": 11.2,
+  "fiber": 0.0,
+  "kcal": 177.0,
+  "officialName": "うし [乳用肥育牛肉] ヒレ 赤肉 生",
+  "protein": 20.8,
+  "salt": 0.1
+ },
+ "11071": {
+  "carbs": 0.4,
+  "fat": 23.7,
+  "fiber": 0.0,
+  "kcal": 273.0,
+  "officialName": "うし [輸入牛肉] サーロイン 脂身つき 生",
+  "protein": 17.4,
+  "salt": 0.1
+ },
+ "11074": {
+  "carbs": 0.2,
+  "fat": 32.9,
+  "fiber": 0.0,
+  "kcal": 338.0,
+  "officialName": "うし [輸入牛肉] ばら 脂身つき 生",
+  "protein": 14.4,
+  "salt": 0.1
+ },
+ "11075": {
+  "carbs": 0.4,
+  "fat": 8.6,
+  "fiber": 0.0,
+  "kcal": 148.0,
+  "officialName": "うし [輸入牛肉] もも 脂身つき 生",
+  "protein": 19.6,
+  "salt": 0.1
+ },
+ "11077": {
+  "carbs": 0.4,
+  "fat": 4.3,
+  "fiber": 0.0,
+  "kcal": 117.0,
+  "officialName": "うし [輸入牛肉] もも 赤肉 生",
+  "protein": 21.2,
+  "salt": 0.1
+ },
+ "11085": {
+  "carbs": 0.3,
+  "fat": 4.8,
+  "fiber": 0.0,
+  "kcal": 123.0,
+  "officialName": "うし [輸入牛肉] ヒレ 赤肉 生",
+  "protein": 20.5,
+  "salt": 0.1
+ },
+ "11089": {
+  "carbs": 0.3,
+  "fat": 21.1,
+  "fiber": 0.0,
+  "kcal": 251.0,
+  "officialName": "うし [ひき肉] 生",
+  "protein": 17.1,
+  "salt": 0.2
+ },
+ "11092": {
+  "carbs": 3.7,
+  "fat": 3.7,
+  "fiber": 0.0,
+  "kcal": 119.0,
+  "officialName": "うし [副生物] 肝臓 生",
+  "protein": 19.6,
+  "salt": 0.1
+ },
+ "11104": {
+  "carbs": 0.9,
+  "fat": 11.7,
+  "fiber": 0.0,
+  "kcal": 190.0,
+  "officialName": "うし [加工品] ローストビーフ",
+  "protein": 21.7,
+  "salt": 0.8
+ },
+ "11119": {
+  "carbs": 0.1,
+  "fat": 19.2,
+  "fiber": 0.0,
+  "kcal": 237.0,
+  "officialName": "ぶた [大型種肉] かたロース 脂身つき 生",
+  "protein": 17.1,
+  "salt": 0.1
+ },
+ "11123": {
+  "carbs": 0.2,
+  "fat": 19.2,
+  "fiber": 0.0,
+  "kcal": 248.0,
+  "officialName": "ぶた [大型種肉] ロース 脂身つき 生",
+  "protein": 19.3,
+  "salt": 0.1
+ },
+ "11124": {
+  "carbs": 0.3,
+  "fat": 22.7,
+  "fiber": 0.0,
+  "kcal": 310.0,
+  "officialName": "ぶた [大型種肉] ロース 脂身つき 焼き",
+  "protein": 26.7,
+  "salt": 0.1
+ },
+ "11126": {
+  "carbs": 0.3,
+  "fat": 11.9,
+  "fiber": 0.0,
+  "kcal": 190.0,
+  "officialName": "ぶた [大型種肉] ロース 皮下脂肪なし 生",
+  "protein": 21.1,
+  "salt": 0.1
+ },
+ "11129": {
+  "carbs": 0.1,
+  "fat": 35.4,
+  "fiber": 0.0,
+  "kcal": 366.0,
+  "officialName": "ぶた [大型種肉] ばら 脂身つき 生",
+  "protein": 14.4,
+  "salt": 0.1
+ },
+ "11130": {
+  "carbs": 0.2,
+  "fat": 10.2,
+  "fiber": 0.0,
+  "kcal": 171.0,
+  "officialName": "ぶた [大型種肉] もも 脂身つき 生",
+  "protein": 20.5,
+  "salt": 0.1
+ },
+ "11131": {
+  "carbs": 0.2,
+  "fat": 6.0,
+  "fiber": 0.0,
+  "kcal": 138.0,
+  "officialName": "ぶた [大型種肉] もも 皮下脂肪なし 生",
+  "protein": 21.5,
+  "salt": 0.1
+ },
+ "11140": {
+  "carbs": 0.3,
+  "fat": 3.7,
+  "fiber": 0.0,
+  "kcal": 118.0,
+  "officialName": "ぶた [大型種肉] ヒレ 赤肉 生",
+  "protein": 22.2,
+  "salt": 0.1
+ },
+ "11163": {
+  "carbs": 0.1,
+  "fat": 17.2,
+  "fiber": 0.0,
+  "kcal": 209.0,
+  "officialName": "ぶた [ひき肉] 生",
+  "protein": 17.7,
+  "salt": 0.1
+ },
+ "11166": {
+  "carbs": 2.5,
+  "fat": 3.4,
+  "fiber": 0.0,
+  "kcal": 114.0,
+  "officialName": "ぶた [副生物] 肝臓 生",
+  "protein": 20.4,
+  "salt": 0.1
+ },
+ "11176": {
+  "carbs": 2.0,
+  "fat": 14.5,
+  "fiber": 0.0,
+  "kcal": 211.0,
+  "officialName": "ぶた [ハム類] ロースハム ロースハム",
+  "protein": 18.6,
+  "salt": 2.3
+ },
+ "11181": {
+  "carbs": 0.5,
+  "fat": 16.6,
+  "fiber": 0.0,
+  "kcal": 243.0,
+  "officialName": "ぶた [ハム類] 生ハム 促成",
+  "protein": 24.0,
+  "salt": 5.8
+ },
+ "11183": {
+  "carbs": 3.2,
+  "fat": 19.4,
+  "fiber": 0.0,
+  "kcal": 241.0,
+  "officialName": "ぶた [ベーコン類] ばらベーコン ばらベーコン",
+  "protein": 15.4,
+  "salt": 2.6
+ },
+ "11186": {
+  "carbs": 3.3,
+  "fat": 30.6,
+  "fiber": 0.0,
+  "kcal": 319.0,
+  "officialName": "ぶた [ソーセージ類] ウインナーソーセージ ウインナーソーセージ",
+  "protein": 11.5,
+  "salt": 1.9
+ },
+ "11195": {
+  "carbs": 5.1,
+  "fat": 8.2,
+  "fiber": 0.0,
+  "kcal": 166.0,
+  "officialName": "ぶた [その他] 焼き豚",
+  "protein": 19.4,
+  "salt": 2.4
+ },
+ "11198": {
+  "carbs": 0.0,
+  "fat": 0.3,
+  "fiber": 0.0,
+  "kcal": 347.0,
+  "officialName": "ぶた [その他] ゼラチン",
+  "protein": 87.6,
+  "salt": 0.7
+ },
+ "11201": {
+  "carbs": 0.1,
+  "fat": 17.1,
+  "fiber": 0.0,
+  "kcal": 214.0,
+  "officialName": "めんよう [ラム] かた 脂身つき 生",
+  "protein": 17.1,
+  "salt": 0.2
+ },
+ "11202": {
+  "carbs": 0.2,
+  "fat": 25.9,
+  "fiber": 0.0,
+  "kcal": 287.0,
+  "officialName": "めんよう [ラム] ロース 脂身つき 生",
+  "protein": 15.6,
+  "salt": 0.2
+ },
+ "11203": {
+  "carbs": 0.3,
+  "fat": 12.0,
+  "fiber": 0.0,
+  "kcal": 164.0,
+  "officialName": "めんよう [ラム] もも 脂身つき 生",
+  "protein": 20.0,
+  "salt": 0.2
+ },
+ "11214": {
+  "carbs": 0.0,
+  "fat": 1.9,
+  "fiber": 0.0,
+  "kcal": 113.0,
+  "officialName": "にわとり [親・主品目] むね 皮なし 生",
+  "protein": 24.4,
+  "salt": 0.1
+ },
+ "11218": {
+  "carbs": 0.0,
+  "fat": 14.3,
+  "fiber": 0.0,
+  "kcal": 189.0,
+  "officialName": "にわとり [若どり・主品目] 手羽 皮つき 生",
+  "protein": 17.8,
+  "salt": 0.2
+ },
+ "11219": {
+  "carbs": 0.1,
+  "fat": 5.9,
+  "fiber": 0.0,
+  "kcal": 133.0,
+  "officialName": "にわとり [若どり・主品目] むね 皮つき 生",
+  "protein": 21.3,
+  "salt": 0.1
+ },
+ "11220": {
+  "carbs": 0.1,
+  "fat": 1.9,
+  "fiber": 0.0,
+  "kcal": 105.0,
+  "officialName": "にわとり [若どり・主品目] むね 皮なし 生",
+  "protein": 23.3,
+  "salt": 0.1
+ },
+ "11221": {
+  "carbs": 0.0,
+  "fat": 14.2,
+  "fiber": 0.0,
+  "kcal": 190.0,
+  "officialName": "にわとり [若どり・主品目] もも 皮つき 生",
+  "protein": 16.6,
+  "salt": 0.2
+ },
+ "11222": {
+  "carbs": 0.0,
+  "fat": 13.9,
+  "fiber": 0.0,
+  "kcal": 220.0,
+  "officialName": "にわとり [若どり・主品目] もも 皮つき 焼き",
+  "protein": 26.3,
+  "salt": 0.2
+ },
+ "11224": {
+  "carbs": 0.0,
+  "fat": 5.0,
+  "fiber": 0.0,
+  "kcal": 113.0,
+  "officialName": "にわとり [若どり・主品目] もも 皮なし 生",
+  "protein": 19.0,
+  "salt": 0.2
+ },
+ "11225": {
+  "carbs": 0.0,
+  "fat": 5.7,
+  "fiber": 0.0,
+  "kcal": 145.0,
+  "officialName": "にわとり [若どり・主品目] もも 皮なし 焼き",
+  "protein": 25.5,
+  "salt": 0.2
+ },
+ "11227": {
+  "carbs": 0.1,
+  "fat": 0.8,
+  "fiber": 0.0,
+  "kcal": 98.0,
+  "officialName": "にわとり [若どり・副品目] ささみ 生",
+  "protein": 23.9,
+  "salt": 0.1
+ },
+ "11228": {
+  "carbs": 0.0,
+  "fat": 1.4,
+  "fiber": 0.0,
+  "kcal": 132.0,
+  "officialName": "にわとり [若どり・副品目] ささみ 焼き",
+  "protein": 31.7,
+  "salt": 0.1
+ },
+ "11229": {
+  "carbs": 0.0,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 121.0,
+  "officialName": "にわとり [若どり・副品目] ささみ ゆで",
+  "protein": 29.6,
+  "salt": 0.1
+ },
+ "11230": {
+  "carbs": 0.0,
+  "fat": 12.0,
+  "fiber": 0.0,
+  "kcal": 171.0,
+  "officialName": "にわとり [二次品目] ひき肉 生",
+  "protein": 17.5,
+  "salt": 0.1
+ },
+ "11232": {
+  "carbs": 0.6,
+  "fat": 3.1,
+  "fiber": 0.0,
+  "kcal": 100.0,
+  "officialName": "にわとり [副品目] 肝臓 生",
+  "protein": 18.9,
+  "salt": 0.2
+ },
+ "11233": {
+  "carbs": 0.0,
+  "fat": 1.8,
+  "fiber": 0.0,
+  "kcal": 86.0,
+  "officialName": "にわとり [副品目] すなぎも 生",
+  "protein": 18.3,
+  "salt": 0.1
+ },
+ "11272": {
+  "carbs": 0.4,
+  "fat": 21.3,
+  "fiber": 0.0,
+  "kcal": 280.0,
+  "officialName": "うし [ひき肉] 焼き",
+  "protein": 25.9,
+  "salt": 0.2
+ },
+ "11278": {
+  "carbs": 0.4,
+  "fat": 5.9,
+  "fiber": 0.0,
+  "kcal": 202.0,
+  "officialName": "ぶた [大型種肉] ヒレ 赤肉 焼き",
+  "protein": 39.3,
+  "salt": 0.2
+ },
+ "11288": {
+  "carbs": 0.1,
+  "fat": 3.3,
+  "fiber": 0.0,
+  "kcal": 177.0,
+  "officialName": "にわとり [若どり・主品目] むね 皮なし 焼き",
+  "protein": 38.8,
+  "salt": 0.2
+ },
+ "11289": {
+  "carbs": 13.3,
+  "fat": 18.1,
+  "fiber": 0.8,
+  "kcal": 307.0,
+  "officialName": "にわとり [若どり・主品目] もも 皮つき から揚げ",
+  "protein": 24.2,
+  "salt": 2.5
+ },
+ "12002": {
+  "carbs": 0.3,
+  "fat": 13.1,
+  "fiber": 0.0,
+  "kcal": 157.0,
+  "officialName": "うずら卵 全卵 生",
+  "protein": 12.6,
+  "salt": 0.3
+ },
+ "12004": {
+  "carbs": 0.4,
+  "fat": 10.2,
+  "fiber": 0.0,
+  "kcal": 142.0,
+  "officialName": "鶏卵 全卵 生",
+  "protein": 12.2,
+  "salt": 0.4
+ },
+ "12005": {
+  "carbs": 0.3,
+  "fat": 10.4,
+  "fiber": 0.0,
+  "kcal": 134.0,
+  "officialName": "鶏卵 全卵 ゆで",
+  "protein": 12.5,
+  "salt": 0.3
+ },
+ "12010": {
+  "carbs": 0.2,
+  "fat": 34.3,
+  "fiber": 0.0,
+  "kcal": 336.0,
+  "officialName": "鶏卵 卵黄 生",
+  "protein": 16.5,
+  "salt": 0.1
+ },
+ "12014": {
+  "carbs": 0.5,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 44.0,
+  "officialName": "鶏卵 卵白 生",
+  "protein": 10.1,
+  "salt": 0.5
+ },
+ "12018": {
+  "carbs": 6.5,
+  "fat": 9.2,
+  "fiber": 0.0,
+  "kcal": 146.0,
+  "officialName": "鶏卵 たまご焼 厚焼きたまご",
+  "protein": 10.5,
+  "salt": 1.2
+ },
+ "12021": {
+  "carbs": 0.3,
+  "fat": 17.6,
+  "fiber": 0.0,
+  "kcal": 205.0,
+  "officialName": "鶏卵 全卵 目玉焼き",
+  "protein": 14.8,
+  "salt": 0.5
+ },
+ "12022": {
+  "carbs": 0.3,
+  "fat": 16.7,
+  "fiber": 0.0,
+  "kcal": 190.0,
+  "officialName": "鶏卵 全卵 いり",
+  "protein": 13.3,
+  "salt": 0.4
+ },
+ "13003": {
+  "carbs": 4.8,
+  "fat": 3.8,
+  "fiber": 0.0,
+  "kcal": 61.0,
+  "officialName": "(液状乳類) 普通牛乳",
+  "protein": 3.3,
+  "salt": 0.1
+ },
+ "13005": {
+  "carbs": 5.5,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 42.0,
+  "officialName": "(液状乳類) 加工乳 低脂肪",
+  "protein": 3.8,
+  "salt": 0.2
+ },
+ "13006": {
+  "carbs": 4.8,
+  "fat": 0.1,
+  "fiber": 0.0,
+  "kcal": 31.0,
+  "officialName": "(液状乳類) 脱脂乳",
+  "protein": 3.4,
+  "salt": 0.1
+ },
+ "13010": {
+  "carbs": 53.3,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 354.0,
+  "officialName": "(粉乳類) 脱脂粉乳",
+  "protein": 34.0,
+  "salt": 1.4
+ },
+ "13014": {
+  "carbs": 6.5,
+  "fat": 43.0,
+  "fiber": 0.0,
+  "kcal": 404.0,
+  "officialName": "(クリーム類) クリーム 乳脂肪",
+  "protein": 1.9,
+  "salt": 0.1
+ },
+ "13025": {
+  "carbs": 4.9,
+  "fat": 3.0,
+  "fiber": 0.0,
+  "kcal": 56.0,
+  "officialName": "(発酵乳・乳酸菌飲料) ヨーグルト 全脂無糖",
+  "protein": 3.6,
+  "salt": 0.1
+ },
+ "13026": {
+  "carbs": 11.9,
+  "fat": 0.2,
+  "fiber": 0.0,
+  "kcal": 65.0,
+  "officialName": "(発酵乳・乳酸菌飲料) ヨーグルト 脱脂加糖",
+  "protein": 4.3,
+  "salt": 0.2
+ },
+ "13033": {
+  "carbs": 1.9,
+  "fat": 4.5,
+  "fiber": 0.0,
+  "kcal": 99.0,
+  "officialName": "(チーズ類) ナチュラルチーズ カテージ",
+  "protein": 13.3,
+  "salt": 1.0
+ },
+ "13034": {
+  "carbs": 0.9,
+  "fat": 24.7,
+  "fiber": 0.0,
+  "kcal": 291.0,
+  "officialName": "(チーズ類) ナチュラルチーズ カマンベール",
+  "protein": 19.1,
+  "salt": 2.0
+ },
+ "13035": {
+  "carbs": 2.3,
+  "fat": 33.0,
+  "fiber": 0.0,
+  "kcal": 313.0,
+  "officialName": "(チーズ類) ナチュラルチーズ クリーム",
+  "protein": 8.2,
+  "salt": 0.7
+ },
+ "13037": {
+  "carbs": 1.4,
+  "fat": 33.8,
+  "fiber": 0.0,
+  "kcal": 390.0,
+  "officialName": "(チーズ類) ナチュラルチーズ チェダー",
+  "protein": 25.7,
+  "salt": 2.0
+ },
+ "13038": {
+  "carbs": 1.9,
+  "fat": 30.8,
+  "fiber": 0.0,
+  "kcal": 445.0,
+  "officialName": "(チーズ類) ナチュラルチーズ パルメザン",
+  "protein": 44.0,
+  "salt": 3.8
+ },
+ "13040": {
+  "carbs": 1.3,
+  "fat": 26.0,
+  "fiber": 0.0,
+  "kcal": 313.0,
+  "officialName": "(チーズ類) プロセスチーズ",
+  "protein": 22.7,
+  "salt": 2.8
+ },
+ "13043": {
+  "carbs": 23.2,
+  "fat": 8.0,
+  "fiber": 0.1,
+  "kcal": 178.0,
+  "officialName": "(アイスクリーム類) アイスクリーム 普通脂肪",
+  "protein": 3.9,
+  "salt": 0.3
+ },
+ "13053": {
+  "carbs": 5.2,
+  "fat": 1.0,
+  "fiber": 0.0,
+  "kcal": 40.0,
+  "officialName": "(発酵乳・乳酸菌飲料) ヨーグルト 低脂肪無糖",
+  "protein": 3.7,
+  "salt": 0.1
+ },
+ "13054": {
+  "carbs": 5.7,
+  "fat": 0.3,
+  "fiber": 0.0,
+  "kcal": 37.0,
+  "officialName": "(発酵乳・乳酸菌飲料) ヨーグルト 無脂肪無糖",
+  "protein": 4.0,
+  "salt": 0.1
+ },
+ "13056": {
+  "carbs": 4.2,
+  "fat": 19.9,
+  "fiber": 0.0,
+  "kcal": 269.0,
+  "officialName": "(チーズ類) ナチュラルチーズ モッツァレラ",
+  "protein": 18.4,
+  "salt": 0.2
+ },
+ "14001": {
+  "carbs": 0.0,
+  "fat": 100.0,
+  "fiber": 0.0,
+  "kcal": 894.0,
+  "officialName": "(植物油脂類) オリーブ油",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "14002": {
+  "carbs": 0.0,
+  "fat": 100.0,
+  "fiber": 0.0,
+  "kcal": 890.0,
+  "officialName": "(植物油脂類) ごま油",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "14006": {
+  "carbs": 0.0,
+  "fat": 100.0,
+  "fiber": 0.0,
+  "kcal": 886.0,
+  "officialName": "(植物油脂類) 調合油",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "14008": {
+  "carbs": 0.0,
+  "fat": 100.0,
+  "fiber": 0.0,
+  "kcal": 887.0,
+  "officialName": "(植物油脂類) なたね油",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "14016": {
+  "carbs": 0.0,
+  "fat": 100.0,
+  "fiber": 0.0,
+  "kcal": 885.0,
+  "officialName": "(動物油脂類) ラード",
+  "protein": 0.0,
+  "salt": 0.0
+ },
+ "14017": {
+  "carbs": 0.2,
+  "fat": 81.0,
+  "fiber": 0.0,
+  "kcal": 700.0,
+  "officialName": "(バター類) 無発酵バター 有塩バター",
+  "protein": 0.6,
+  "salt": 1.9
+ },
+ "14020": {
+  "carbs": 0.5,
+  "fat": 83.1,
+  "fiber": 0.0,
+  "kcal": 715.0,
+  "officialName": "(マーガリン類) マーガリン 家庭用 有塩",
+  "protein": 0.4,
+  "salt": 1.3
+ },
+ "16001": {
+  "carbs": 4.9,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 107.0,
+  "officialName": "(醸造酒類) 清酒 普通酒",
+  "protein": 0.4,
+  "salt": 0.0
+ },
+ "16006": {
+  "carbs": 3.1,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 39.0,
+  "officialName": "(醸造酒類) ビール 淡色",
+  "protein": 0.3,
+  "salt": 0.0
+ },
+ "16037": {
+  "carbs": 0.2,
+  "fat": 0.0,
+  "fiber": null,
+  "kcal": 2.0,
+  "officialName": "(緑茶類) せん茶 浸出液",
+  "protein": 0.2,
+  "salt": 0.0
+ },
+ "16045": {
+  "carbs": 0.7,
+  "fat": 0.0,
+  "fiber": null,
+  "kcal": 4.0,
+  "officialName": "コーヒー 浸出液",
+  "protein": 0.2,
+  "salt": 0.0
+ },
+ "17001": {
+  "carbs": 27.1,
+  "fat": 0.1,
+  "fiber": 0.5,
+  "kcal": 117.0,
+  "officialName": "(ウスターソース類) ウスターソース",
+  "protein": 1.0,
+  "salt": 8.5
+ },
+ "17002": {
+  "carbs": 30.9,
+  "fat": 0.1,
+  "fiber": 1.0,
+  "kcal": 129.0,
+  "officialName": "(ウスターソース類) 中濃ソース",
+  "protein": 0.8,
+  "salt": 5.8
+ },
+ "17007": {
+  "carbs": 7.9,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 76.0,
+  "officialName": "(しょうゆ類) こいくちしょうゆ",
+  "protein": 7.7,
+  "salt": 14.5
+ },
+ "17008": {
+  "carbs": 5.8,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 60.0,
+  "officialName": "(しょうゆ類) うすくちしょうゆ",
+  "protein": 5.7,
+  "salt": 16.0
+ },
+ "17012": {
+  "carbs": 0.0,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 0.0,
+  "officialName": "(食塩類) 食塩",
+  "protein": 0.0,
+  "salt": 99.5
+ },
+ "17015": {
+  "carbs": 2.4,
+  "fat": 0.0,
+  "fiber": 0.0,
+  "kcal": 25.0,
+  "officialName": "(食酢類) 穀物酢",
+  "protein": 0.1,
+  "salt": 0.0
+ },
+ "17029": {
+  "carbs": 8.7,
+  "fat": 0.0,
+  "fiber": null,
+  "kcal": 44.0,
+  "officialName": "(だし類) めんつゆ ストレート",
+  "protein": 2.2,
+  "salt": 3.3
+ },
+ "17031": {
+  "carbs": 18.3,
+  "fat": 0.3,
+  "fiber": 0.2,
+  "kcal": 105.0,
+  "officialName": "(調味ソース類) オイスターソース",
+  "protein": 7.7,
+  "salt": 11.4
+ },
+ "17036": {
+  "carbs": 27.6,
+  "fat": 0.2,
+  "fiber": 1.7,
+  "kcal": 116.0,
+  "officialName": "(トマト加工品類) トマトケチャップ",
+  "protein": 1.6,
+  "salt": 3.1
+ },
+ "17042": {
+  "carbs": 3.6,
+  "fat": 76.0,
+  "fiber": 0.0,
+  "kcal": 668.0,
+  "officialName": "(ドレッシング類) 半固体状ドレッシング マヨネーズ 全卵型",
+  "protein": 1.4,
+  "salt": 1.9
+ },
+ "17045": {
+  "carbs": 21.9,
+  "fat": 6.0,
+  "fiber": 4.9,
+  "kcal": 182.0,
+  "officialName": "(みそ類) 米みそ 淡色辛みそ",
+  "protein": 12.5,
+  "salt": 12.4
+ },
+ "17046": {
+  "carbs": 21.1,
+  "fat": 5.5,
+  "fiber": 4.1,
+  "kcal": 178.0,
+  "officialName": "(みそ類) 米みそ 赤色辛みそ",
+  "protein": 13.1,
+  "salt": 13.0
+ },
+ "17051": {
+  "carbs": 44.7,
+  "fat": 34.1,
+  "fiber": 6.4,
+  "kcal": 474.0,
+  "officialName": "(ルウ類) カレールウ",
+  "protein": 6.5,
+  "salt": 10.6
+ }
+}

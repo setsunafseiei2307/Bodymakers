@@ -232,6 +232,9 @@ body {
   line-height: 1.85;
   font-feature-settings: 'palt' 1;
   -webkit-font-smoothing: antialiased;
+  /* 長いURLなど折り返せない文字列がページを横に広げるのを防ぐ。
+     break-word なので、収まる語は通常どおり折り返さない。 */
+  overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 {

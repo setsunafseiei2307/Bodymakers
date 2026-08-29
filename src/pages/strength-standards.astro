@@ -5,6 +5,7 @@ import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { getPublishedArticles } from '../lib/articles';
 import ArticleCard from '../components/ArticleCard.astro';
+import '../styles/tools.css';
 import '../styles/strength.css';
 
 const totalLifters =
@@ -174,6 +175,12 @@ const articles = (await getPublishedArticles()).slice(0, 3);
   .page__body {
     display: grid;
     gap: var(--s6);
+  }
+
+  /* グリッド項目の min-width は既定が auto。中の入力欄の固有幅で
+     列が押し広げられ、ページ全体が横スクロールしてしまうため 0 を明示する。 */
+  .page__body > * {
+    min-width: 0;
   }
 
   @media (min-width: 60rem) {

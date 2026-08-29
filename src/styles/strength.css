@@ -50,6 +50,8 @@
   gap: var(--s5);
 }
 
+.strength__row > * { min-width: 0; }
+
 @media (min-width: 40rem) {
   .strength__row { grid-template-columns: 1fr 1fr; }
 }
@@ -98,6 +100,8 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--s4);
 }
+
+.lift-input__fields > * { min-width: 0; }
 
 /* ============================================================
    2. リザルト票

@@ -19,11 +19,15 @@
   gap: var(--s5);
 }
 
-/* 入力欄を横に並べる。狭い画面では1列に落ちる */
+/* 入力欄を横に並べる。狭い画面では1列に落ちる。
+   グリッド項目の min-width は既定が auto で、中の <input> の既定幅（約208px）が
+   そのまま最小幅として効いてしまう。0 を明示して縮められるようにする。 */
 .row {
   display: grid;
   gap: var(--s4);
 }
+
+.row > * { min-width: 0; }
 
 @media (min-width: 34rem) {
   .row--2 { grid-template-columns: 1fr 1fr; }
@@ -42,6 +46,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2);
+  /* 親がグリッド/フレックスのとき、入力欄の既定幅で押し広げられないようにする */
+  min-width: 0;
 }
 
 .field__label {
@@ -62,6 +68,8 @@
 
 .field__input {
   width: 100%;
+  /* <input> は既定で約208px分の固有幅を持つ。0 にしないと親を押し広げる */
+  min-width: 0;
   min-height: 3rem;
   padding: var(--s2) var(--s3);
   border: 0;
@@ -148,6 +156,7 @@
 /* プルダウン */
 .field__select {
   width: 100%;
+  min-width: 0;
   min-height: 3rem;
   padding: var(--s2) var(--s3);
   border: 0;

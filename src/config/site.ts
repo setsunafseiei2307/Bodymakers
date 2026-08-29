@@ -37,6 +37,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/strength-standards', label: '筋力レベル診断', primary: true },
+  { href: '/tools', label: 'ツール' },
   { href: '/articles', label: '記事' },
   { href: '/about', label: 'このサイトについて' },
 ] as const;

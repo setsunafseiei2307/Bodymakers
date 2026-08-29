@@ -5,6 +5,7 @@ import { getPublishedArticles } from '../lib/articles';
 import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { CATEGORIES, SITE_DESCRIPTION } from '../config/site';
+import { TOOLS } from '../config/tools';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -126,6 +127,29 @@ const articles = (await getPublishedArticles()).slice(0, 6);
 
     {/* 広告枠（トップページ中段）。現時点では広告タグを読み込まない。 */}
     <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="home-mid"></div>
+
+    {/* --- ツール --- */}
+    <section class="section">
+      <div class="section-head">
+        <h2>計算ツール</h2>
+        <a href="/tools">ツール一覧へ</a>
+      </div>
+      <p class="section__lead">
+        すべてブラウザの中だけで計算します。登録不要・データ保存なし。
+      </p>
+      <ul class="home-tools">
+        {
+          TOOLS.filter((tool) => !tool.primary).map((tool) => (
+            <li>
+              <a class="home-tool" href={tool.href}>
+                <span class="home-tool__code">{tool.code}</span>
+                <span class="home-tool__name">{tool.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
 
     {/* --- 記事 --- */}
     <section class="section">
@@ -369,6 +393,49 @@ const articles = (await getPublishedArticles()).slice(0, 6);
     font-size: 0.8125rem;
     line-height: 1.6;
   }
+
+  .section__lead {
+    margin-bottom: var(--s4);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  .home-tools {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--hair);
+    border: 1px solid var(--hair);
+  }
+
+  @media (min-width: 34rem) {
+    .home-tools { grid-template-columns: 1fr 1fr; }
+  }
+
+  .home-tool {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s1);
+    padding: var(--s4);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .home-tool:hover { background: var(--inset); }
+  .home-tool:hover .home-tool__name { color: var(--signal); }
+
+  .home-tool__code {
+    color: var(--muted);
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .home-tool__name { font-size: 0.9375rem; font-weight: 900; }
 
   /* --- 記事グリッド --- */
 

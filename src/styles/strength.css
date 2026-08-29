@@ -1,6 +1,6 @@
 /*
  * 筋力レベル診断の画面スタイル。診断ページでのみ読み込む。
- * global.css のトークンを前提にしており、色の直接指定はしない。
+ * 入力欄などツール共通のパーツは tools.css にある。ここは診断固有のものだけ。
  */
 
 /* ============================================================
@@ -71,115 +71,6 @@
   color: var(--muted);
   font-size: 0.75rem;
   text-align: center;
-}
-
-/* --- 入力欄 --- */
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s2);
-}
-
-.field__label {
-  display: flex;
-  align-items: baseline;
-  gap: var(--s2);
-  color: var(--ink);
-  font-size: 0.8125rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-}
-
-.field__unit {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-
-.field__input {
-  width: 100%;
-  min-height: 3rem;
-  padding: var(--s2) var(--s3);
-  border: 0;
-  border-bottom: 2px solid var(--rule);
-  border-radius: 0;
-  background: var(--inset);
-  color: var(--ink);
-  font-family: var(--f-mono);
-  font-size: 1.25rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  transition: border-color var(--dur) var(--ease);
-}
-
-.field__input::placeholder {
-  color: var(--muted);
-  opacity: 0.55;
-}
-
-.field__input:hover { border-bottom-color: var(--signal); }
-.field__input:focus-visible { outline-offset: 0; }
-
-.field__input--error {
-  border-bottom-color: var(--danger);
-  background: var(--danger-soft);
-}
-
-.field__hint {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-
-.field__error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--s1);
-  color: var(--danger);
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.field__error::before {
-  content: '!';
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 1rem;
-  height: 1rem;
-  background: var(--danger);
-  color: var(--surface);
-  font-family: var(--f-mono);
-  font-size: 0.6875rem;
-}
-
-/* --- 性別のセグメント --- */
-
-.segmented {
-  display: flex;
-  border: 1.5px solid var(--rule);
-}
-
-.segmented__option {
-  flex: 1;
-  min-height: 2.75rem;
-  padding: var(--s2);
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 0.9375rem;
-  font-weight: 900;
-  cursor: pointer;
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-
-.segmented__option + .segmented__option { border-left: 1.5px solid var(--rule); }
-.segmented__option:hover { color: var(--ink); }
-
-.segmented__option[aria-checked='true'] {
-  background: var(--rule);
-  color: var(--paper);
 }
 
 /* --- 種目ごとの入力ブロック --- */

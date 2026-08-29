@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isFiniteNumber, parseNumber, roundTo, fmt, fmtComma, clamp } from '../lib/format';
+import { isFiniteNumber, parseNumber, fmt, fmtComma, clamp } from '../lib/format';
 
 describe('isFiniteNumber', () => {
   it('有限の数値だけを通す', () => {

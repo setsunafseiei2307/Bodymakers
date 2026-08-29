@@ -204,6 +204,13 @@
   .record__grid { grid-template-columns: 10.5rem minmax(0, 1fr); }
 }
 
+/* 三角チャートを出さないとき（1種目のみ）は1列に戻す */
+.record__grid--single { grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 26rem) {
+  .record__grid--single { grid-template-columns: minmax(0, 1fr); }
+}
+
 .record__lifts { min-width: 0; }
 
 .record__hint {
@@ -505,4 +512,59 @@
   .record__bar {
     animation: none;
   }
+}
+
+/* ============================================================
+   共有カード
+   ============================================================
+   結果画面とは別に、投稿用の1枚画像を作って見せる。
+   Canvas は 1080×1080 の実寸で描き、表示だけを幅に合わせて縮める。 */
+
+.share {
+  display: grid;
+  gap: var(--s4);
+}
+
+.share__frame {
+  position: relative;
+  /* 描画が終わるまで枠の高さを確保しておく（できあがった瞬間に飛び跳ねない） */
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--hair);
+  background: var(--inset);
+}
+
+.share__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.share__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+}
+
+.share__actions {
+  display: grid;
+  gap: var(--s2);
+}
+
+.share__hint,
+.share__message {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+
+.share__message {
+  padding: var(--s2) var(--s3);
+  border-left: 3px solid var(--data);
+  background: var(--inset);
+  color: var(--body);
 }

@@ -21,6 +21,7 @@ import {
   type LevelThreshold,
   type LiftDiagnosis,
 } from '../../lib/strength/diagnose';
+import ShareCard from './ShareCard';
 
 /** レベルIDごとのCSSクラス。色はCSS側のトークンで持つ。 */
 const LEVEL_CLASS: Record<LevelId, string> = {
@@ -303,8 +304,10 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
 
           <div className="record__rule" />
 
-          <div className="record__grid">
-            <Radar lifts={lifts} />
+          {/* 1種目だけだと三角形が1本の線に潰れて意味を持たないので、
+              2種目以上そろったときだけチャートを出す */}
+          <div className={lifts.length < 2 ? 'record__grid record__grid--single' : 'record__grid'}>
+            {lifts.length >= 2 && <Radar lifts={lifts} />}
             <div className="record__lifts">
               {lifts.map((lift) => (
                 <LiftRow key={lift.lift} lift={lift} />
@@ -312,6 +315,17 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
               <p className="record__hint">種目名を押すと内訳が開きます</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* --- 共有カード。結果票とは別物として、投稿用の1枚だけを作る --- */}
+      <div className="slip">
+        <div className="slip__band">
+          <span>SHARE</span>
+          <span>結果を保存・共有する</span>
+        </div>
+        <div className="slip__body">
+          <ShareCard diagnosis={diagnosis} />
         </div>
       </div>
 
@@ -423,7 +437,8 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
       </div>
 
       <p className="result__save">
-        結果は保存されません。残したい場合はスクリーンショットを撮ってください。
+        入力した内容も結果も、この端末の外には送られません。
+        残したい場合は上の共有カードを保存するか、スクリーンショットを撮ってください。
       </p>
     </section>
   );

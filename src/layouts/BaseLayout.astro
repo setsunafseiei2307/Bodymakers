@@ -1,0 +1,101 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import {
+  SITE_DESCRIPTION,
+  SITE_LANG,
+  SITE_LOCALE,
+  SITE_NAME,
+  SITE_TAGLINE,
+} from '../config/site';
+import '../styles/global.css';
+
+interface Props {
+  /** ページ固有のタイトル。省略するとサイト名だけになる */
+  title?: string;
+  description?: string;
+  /** 記事ページなど、OGPを article として出したい場合 */
+  ogType?: 'website' | 'article';
+  /** 検索エンジンにインデックスさせない場合 true */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — ${SITE_TAGLINE}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
+---
+
+<!doctype html>
+<html lang={SITE_LANG} data-theme-default>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title ?? SITE_NAME} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:locale" content={SITE_LOCALE.replace('-', '_')} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />
+
+    <!-- バーベルを模したインラインSVGのファビコン。画像ファイルを持たずに済ませる -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f4fd8'/%3E%3Cg fill='white'%3E%3Crect x='4' y='13' width='3.5' height='6' rx='1.2'/%3E%3Crect x='8' y='10' width='4' height='12' rx='1.4'/%3E%3Crect x='12' y='14.4' width='8' height='3.2'/%3E%3Crect x='20' y='10' width='4' height='12' rx='1.4'/%3E%3Crect x='24.5' y='13' width='3.5' height='6' rx='1.2'/%3E%3C/g%3E%3C/svg%3E"
+    />
+
+    {/*
+      テーマの初期化。CSS より先に data-theme を確定させないと、
+      ダーク設定の端末で一瞬白い画面が出る（FOUC）。
+      そのため、あえて head 内のインラインスクリプトで同期的に実行する。
+    */}
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bodymakers:theme');
+          if (stored === 'dark' || stored === 'light') {
+            document.documentElement.dataset.theme = stored;
+          }
+        } catch (error) {
+          // localStorage が使えない環境では OS 設定にそのまま従う
+        }
+      })();
+    </script>
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">本文へ移動</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  main {
+    flex: 1;
+  }
+
+  /* プログラムからフォーカスを当てたときにリングを出さない
+     （「本文へ移動」のジャンプ先なので、視覚的な強調は不要） */
+  main:focus {
+    outline: none;
+  }
+</style>

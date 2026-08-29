@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="ページが見つかりません" noindex>
+  <div class="container not-found">
+    <p class="not-found__code">404</p>
+    <h1 class="not-found__title">ページが見つかりません</h1>
+    <p class="not-found__text">
+      お探しのページは移動または削除された可能性があります。
+      URLをご確認いただくか、下のリンクからお進みください。
+    </p>
+    <div class="not-found__actions">
+      <a class="button" href="/strength-standards">筋力レベル診断へ</a>
+      <a class="button button--secondary" href="/articles">記事一覧へ</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    padding-block: var(--space-8);
+    text-align: center;
+  }
+
+  .not-found__code {
+    color: var(--brand);
+    font-family: var(--font-numeric);
+    font-size: clamp(3.5rem, 18vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .not-found__title {
+    margin-top: var(--space-4);
+  }
+
+  .not-found__text {
+    max-width: 32rem;
+    margin: var(--space-4) auto 0;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+
+  .not-found__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+</style>

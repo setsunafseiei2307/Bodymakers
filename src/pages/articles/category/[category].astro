@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ArticleCard from '../../../components/ArticleCard.astro';
+import { getArticlesByCategory } from '../../../lib/articles';
+import { CATEGORIES, type CategoryKey } from '../../../config/site';
+
+/**
+ * カテゴリ別の一覧。
+ * 記事が0件のカテゴリでもページ自体は生成する
+ * （ナビから飛べるリンクが404にならないようにするため。空状態を表示する）。
+ */
+export function getStaticPaths() {
+  return Object.values(CATEGORIES).map((category) => ({
+    params: { category: category.slug },
+  }));
+}
+
+const { category: slug } = Astro.params;
+const category = CATEGORIES[slug as CategoryKey];
+const articles = await getArticlesByCategory(slug as string);
+---
+
+<BaseLayout
+  title={`${category.label}の記事`}
+  description={`${category.label}に関する記事の一覧です。`}
+>
+  <div class="container list-page">
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <ol>
+        <li><a href="/">ホーム</a></li>
+        <li><a href="/articles">記事</a></li>
+      </ol>
+    </nav>
+
+    <header class="list-page__header">
+      <h1>{category.label}</h1>
+      <p class="list-page__lead">
+        {articles.length > 0
+          ? `${articles.length}件の記事があります。`
+          : 'このカテゴリの記事はまだありません。'}
+      </p>
+    </header>
+
+    <nav class="category-nav" aria-label="カテゴリ">
+      <ul>
+        <li><a class="category-nav__link" href="/articles">すべて</a></li>
+        {
+          Object.values(CATEGORIES).map((item) => (
+            <li>
+              <a
+                class:list={[
+                  'category-nav__link',
+                  item.slug === slug && 'category-nav__link--active',
+                ]}
+                href={`/articles/category/${item.slug}`}
+                aria-current={item.slug === slug ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      articles.length > 0 ? (
+        <div class="card-grid">
+          {articles.map((article) => (
+            <ArticleCard article={article} />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <strong class="empty-state__title">記事はまだありません</strong>
+          <p>
+            <a href="/articles">すべての記事を見る</a>
+          </p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .list-page {
+    padding-block: var(--space-5) var(--space-8);
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .breadcrumb li + li::before {
+    content: '/';
+    margin-right: var(--space-2);
+    color: var(--border-strong);
+  }
+
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--brand-text);
+    text-decoration: underline;
+  }
+
+  .list-page__header {
+    margin-bottom: var(--space-5);
+  }
+
+  .list-page__lead {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .category-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-nav__link {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-full);
+    color: var(--text-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .category-nav__link:hover {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+
+  .category-nav__link--active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: var(--text-inverse);
+  }
+
+  .category-nav__link--active:hover {
+    background: var(--brand-hover);
+    color: var(--text-inverse);
+  }
+
+  .card-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 40rem) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,290 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { CATEGORIES, SITE_NAME, type CategoryKey } from '../config/site';
+import { formatDate, toISODate, type Article } from '../lib/articles';
+
+interface Props {
+  article: Article;
+  related: Article[];
+}
+
+const { article, related } = Astro.props;
+const { data } = article;
+const category = CATEGORIES[data.category as CategoryKey];
+
+/**
+ * 構造化データ。記事が検索結果でリッチに扱われるようにする。
+ * 著者は個人名を出さずサイト名にしている（運営者情報は /about に置く）。
+ */
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.title,
+  description: data.description,
+  datePublished: toISODate(data.publishedAt),
+  dateModified: toISODate(data.updatedAt ?? data.publishedAt),
+  author: { '@type': 'Organization', name: SITE_NAME },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href,
+};
+---
+
+<BaseLayout title={data.title} description={data.description} ogType="article">
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(structuredData)}
+  />
+
+  <div class="container article-page">
+    <nav class="breadcrumb" aria-label="パンくずリスト">
+      <ol>
+        <li><a href="/">ホーム</a></li>
+        <li><a href="/articles">記事</a></li>
+        <li>
+          <a href={`/articles/category/${category.slug}`}>{category.label}</a>
+        </li>
+      </ol>
+    </nav>
+
+    <article class="prose-container">
+      <header class="article-header">
+        <div class="article-header__meta">
+          <span class="badge badge--brand">{category.label}</span>
+          <time datetime={toISODate(data.publishedAt)}>
+            {formatDate(data.publishedAt)} 公開
+          </time>
+          {
+            data.updatedAt && (
+              <time datetime={toISODate(data.updatedAt)}>
+                {formatDate(data.updatedAt)} 更新
+              </time>
+            )
+          }
+        </div>
+        <h1>{data.title}</h1>
+        <p class="article-header__description">{data.description}</p>
+        {
+          data.tags.length > 0 && (
+            <ul class="article-header__tags">
+              {data.tags.map((tag) => (
+                <li class="badge">{tag}</li>
+              ))}
+            </ul>
+          )
+        }
+      </header>
+
+      <div class="article-body">
+        <slot />
+      </div>
+
+      {
+        data.references.length > 0 && (
+          <section class="references">
+            <h2 class="references__title">参考文献・出典</h2>
+            <ol class="references__list">
+              {data.references.map((reference) => (
+                <li>
+                  {reference.url ? (
+                    <a href={reference.url} target="_blank" rel="noopener noreferrer">
+                      {reference.title}
+                    </a>
+                  ) : (
+                    <span>{reference.title}</span>
+                  )}
+                  {reference.note && <span class="references__note">{reference.note}</span>}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )
+      }
+
+      <div class="note note--warning article-disclaimer">
+        <span class="note__title">ご注意</span>
+        <p>
+          本記事は一般的な情報提供を目的としたものであり、医学的な診断・治療・指導を
+          行うものではありません。効果には個人差があり、
+          特定の結果を保証するものではありません。
+          既往症がある場合や体調に不安がある場合は、医療機関にご相談ください。
+        </p>
+      </div>
+
+      {/* 広告枠（記事末尾）。現時点では広告タグを読み込まない。
+          アフィリエイトリンク（書籍・器具・サプリメント等）を差し込む場合も、
+          本文とは区別できるようこのブロック内に置き、PR表記を添えること。 */}
+      <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="article-end"></div>
+
+      {/* --- 診断への回遊導線。記事からツールへ送る --- */}
+      <aside class="cta-card">
+        <h2 class="cta-card__title">自分の筋力レベルを確認する</h2>
+        <p class="cta-card__text">
+          挙上重量とレップ数を入れるだけで、同じ性別・体重の人の中での位置が分かります。
+          登録不要・データ保存なし。
+        </p>
+        <a class="button button--block" href="/strength-standards">筋力レベル診断へ</a>
+      </aside>
+    </article>
+
+    {
+      related.length > 0 && (
+        <section class="related">
+          <div class="section-heading">
+            <h2>関連記事</h2>
+            <a href="/articles">記事一覧へ</a>
+          </div>
+          <div class="card-grid">
+            {related.map((item) => (
+              <ArticleCard article={item} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .article-page {
+    padding-block: var(--space-5) var(--space-8);
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .breadcrumb li + li::before {
+    content: '/';
+    margin-right: var(--space-2);
+    color: var(--border-strong);
+  }
+
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--brand-text);
+    text-decoration: underline;
+  }
+
+  .article-header {
+    padding-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .article-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .article-header__description {
+    margin-top: var(--space-4);
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
+  .article-header__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .references {
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-inset);
+  }
+
+  .references__title {
+    margin-bottom: var(--space-3);
+    font-size: 1rem;
+  }
+
+  .references__list {
+    margin: 0;
+    padding-left: 1.4em;
+    color: var(--text-body);
+    font-size: 0.875rem;
+    line-height: 1.9;
+  }
+
+  .references__list li + li {
+    margin-top: var(--space-2);
+  }
+
+  .references__note {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .article-disclaimer {
+    margin-top: var(--space-6);
+  }
+
+  .cta-card {
+    margin-top: var(--space-6);
+    padding: var(--space-6) var(--space-5);
+    border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+    border-radius: var(--radius-lg);
+    background: var(--brand-soft);
+    text-align: center;
+  }
+
+  .cta-card__title {
+    font-size: 1.125rem;
+  }
+
+  .cta-card__text {
+    margin: var(--space-3) 0 var(--space-5);
+    color: var(--text-body);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+  }
+
+  .cta-card .button {
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+
+  .related {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .card-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 40rem) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    }
+  }
+</style>

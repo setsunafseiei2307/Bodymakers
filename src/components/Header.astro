@@ -1,0 +1,159 @@
+---
+import { NAV_ITEMS, SITE_SHORT_NAME } from '../config/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+/** 現在のパス。ナビの現在地表示に使う。 */
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function isCurrent(href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__logo" href="/">
+      <svg class="site-header__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <!-- バーベルを模した記号。装飾なのでテキストは持たせない -->
+        <rect x="2" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
+        <rect x="6.5" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"></rect>
+        <rect x="11" y="14.5" width="10" height="3" fill="currentColor"></rect>
+        <rect x="21" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"></rect>
+        <rect x="26" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
+      </svg>
+      <span class="site-header__name">{SITE_SHORT_NAME}</span>
+    </a>
+
+    <nav class="site-header__nav" aria-label="メインナビゲーション">
+      <ul class="site-header__list">
+        {
+          NAV_ITEMS.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'site-header__link',
+                  item.primary && 'site-header__link--primary',
+                ]}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 3.5rem;
+  }
+
+  .site-header__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-strong);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.0625rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .site-header__mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--brand);
+  }
+
+  .site-header__nav {
+    /* スマホではロゴの下に折り返さず、ナビ自体を横スクロールさせる。
+       折り返すとヘッダーの高さが変わり、sticky 表示がガタつくため。 */
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-header__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header__list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-header__link {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-body);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .site-header__link:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+  }
+
+  .site-header__link[aria-current='page'] {
+    color: var(--brand-text);
+    background: var(--brand-soft);
+  }
+
+  /* 診断への導線はナビの中でも一段強調する */
+  .site-header__link--primary {
+    background: var(--brand);
+    color: var(--text-inverse);
+  }
+
+  .site-header__link--primary:hover {
+    background: var(--brand-hover);
+    color: var(--text-inverse);
+  }
+
+  .site-header__link--primary[aria-current='page'] {
+    background: var(--brand-active);
+    color: var(--text-inverse);
+  }
+
+  @media (max-width: 30rem) {
+    .site-header__name {
+      /* 狭い画面ではロゴマークだけにしてナビの幅を確保する */
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>

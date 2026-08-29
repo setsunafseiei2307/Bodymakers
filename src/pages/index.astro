@@ -1,0 +1,414 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { getPublishedArticles } from '../lib/articles';
+import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
+import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
+import { CATEGORIES, SITE_DESCRIPTION } from '../config/site';
+
+const totalLifters =
+  STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
+const articles = (await getPublishedArticles()).slice(0, 6);
+---
+
+<BaseLayout description={SITE_DESCRIPTION}>
+  {/* --- ヒーロー。診断への導線を最優先で置く --- */}
+  <section class="hero">
+    <div class="container hero__inner">
+      <p class="hero__eyebrow">登録不要・データ保存なし</p>
+      <h1 class="hero__title">
+        あなたの筋力は<br />
+        <span class="hero__accent">上位何%</span>ですか？
+      </h1>
+      <p class="hero__lead">
+        ベンチプレス・スクワット・デッドリフトの記録を入れるだけ。
+        同じ性別・体重の人と比べたレベルとパーセンタイルが、その場で分かります。
+      </p>
+
+      <div class="hero__actions">
+        <a class="button button--large" href="/strength-standards">
+          筋力レベルを診断する
+          <svg class="hero__arrow" viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              d="M4 10h11M10.5 5.5 15 10l-4.5 4.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </a>
+        <p class="hero__actions-note">所要時間およそ30秒 / 入力内容は送信されません</p>
+      </div>
+
+      <dl class="hero__stats">
+        <div class="hero__stat">
+          <dt>基準となる競技記録</dt>
+          <dd>{totalLifters.toLocaleString('ja-JP')}<span>人</span></dd>
+        </div>
+        <div class="hero__stat">
+          <dt>判定できる種目</dt>
+          <dd>3<span>種目</span></dd>
+        </div>
+        <div class="hero__stat">
+          <dt>保存されるデータ</dt>
+          <dd>0<span>件</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="container">
+    {/* --- 診断の中身の説明 --- */}
+    <section class="section">
+      <div class="section-heading">
+        <h2>診断で分かること</h2>
+      </div>
+      <div class="feature-grid">
+        <div class="feature card">
+          <span class="feature__number">01</span>
+          <h3 class="feature__title">推定1RM</h3>
+          <p class="feature__text">
+            挙上重量とレップ数から、1回だけ挙げられる最大重量を推定します。
+            7つの換算式の平均を使い、式ごとのばらつきも表示します。
+          </p>
+        </div>
+        <div class="feature card">
+          <span class="feature__number">02</span>
+          <h3 class="feature__title">体重帯内パーセンタイル</h3>
+          <p class="feature__text">
+            同じ性別・同じくらいの体重の競技者の中で、上位何%に入るかを表示します。
+            体重階級で区切らず、実測体重に合わせて基準値を補間します。
+          </p>
+        </div>
+        <div class="feature card">
+          <span class="feature__number">03</span>
+          <h3 class="feature__title">5段階レベル</h3>
+          <p class="feature__text">
+            初心者から エリートまでの5段階で判定し、
+            次のレベルまであと何kg必要かも示します。
+          </p>
+        </div>
+        <div class="feature card">
+          <span class="feature__number">04</span>
+          <h3 class="feature__title">弱点部位の指摘</h3>
+          <p class="feature__text">
+            3種目の順位を比べ、他より伸びていない種目と、
+            そこで主に使われる部位を指摘します。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* --- レベルの見え方（診断前に期待値を合わせる） --- */}
+    <section class="section">
+      <div class="section-heading">
+        <h2>5段階レベル</h2>
+        <a href="/sources">判定基準の詳細</a>
+      </div>
+      <ol class="level-ladder">
+        {
+          LEVELS.map((level) => (
+            <li class={`level-ladder__item level--${level.id}`}>
+              <span class="level-ladder__bar" />
+              <span class="level-ladder__label">{level.label}</span>
+              <span class="level-ladder__desc">{level.description}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="section__note">
+        判定基準は{STANDARDS_SOURCE.name}が公開する公式競技会の記録
+        （{STANDARDS_SOURCE.license}）から算出しています。母集団は競技会出場者のため、
+        一般のジム利用者より全体に高い水準です。結果はあくまで目安として扱ってください。
+      </p>
+    </section>
+
+    {/* 広告枠（トップページ中段）。現時点では広告タグを読み込まない。 */}
+    <div class="ad-slot ad-slot--inline" aria-hidden="true" data-ad-slot="home-mid"></div>
+
+    {/* --- 記事 --- */}
+    <section class="section">
+      <div class="section-heading">
+        <h2>新着記事</h2>
+        <a href="/articles">記事一覧へ</a>
+      </div>
+      {
+        articles.length > 0 ? (
+          <div class="card-grid">
+            {articles.map((article) => (
+              <ArticleCard article={article} />
+            ))}
+          </div>
+        ) : (
+          <div class="empty-state">
+            <strong class="empty-state__title">記事はまだありません</strong>
+            <p>src/content/articles/ に Markdown を置くと、ここに一覧が出ます。</p>
+          </div>
+        )
+      }
+    </section>
+
+    {/* --- カテゴリ --- */}
+    <section class="section">
+      <div class="section-heading">
+        <h2>カテゴリから探す</h2>
+      </div>
+      <ul class="category-list">
+        {
+          Object.values(CATEGORIES).map((category) => (
+            <li>
+              <a class="category-list__link" href={`/articles/category/${category.slug}`}>
+                {category.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* --- ヒーロー --- */
+
+  .hero {
+    padding-block: var(--space-7) var(--space-7);
+    background:
+      radial-gradient(
+        ellipse 80% 60% at 50% 0%,
+        var(--brand-soft),
+        transparent 70%
+      ),
+      var(--surface-0);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero__inner {
+    max-width: 48rem;
+    text-align: center;
+  }
+
+  .hero__eyebrow {
+    display: inline-block;
+    padding: 0.2rem var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+    border-radius: var(--radius-full);
+    background: var(--surface-1);
+    color: var(--brand-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .hero__title {
+    margin-top: var(--space-4);
+    font-size: clamp(2rem, 8.5vw, 3.25rem);
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+  }
+
+  .hero__accent {
+    color: var(--brand);
+  }
+
+  .hero__lead {
+    max-width: 34rem;
+    margin: var(--space-4) auto 0;
+    color: var(--text-body);
+    font-size: 1.0625rem;
+    line-height: 1.9;
+  }
+
+  .hero__actions {
+    margin-top: var(--space-6);
+  }
+
+  .hero__actions .button {
+    width: 100%;
+    max-width: 22rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero__arrow {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .hero__actions-note {
+    margin-top: var(--space-3);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4) var(--space-6);
+    margin: var(--space-7) 0 0;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .hero__stat {
+    min-width: 6rem;
+  }
+
+  .hero__stat dt {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .hero__stat dd {
+    margin: var(--space-1) 0 0;
+    color: var(--text-strong);
+    font-family: var(--font-numeric);
+    font-size: 1.375rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero__stat dd span {
+    margin-left: 0.1em;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  /* --- セクション共通 --- */
+
+  .section {
+    padding-block: var(--space-7);
+  }
+
+  .section + .section {
+    border-top: 1px solid var(--border);
+  }
+
+  .section__note {
+    margin-top: var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+  }
+
+  /* --- 特徴 --- */
+
+  .feature-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 40rem) {
+    .feature-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .feature__number {
+    display: block;
+    margin-bottom: var(--space-2);
+    color: var(--brand);
+    font-family: var(--font-numeric);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+
+  .feature__title {
+    margin-bottom: var(--space-2);
+    font-size: 1.0625rem;
+  }
+
+  .feature__text {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.85;
+  }
+
+  /* --- レベルの階段 --- */
+
+  .level-ladder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: level;
+  }
+
+  .level-ladder__item {
+    display: grid;
+    grid-template-columns: 0.5rem 5rem 1fr;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+  }
+
+  .level-ladder__bar {
+    width: 0.5rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background: var(--level-color);
+  }
+
+  .level-ladder__label {
+    color: var(--level-color);
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .level-ladder__desc {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  /* --- 記事グリッド --- */
+
+  .card-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 40rem) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    }
+  }
+
+  /* --- カテゴリ --- */
+
+  .category-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-list__link {
+    display: inline-block;
+    padding: var(--space-3) var(--space-5);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-full);
+    background: var(--surface-1);
+    color: var(--text-body);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .category-list__link:hover {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+</style>

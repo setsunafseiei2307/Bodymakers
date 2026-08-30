@@ -48,6 +48,13 @@ export const TOOLS: readonly ToolEntry[] = [
       '「いつまでに何kg」から、週あたりのペースと1日のカロリー収支を出します。体重・目標体重・目標日の3つだけで結果が出ます。増量（バルクアップ）にも対応。',
   },
   {
+    href: '/tools/today',
+    label: '今日の記録',
+    code: 'TODAY',
+    summary:
+      '食べたものと動いたものを入れると、摂取カロリー・PFC・消費カロリー・差し引きが一度に出ます。身長と年齢を足せば「この調子なら1か月で何kg」まで分かります。',
+  },
+  {
     href: '/tools/burn',
     label: '運動の消費カロリー',
     code: 'BURN',

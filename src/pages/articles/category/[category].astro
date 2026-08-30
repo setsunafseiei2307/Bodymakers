@@ -3,7 +3,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ArticleCard from '../../../components/ArticleCard.astro';
 import { getArticlesByCategory } from '../../../lib/articles';
 import { CATEGORIES, type CategoryKey } from '../../../config/site';
+import type { ToolKey } from '../../../config/tools';
 import { url } from '../../../lib/url';
+import NextSteps from '../../../components/NextSteps.astro';
 
 /**
  * カテゴリ別の一覧。
@@ -19,6 +21,37 @@ export function getStaticPaths() {
 const { category: slug } = Astro.params;
 const category = CATEGORIES[slug as CategoryKey];
 const articles = await getArticlesByCategory(slug as string);
+
+/**
+ * カテゴリごとの説明と、そのカテゴリから使うツール。
+ *
+ * 一覧を見に来た人は、まだ読む記事を決めていない。
+ * 「この棚には何が置いてあるか」を1行で示し、
+ * 記事を読まずにツールへ行きたい人の出口も用意しておく。
+ */
+const CATEGORY_INFO: Record<
+  CategoryKey,
+  { lead: string; tools: ToolKey[] }
+> = {
+  strength: {
+    lead: '自分の強さが競技会の記録と比べてどこにあるかを、実データで示します。',
+    tools: ['strength', 'oneRm'],
+  },
+  training: {
+    lead: '伸ばし方の原則と、メニューの組み方。',
+    tools: ['oneRm', 'rpe', 'today'],
+  },
+  nutrition: {
+    lead: '何をどれだけ食べるか。数値はすべて食品成分表の収載値です。',
+    tools: ['nutrition', 'foods'],
+  },
+  diet: {
+    lead: '体重を落とすための考え方と、消費カロリーの実際。',
+    tools: ['plan', 'burn', 'today'],
+  },
+};
+
+const info = CATEGORY_INFO[slug as CategoryKey];
 ---
 
 <BaseLayout
@@ -35,10 +68,9 @@ const articles = await getArticlesByCategory(slug as string);
 
     <header class="list-page__header">
       <h1>{category.label}</h1>
-      <p class="list-page__lead">
-        {articles.length > 0
-          ? `${articles.length}件の記事があります。`
-          : 'このカテゴリの記事はまだありません。'}
+      <p class="list-page__lead">{info.lead}</p>
+      <p class="list-page__count">
+        {articles.length > 0 ? `${articles.length}本` : 'まだ記事がありません'}
       </p>
     </header>
 
@@ -64,6 +96,9 @@ const articles = await getArticlesByCategory(slug as string);
       </ul>
     </nav>
 
+    {/* カードの見出しが h3 なので、その上に h2 を置いて階層を飛ばさない */}
+    <h2 class="cat-list__title">{category.label}の記事</h2>
+
     {
       articles.length > 0 ? (
         <div class="card-grid">
@@ -80,7 +115,8 @@ const articles = await getArticlesByCategory(slug as string);
         </div>
       )
     }
-  </div>
+    <NextSteps title={`${category.label}で使うツール`} tools={info.tools} articles={false} />
+</div>
 </BaseLayout>
 
 <style>
@@ -117,6 +153,20 @@ const articles = await getArticlesByCategory(slug as string);
 
   .list-page__header {
     margin-bottom: var(--s5);
+  }
+
+  .cat-list__title {
+    margin-bottom: var(--s4);
+    font-size: 1rem;
+  }
+
+  .list-page__count {
+    margin-top: var(--s3);
+    color: var(--signal);
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
   }
 
   .list-page__lead {

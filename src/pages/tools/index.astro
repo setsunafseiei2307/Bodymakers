@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOOLS } from '../../config/tools';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import NextSteps from '../../components/NextSteps.astro';
 
 const title = 'ツール一覧';
 const description =
@@ -35,7 +36,8 @@ const description =
     </ul>
 
     <AdSlot id="tools-bottom" />
-  </div>
+    <NextSteps title="使い方を解説した記事" tools={[]} articles={true} />
+</div>
 </BaseLayout>
 
 <style>

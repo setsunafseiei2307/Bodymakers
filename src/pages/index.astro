@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-import { getPublishedArticles } from '../lib/articles';
+import { getFeaturedArticles } from '../lib/articles';
 import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { CATEGORIES, SITE_DESCRIPTION } from '../config/site';
@@ -14,7 +14,9 @@ import { url } from '../lib/url';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
-const articles = (await getPublishedArticles()).slice(0, 6);
+// 新着順ではなく、記事側で featured を立てたものを出す。
+// 書いた順という運営の都合が、そのまま並びになるのを避けるため。
+const articles = await getFeaturedArticles(4);
 ---
 
 <BaseLayout description={SITE_DESCRIPTION}>
@@ -136,7 +138,7 @@ const articles = (await getPublishedArticles()).slice(0, 6);
     {/* --- 記事 --- */}
     <section class="section">
       <div class="section-head">
-        <h2>新着記事</h2>
+        <h2>まず読むなら</h2>
         <a href={url('/articles')}>記事一覧へ</a>
       </div>
       {

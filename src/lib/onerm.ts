@@ -116,3 +116,41 @@ export function percentOfOneRM(weight: number, oneRM: number): number | null {
   if (!isFiniteNumber(weight) || !isFiniteNumber(oneRM) || oneRM <= 0) return null;
   return (weight / oneRM) * 100;
 }
+
+/**
+ * 自重種目で、実際に扱っている重量を求める。
+ *
+ * 懸垂やディップスは自分の体を持ち上げる種目なので、
+ * バーベルと同じ「挙上重量」で比べるには体重を足す必要がある。
+ * 加重ベルトを付けているならその重量も足す。
+ *
+ * ここは足し算だけで、推定は入っていない。
+ *
+ * なお、腕立て伏せのように体重の一部しか持ち上げない種目では、
+ * この式は使えない（何割が乗るかは姿勢で変わり、推測になるため）。
+ * そういう種目では体重を足さず、加重ぶんだけを扱う。
+ */
+export function bodyweightLoad(
+  bodyweightKg: number,
+  addedKg: number,
+): number | null {
+  if (!isFiniteNumber(bodyweightKg) || bodyweightKg <= 0) return null;
+  if (!isFiniteNumber(addedKg) || addedKg < 0) return null;
+  return bodyweightKg + addedKg;
+}
+
+/**
+ * 自重種目の1RMを、体重＋加重から推定する。
+ *
+ * 返す値は「体重を含んだ総重量」。
+ * 「あと何kg足せるか」を知りたいときは、ここから体重を引く。
+ */
+export function bodyweightOneRm(
+  bodyweightKg: number,
+  addedKg: number,
+  reps: number,
+): OneRmEstimate | null {
+  const load = bodyweightLoad(bodyweightKg, addedKg);
+  if (load == null) return null;
+  return estimateOneRM(load, reps);
+}

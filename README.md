@@ -5,6 +5,48 @@
 
 > サイト名は暫定。変更は `src/config/site.ts` の `SITE_NAME` を書き換えるだけで全体に反映される。
 
+## 制作物の見かた
+
+作ったものを確認する場所は4つ。スマホのブラウザでそのまま開ける。
+
+| 見たいもの | URL |
+|---|---|
+| **公開サイト**（実物を触る） | https://setsunafseiei2307.github.io/Bodymakers/ |
+| **コード全体** | https://github.com/setsunafseiei2307/Bodymakers |
+| **何をどう変えたか**（作業ブランチと main の差分） | `https://github.com/setsunafseiei2307/Bodymakers/compare/main...<ブランチ名>` |
+| **テストが通っているか** | https://github.com/setsunafseiei2307/Bodymakers/actions |
+
+### 公開の流れ
+
+作業は `claude/*` のブランチで進み、まとまった段階で main への Pull Request になる。
+
+1. ブランチへ push → CI（型チェック・テスト・ビルド・リンク検査）が走る
+2. Pull request の「Files changed」で差分を確認する
+3. 緑の **Merge pull request** を押す
+4. main への反映を合図に公開ワークフローが走り、数分で公開サイトに反映される
+
+Actions タブの緑チェックは「型エラーなし・テスト全件通過・全ページのビルド成功・
+サイト内リンク切れなし」を意味する。赤いバツが出ていたら、そのページを開けば
+どの段階で落ちたかが読める。
+
+### 外部のレビューに出すとき
+
+公開リポジトリなので、URLを渡せば中身をそのまま読んでもらえる。
+スクリーンショットやzipを別途用意する必要はない。
+
+```
+サイト: https://setsunafseiei2307.github.io/Bodymakers/
+コード: https://github.com/setsunafseiei2307/Bodymakers
+設計の背景: docs/architecture.md
+データの出典と集計方法: docs/strength-standards.md / docs/food-data.md
+```
+
+### 検索エンジンへの掲載
+
+現在は載せない設定（`src/config/site.ts` の `SEARCH_INDEXING` が `false`）。
+URLを知っていれば誰でも見られるが、検索結果には出ない。
+記事と機能が揃った段階で `true` にする。
+
 ## 中核機能: 筋力レベル診断
 
 ベンチプレス・スクワット・デッドリフトの記録から、

@@ -1,10 +1,11 @@
 name: GitHub Pages への公開
 
 on:
+  # 公開は main への反映を合図にする。
+  # github-pages 環境は既定で既定ブランチからの公開しか許可しないため、
+  # 作業ブランチで走らせても最後の公開段階で必ず失敗する。
   push:
-    branches:
-      - main
-      - claude/fitness-comprehensive-site-5oabdo
+    branches: [main]
   workflow_dispatch:
 
 permissions:

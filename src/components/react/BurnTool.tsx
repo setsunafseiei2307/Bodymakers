@@ -252,6 +252,9 @@ export default function BurnTool() {
         </p>
 
         <p className="next" style={{ marginTop: 'var(--s4)' }}>
+          <a href={url('/articles/exercise-calorie-reality')}>
+            運動で消費できる量の話を読む →
+          </a>
           <a href={url('/tools/plan')}>ダイエット計画を立てる →</a>
         </p>
       </Slip>

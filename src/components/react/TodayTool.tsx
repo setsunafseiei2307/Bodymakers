@@ -416,6 +416,7 @@ export default function TodayTool() {
       </p>
 
       <p className="next">
+        <a href={url('/articles/energy-balance-basics')}>ダイエットの仕組みを読む →</a>
         <a href={url('/tools/plan')}>ダイエット計画を立てる →</a>
         <a href={url('/tools/burn')}>運動の消費カロリーを調べる →</a>
       </p>

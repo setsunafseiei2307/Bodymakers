@@ -62,10 +62,10 @@ export const TOOLS: readonly ToolEntry[] = [
   {
     key: 'oneRm',
     href: '/tools/one-rep-max',
-    label: '1RM換算',
+    label: '1RM・RPE換算',
     code: 'ONE REP MAX',
     summary:
-      '挙上重量とレップ数から1RMを推定します。7つの換算式の値と、推定の幅も表示します。',
+      '挙上重量とレップ数から1RMを推定します。余力（RPE）を入れた計算、懸垂やディップスの体重込みの計算にも同じ画面で切り替えられます。',
     cta: '今日のセットから1RMを計算する',
     ctaText:
       '重量とレップ数から、1回だけ挙げられる重量を推定します。7つの換算式の平均とばらつきを同時に出します。',
@@ -76,7 +76,7 @@ export const TOOLS: readonly ToolEntry[] = [
     label: 'RPE換算',
     code: 'RPE',
     summary:
-      '「あと何回できたか」から1RMを逆算し、次のセットの目安重量表を出します。',
+      '「あと何回できたか」から1RMを逆算し、次のセットの目安重量表を出します。1RM換算と同じツールで、開いたときの計算方法が違うだけです。',
     cta: 'RPEから今日の重量を逆算する',
     ctaText:
       '重量・レップ数・RPEから1RMを推定し、レップ数とRPEの組み合わせごとの目安重量を表にします。',

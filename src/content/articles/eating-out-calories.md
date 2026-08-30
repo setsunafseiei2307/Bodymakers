@@ -16,6 +16,7 @@ takeaways:
   - 差を作っているのは主に脂質。カツ丼49gに対しざるそばは3g
   - 塩分はうどん10.6g・ラーメン8.1gと、麺類のつゆで一気に増える
 nextArticle: convenience-store-pfc
+featured: true
 references:
   - title: 日本食品標準成分表（八訂）増補2023年
     url: https://www.mext.go.jp/a_menu/syokuhinseibun/

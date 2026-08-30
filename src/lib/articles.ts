@@ -7,6 +7,8 @@
 
 import { getCollection, type CollectionEntry } from 'astro:content';
 
+import { CATEGORY_KEYS, type CategoryKey } from '../config/site';
+
 export { readingMinutes } from './readingTime';
 
 export type Article = CollectionEntry<'articles'>;
@@ -24,6 +26,28 @@ export async function getPublishedArticles(): Promise<Article[]> {
   const showDrafts = import.meta.env.DEV;
   const all = await getCollection('articles');
   return all.filter((article) => showDrafts || !article.data.draft).sort(byNewest);
+}
+
+/**
+ * 一覧の先頭で大きく出す記事。
+ * 指定が無ければ、いちばん新しい記事を1本だけ使う
+ * （先頭が空のページにならないようにするため）。
+ */
+export async function getFeaturedArticles(limit = 3): Promise<Article[]> {
+  const articles = await getPublishedArticles();
+  const featured = articles.filter((article) => article.data.featured);
+  return (featured.length > 0 ? featured : articles.slice(0, 1)).slice(0, limit);
+}
+
+/** カテゴリごとに記事をまとめる（一覧の見出し用） */
+export async function getArticlesGroupedByCategory(): Promise<
+  { category: CategoryKey; articles: Article[] }[]
+> {
+  const articles = await getPublishedArticles();
+  return CATEGORY_KEYS.map((category) => ({
+    category,
+    articles: articles.filter((article) => article.data.category === category),
+  })).filter((group) => group.articles.length > 0);
 }
 
 /** スラッグから記事を1件引く。見つからなければ undefined。 */

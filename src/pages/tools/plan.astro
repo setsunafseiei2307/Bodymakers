@@ -5,6 +5,7 @@ import '../../styles/strength.css';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'ダイエット計画';
 const description =
@@ -30,6 +31,8 @@ const description =
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <PlanTool client:load />
+
+    <ToolArticles toolKey="plan" />
 
     <AdSlot id="tool-bottom" />
   </div>

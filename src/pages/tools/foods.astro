@@ -5,6 +5,7 @@ import DishPanel from '../../components/react/DishPanel';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = '食品の栄養価を調べる';
 const description = '日本食品標準成分表の全2,538食品から、カロリーとPFCを調べます。分量を変えると成分値も変わります。';
@@ -32,6 +33,8 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
     <DishPanel client:load />
 
     <FoodTool client:load />
+
+    <ToolArticles toolKey="foods" />
 
     <AdSlot id="tool-bottom" />
   </div>

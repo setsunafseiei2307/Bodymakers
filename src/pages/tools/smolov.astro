@@ -4,6 +4,7 @@ import SmolovTool from '../../components/react/SmolovTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'Smolov プログラム生成';
 const description = '1RMから Smolov（ロシア発の高頻度・高ボリュームなプログラム）の4週間分のメニューを生成します。';
@@ -28,6 +29,8 @@ const description = '1RMから Smolov（ロシア発の高頻度・高ボリュ�
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <SmolovTool client:load />
+
+    <ToolArticles toolKey="smolov" />
 
     <AdSlot id="tool-bottom" />
   </div>

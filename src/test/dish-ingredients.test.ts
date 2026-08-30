@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { DISHES, DISH_CATEGORIES, calcDish, dishesByCategory } from '../lib/dishes';
 import { findFood } from '../lib/foods';
 
@@ -277,5 +280,27 @@ describe('料理の材料', () => {
       // 内訳の行数は材料の数と一致する（欠測で行が消えていないこと）
       expect(result.rows.length).toBe(dish.ingredients.length);
     }
+  });
+});
+
+/**
+ * 画面に書いた品数が、実際の収録数と合っているかを確かめる。
+ *
+ * ツールの説明文に「31品」と数を書いてしまうと、料理を足したときに
+ * そこだけ古くなる。tools.ts から DISHES を import すると
+ * 食品データ（230KB超）が全ページのバンドルに入ってしまうので、
+ * 数はテキストのまま持ち、ここで突き合わせる。
+ */
+describe('画面に書いた品数', () => {
+  it('ツールの説明文の品数が実際の収録数と一致する', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src/config/tools.ts'),
+      'utf8',
+    );
+    const match = source.match(/など(\d+)品の料理/);
+    expect(match, 'tools.ts に「◯品の料理」の記述が見つかりません').not.toBeNull();
+    expect(Number(match![1]), '料理を足したら tools.ts の品数も直してください').toBe(
+      DISHES.length,
+    );
   });
 });

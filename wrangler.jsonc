@@ -1,0 +1,24 @@
+{
+  // Cloudflare Workers の静的アセット配信の設定。
+  //
+  // このサイトは output: 'static' で、サーバー側で動くコードを持たない。
+  // そのため main（Workerのスクリプト）は指定しない。
+  // assets だけを書くと、dist/ をそのまま配信する「静的アセットだけのWorker」になる。
+  //
+  // @astrojs/cloudflare（アダプタ）は入れていない。あれは
+  // サーバーサイドレンダリングをCloudflare上で動かすためのもので、
+  // 静的サイトには不要。入れると output が server 側に倒れてしまう。
+  "name": "bodymakers",
+  "compatibility_date": "2026-08-30",
+  "assets": {
+    // astro build の出力先。ビルドコマンドは npm run build のままでよい。
+    "directory": "./dist",
+
+    // Astro は build.format: 'directory' で /about/index.html の形に出力する。
+    // auto-trailing-slash なら /about と /about/ のどちらで来ても同じページを返す。
+    "html_handling": "auto-trailing-slash",
+
+    // 存在しないパスは Astro が生成した 404.html を返す。
+    "not_found_handling": "404-page"
+  }
+}

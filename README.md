@@ -181,6 +181,33 @@ SITE_URL=https://example.com BASE_PATH=/Bodymakers npm run build
 
 付け忘れは `npm run check:links` が見つける（CI でも実行する）。
 
+### Cloudflare Workers への公開
+
+`wrangler.jsonc` を置いてある。サーバー側で動くコードを持たない静的サイトなので、
+`main`（Workerのスクリプト）は指定せず、`assets` だけで `dist/` を配信する。
+
+```jsonc
+{
+  "name": "bodymakers",
+  "assets": { "directory": "./dist", ... }
+}
+```
+
+- `@astrojs/cloudflare` は入れない。あれはCloudflare上でサーバーサイド
+  レンダリングを動かすためのアダプタで、静的サイトには不要（入れると
+  `output` が server 側に倒れる）
+- `public/.assetsignore` も不要。あれはアダプタが出力する `_worker.js` を
+  アセットとして公開しないための除外リストで、`_worker.js` が無いこの構成では
+  そもそも除外するものが無い
+- Cloudflare 側の設定は「ビルドコマンド `npm run build`」「デプロイコマンド
+  `npx wrangler deploy`」のまま。`wrangler.jsonc` があると、Cloudflare の
+  フレームワーク自動設定（`astro add cloudflare` を走らせる流れ）に入らない
+- `name` は Cloudflare 側の Worker 名と一致させること。違う名前だと別のWorkerが作られる
+- 公開URLを canonical・sitemap・RSS に反映するには、Cloudflare の環境変数に
+  `SITE_URL`（例: `https://bodymakers.example.workers.dev`）を設定する。
+  未設定だと `astro.config.mjs` の既定値が使われる
+- `BASE_PATH` は設定しない。Cloudflareではルート直下に配信するため
+
 ### 公開状態
 
 `.github/workflows/deploy.yml` が GitHub Pages へ公開する。

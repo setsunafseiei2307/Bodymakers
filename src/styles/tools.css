@@ -431,3 +431,22 @@
 
 /* 未測定の項目 */
 .food__na { color: var(--muted); font-style: normal; }
+
+/* 「成分表の全食品から探す」など、注記の中に置く控えめなボタン */
+.food__widen {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--data);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.food__widen:hover { color: var(--signal); }
+
+/* 食品を選んだときの送り先。ヘッダーが固定されているぶんを空ける */
+.food__detail {
+  scroll-margin-top: 8rem;
+}

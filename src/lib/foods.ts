@@ -24,6 +24,18 @@ export interface Food {
   officialName: string;
   /** 成分表で括弧付き（推定値）だった項目 */
   estimated?: NutrientKey[];
+  /**
+   * 日常的によく食べられる食品かどうか。
+   *
+   * 成分表には「こめ [水稲穀粒] 半つき米」のように、家庭の食事では
+   * まず出てこない状態のものが多く含まれる。「米」で検索すると85件出るが、
+   * その大半は誰も食べない形の米で、探しているごはんが埋もれる。
+   * そこで一覧の初期表示と検索の並び順だけをこの印で変える。
+   *
+   * 栄養価の扱いは全食品まったく同じで、この印で値が変わることはない。
+   * 印を付ける対象は scripts/food-data/names.py の DISPLAY_NAME にある食品。
+   */
+  common: boolean;
 }
 
 export { FOODS };
@@ -146,6 +158,8 @@ export interface SearchOptions {
   limit?: number;
   /** 指定するとそのカテゴリ内だけを検索する */
   category?: string | null;
+  /** よく食べる食品だけに絞る */
+  commonOnly?: boolean;
 }
 
 /**
@@ -154,7 +168,9 @@ export interface SearchOptions {
  */
 export function searchFoods(query: string, options: SearchOptions = {}): Food[] {
   const limit = options.limit ?? 50;
-  const pool = options.category ? FOODS.filter((f) => f.category === options.category) : FOODS;
+  let pool: readonly Food[] = FOODS;
+  if (options.category) pool = pool.filter((f) => f.category === options.category);
+  if (options.commonOnly) pool = pool.filter((f) => f.common);
   // 空白で区切られていたら、すべてを含む食品だけを返す（AND検索）。
   // 「とり ささみ」のように、表示名と収載名にまたがる語を繋げて打たれても拾えるようにするため。
   const tokens = (query ?? '')
@@ -187,8 +203,28 @@ export function searchFoods(query: string, options: SearchOptions = {}): Food[] 
     scored.push({ food, rank: worst });
   }
 
-  scored.sort((a, b) => a.rank - b.rank || a.food.name.length - b.food.name.length);
+  // 一致の強さ → よく食べる食品 → 名前の短さ、の順に並べる。
+  // 「米」で引いたときに、精白米の穀粒やかゆより先にごはんが来るようにするため。
+  scored.sort(
+    (a, b) =>
+      a.rank - b.rank ||
+      Number(b.food.common) - Number(a.food.common) ||
+      a.food.name.length - b.food.name.length,
+  );
   return scored.slice(0, Math.max(0, limit)).map((s) => s.food);
+}
+
+/**
+ * よく食べる食品だけを返す。検索していないときの一覧に使う。
+ * カテゴリを渡すとその中だけに絞る。
+ */
+export function commonFoods(category?: string | null): Food[] {
+  return FOODS.filter((f) => f.common && (category == null || f.category === category));
+}
+
+/** 検索語なしで出せる件数（よく食べる食品の総数） */
+export function commonFoodCount(): number {
+  return FOODS.filter((f) => f.common).length;
 }
 
 /** 食品番号で1件引く */

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   FOODS,
   categorySummaries,
+  commonFoods,
   findFood,
   foodCategories,
   foodsInCategory,
@@ -137,6 +138,66 @@ describe('normalizeQuery', () => {
   it('空文字でも壊れない', () => {
     expect(normalizeQuery('')).toBe('');
     expect(normalizeQuery('   ')).toBe('');
+  });
+});
+
+describe('よく食べる食品の絞り込み', () => {
+  it('印が付いているのは全食品の一部だけ', () => {
+    const common = FOODS.filter((f) => f.common);
+    expect(common.length).toBeGreaterThan(300);
+    expect(common.length).toBeLessThan(FOODS.length);
+  });
+
+  it('日常的な食品には印が付いている', () => {
+    // 主食・肉・卵・野菜・酒・ソフトドリンク・調味料が一通り入っていること
+    const musts = [
+      '01088', // ごはん（精白米）
+      '01085', // ごはん（玄米）
+      '01064', // スパゲッティ（ゆで）
+      '01128', // そば（ゆで）
+      '01039', // うどん（ゆで）
+      '12004', // 鶏卵（全卵・生）
+      '11220', // 鶏むね（若どり・皮なし・生）
+      '06061', // キャベツ（生）
+      '16006', // ビール（淡色）
+      '16053', // コーラ
+      '17007', // しょうゆ（濃口）
+    ];
+    for (const id of musts) {
+      const food = FOODS.find((f) => f.id === id);
+      expect(food, `食品番号 ${id} が見つからない`).toBeDefined();
+      expect(food?.common, `${food?.name}（${id}）に印が付いていない`).toBe(true);
+    }
+  });
+
+  it('家庭の食事に出てこない状態のものには印が付かない', () => {
+    // 水稲穀粒（炊く前の米粒）や全かゆは、日常の記録では選ばれない
+    for (const id of ['01083', '01090', '01081']) {
+      expect(FOODS.find((f) => f.id === id)?.common).toBe(false);
+    }
+  });
+
+  it('commonFoods はカテゴリで絞れる', () => {
+    const all = commonFoods();
+    const grain = commonFoods('穀類');
+    expect(grain.length).toBeGreaterThan(0);
+    expect(grain.length).toBeLessThan(all.length);
+    expect(grain.every((f) => f.category === '穀類' && f.common)).toBe(true);
+  });
+
+  it('commonOnly を付けると印のある食品だけが返る', () => {
+    const hits = searchFoods('米', { commonOnly: true, limit: 100 });
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((f) => f.common)).toBe(true);
+  });
+
+  it('「米」で引くと、穀粒やかゆより先にごはんが出る', () => {
+    // 成分表には米が85件あり、その大半は炊く前・かゆ・おもゆの状態。
+    // 印のある食品を先に並べることで、探しているごはんが上に来る。
+    const hits = searchFoods('米', { limit: 10 });
+    const first = hits.findIndex((f) => f.id === '01088');
+    expect(first).toBeGreaterThanOrEqual(0);
+    expect(first).toBeLessThan(5);
   });
 });
 

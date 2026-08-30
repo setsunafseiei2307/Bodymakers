@@ -1,0 +1,77 @@
+---
+/**
+ * ツールページの下に置く「このツールを使う記事」。
+ *
+ * 【なぜ必要か】
+ * 記事からツールへの導線は張ったが、逆が無かった。
+ * ツール8ページのうち5ページは記事へのリンクが1本も無く、
+ * 計算だけして帰る人をそのまま見送っていた。
+ *
+ * 【手で対応表を作らない理由】
+ * 記事の frontmatter の primaryTool を逆引きするだけにしてある。
+ * 記事側でCTAの行き先を決めれば、こちら側は何もしなくても増える。
+ * 対応表を2か所に持つと、必ず片方だけ古くなる。
+ */
+import ArticleCard from './ArticleCard.astro';
+import { getPublishedArticles } from '../lib/articles';
+import { findTool } from '../config/tools';
+import { url } from '../lib/url';
+
+interface Props {
+  /** src/config/tools.ts のキー */
+  toolKey: string;
+  /** 出す本数の上限 */
+  limit?: number;
+}
+
+const { toolKey, limit = 3 } = Astro.props;
+
+const tool = findTool(toolKey);
+const articles = (await getPublishedArticles())
+  .filter((article) => article.data.primaryTool === toolKey)
+  .slice(0, limit);
+---
+
+{
+  tool && articles.length > 0 && (
+    <section class="tool-articles">
+      <div class="section-head">
+        <h2>{tool.label}を使う記事</h2>
+        <a href={url('/articles')}>記事一覧へ</a>
+      </div>
+      <p class="tool-articles__lead">
+        数字の読み方や、その数字をどう使うかを解説しています。
+      </p>
+      <div class="tool-articles__grid">
+        {articles.map((article) => (
+          <ArticleCard article={article} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .tool-articles {
+    margin-top: var(--s8);
+    padding-top: var(--s6);
+    border-top: 1px solid var(--hair);
+  }
+
+  .tool-articles__lead {
+    margin-bottom: var(--s4);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  .tool-articles__grid {
+    display: grid;
+    gap: var(--s4);
+  }
+
+  @media (min-width: 40rem) {
+    .tool-articles__grid {
+      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    }
+  }
+</style>

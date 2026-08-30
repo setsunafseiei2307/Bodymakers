@@ -24,15 +24,18 @@ export const SITE_DESCRIPTION =
 export const SITE_URL = import.meta.env.SITE ?? 'https://bodymakers.example.com';
 
 /**
- * 検索エンジンに載せるかどうか。
+ * 検索エンジンにインデックスさせるか。
  *
- * 記事も機能もまだ揃っていない段階で検索結果に出ると、
- * 中身の薄いサイトとして評価が固まってしまう。内容が揃うまでは false にし、
- * URLを知っている人だけが見られる状態にしておく。
- * 公開の準備ができたら true にするだけでよい（robots.txt と各ページの
- * meta robots が同時に切り替わる）。
+ * false の間は robots.txt が全拒否になり、各ページにも noindex が入る。
+ * 中身が揃うまでは検索結果に出さない、という運用のための切り替え。
+ *
+ * 【true にした理由】
+ * 記事26本・ツール9種が揃い、canonical が実在するドメインを指すようになった。
+ * canonical が誤ったドメインを指したまま公開すると、検索エンジンに
+ * 「本物は別の場所にある」と伝えることになり回復に時間がかかるため、
+ * その修正を先に済ませてある。カテゴリのURL変更も公開前に終わらせた。
  */
-export const SEARCH_INDEXING = false;
+export const SEARCH_INDEXING = true;
 
 /** 言語・地域。lang 属性と OGP に使う。 */
 export const SITE_LOCALE = 'ja-JP';

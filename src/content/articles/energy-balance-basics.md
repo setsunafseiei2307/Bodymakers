@@ -14,6 +14,7 @@ takeaways:
   - 脂肪1kgを減らすにはおよそ7,200kcalの差が必要
   - 筋肉1kgが増えて上がる安静時代謝は1日約13kcal。よく言われる50kcalではない
 nextArticle: exercise-calorie-reality
+featured: true
 references:
   - title: 厚生労働省 e-ヘルスネット「肥満」
     url: https://www.e-healthnet.mhlw.go.jp/information/dictionary-summaries/m-obesity

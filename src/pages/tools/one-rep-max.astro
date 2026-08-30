@@ -4,6 +4,7 @@ import MaxTool from '../../components/react/MaxTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = '1RM換算';
 const description = '挙上重量とレップ数から、7つの換算式で1RM（1回だけ挙げられる最大重量）を推定します。余力（RPE）を入れた計算、懸垂やディップスの体重込みの計算にも同じ画面で切り替えられます。';
@@ -28,6 +29,8 @@ const description = '挙上重量とレップ数から、7つの換算式で1RM�
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <MaxTool client:load defaultMode="reps" />
+
+    <ToolArticles toolKey="oneRm" />
 
     <AdSlot id="tool-bottom" />
   </div>

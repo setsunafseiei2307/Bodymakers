@@ -68,6 +68,15 @@ const articles = defineCollection({
         }),
       )
       .default([]),
+    /**
+     * 一覧の先頭で大きく出す記事。
+     *
+     * 「新着＝先頭」にすると、書いた順という運営の都合が
+     * そのまま並びになる。検索需要が大きい記事や、当サイトの
+     * データを使った記事を先に見せたいので、明示で指定する。
+     * 複数指定した場合は公開日の新しい順に並ぶ。
+     */
+    featured: z.boolean().default(false),
     /** true の間はビルドに含めない（書きかけの記事を置いておける） */
     draft: z.boolean().default(false),
   }),

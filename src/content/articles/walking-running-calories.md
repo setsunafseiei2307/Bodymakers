@@ -17,6 +17,7 @@ takeaways:
   - 体重60kgなら速歩30分で126kcal、ランニング30分で261kcal
   - 速歩30分はビール350ml缶1本ぶん。脂肪1kgぶんは約29時間
 nextArticle: exercise-calorie-reality
+featured: true
 references:
   - title: 健康づくりのための身体活動基準2013（参考資料 生活活動・運動のメッツ表）
     url: https://www.e-healthnet.mhlw.go.jp/information/exercise/guidelines_2013.html

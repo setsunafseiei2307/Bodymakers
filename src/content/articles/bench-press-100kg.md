@@ -15,6 +15,7 @@ takeaways:
   - 同じ100kgでも体重によって意味がまったく違う
   - この順位は競技会出場者の中でのもの。一般の人と比べれば十分に強い
 nextArticle: strength-standards-explained
+featured: true
 references:
   - title: OpenPowerlifting — 公式競技会の記録データベース
     url: https://www.openpowerlifting.org

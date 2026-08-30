@@ -9,6 +9,7 @@ import '../styles/tools.css';
 import '../styles/strength.css';
 import AdSlot from '../components/AdSlot.astro';
 import { url } from '../lib/url';
+import ToolArticles from '../components/ToolArticles.astro';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -95,6 +96,8 @@ const articles = (await getPublishedArticles()).slice(0, 3);
         </section>
 
         {/* 広告枠（サイドバー）。960px以上でのみ表示される。 */}
+        <ToolArticles toolKey="strength" />
+
         <AdSlot id="sidebar" variant="sidebar" />
       </aside>
     </div>

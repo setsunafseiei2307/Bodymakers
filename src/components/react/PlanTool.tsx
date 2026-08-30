@@ -4,12 +4,20 @@
  * 「◯月までに◯kg落としたい」に、必要な速さと現実性を返す。
  *
  * 【入力の設計】
- * 体重・目標体重・目標日の3つだけで結果が出る。身長や年齢の入力を必須にすると、
+ * 体重・目標体重・期間の3つだけで結果が出る。身長や年齢の入力を必須にすると、
  * その場で試す人が離れるため。詳しく入れた人にだけ、1日の目標カロリーと
  * PFCまで出す（精度は上がるが、無くても計画の判定はできる）。
+ *
+ * 期間は「3ヶ月」のような長さで選べるようにしてある。
+ * 目標日をカレンダーで選ばせると、スマホでは操作が重いうえに、
+ * そもそも人は「11月30日までに」ではなく「3ヶ月で」と考えるため。
+ * 日付で決めたい人のために、カレンダー入力も残してある。
+ *
+ * 送信ボタンは置かず、入力した端から結果が変わる。
+ * ほかのツールがすべてそうなっているのに、ここだけボタンを押す作りだった。
  */
 
-import { useMemo, useState, type SyntheticEvent } from 'react';
+import { useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import {
@@ -46,6 +54,29 @@ const VERDICT_TEXT: Record<PaceVerdict, { label: string; tone: string }> = {
   aggressive: { label: 'かなり攻めたペース', tone: 'lv-elite' },
 };
 
+/**
+ * 期間の選択肢。
+ * 人が計画を考えるときの単位に合わせてある。
+ * 「日付で指定」を選んだときだけカレンダーを出す。
+ */
+const PERIOD_OPTIONS = [
+  { value: '1', label: '1ヶ月' },
+  { value: '2', label: '2ヶ月' },
+  { value: '3', label: '3ヶ月' },
+  { value: '6', label: '半年' },
+  { value: '12', label: '1年' },
+  { value: 'date', label: '日付で指定' },
+] as const;
+
+type PeriodValue = (typeof PERIOD_OPTIONS)[number]['value'];
+
+/** 今日から nか月後の日付。 */
+function dateAfterMonths(months: number): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  return toDateValue(d);
+}
+
 /** 今日から数えて既定で置く目標日（3か月後）。 */
 function defaultTargetDate(): string {
   const d = new Date();
@@ -75,8 +106,8 @@ function dateAfterWeeks(weeks: number): string {
 export default function PlanTool() {
   const [weight, setWeight] = useState('');
   const [target, setTarget] = useState('');
+  const [period, setPeriod] = useState<PeriodValue>('3');
   const [date, setDate] = useState(defaultTargetDate);
-  const [submitted, setSubmitted] = useState(false);
 
   // 詳しい入力。開いた人にだけ1日の目標カロリーとPFCまで出す
   const [detailed, setDetailed] = useState(false);
@@ -87,28 +118,39 @@ export default function PlanTool() {
 
   const weightKg = parseNumber(weight);
   const targetWeightKg = parseNumber(target);
+
+  /** 実際に使う目標日。期間で選んでいるときはそこから計算する。 */
+  const targetDate = period === 'date' ? date : dateAfterMonths(Number(period));
+
   const weeks = useMemo(() => {
-    if (date === '') return null;
-    const [y, m, d] = date.split('-').map(Number);
+    if (targetDate === '') return null;
+    const [y, m, d] = targetDate.split('-').map(Number);
     if (!y || !m || !d) return null;
     return weeksUntil(new Date(y, m - 1, d));
-  }, [date]);
+  }, [targetDate]);
+
+  /**
+   * 両方の体重が入るまではエラーを出さない。
+   * 入力の途中で赤字が出ると、打っている最中に急かされる感じになる。
+   */
+  const ready = weight !== '' && target !== '';
 
   const errors = useMemo(() => {
-    if (!submitted) return [];
+    if (!ready) return [];
     return validatePlanInput({
       weightKg: weightKg ?? NaN,
       targetWeightKg: targetWeightKg ?? NaN,
       weeks: weeks ?? NaN,
     });
-  }, [submitted, weightKg, targetWeightKg, weeks]);
+  }, [ready, weightKg, targetWeightKg, weeks]);
 
   const errorFor = (field: string) => errors.find((e) => e.field === field)?.message;
 
   const plan = useMemo<PlanResult | null>(() => {
-    if (!submitted || weightKg == null || targetWeightKg == null || weeks == null) return null;
+    if (!ready || errors.length > 0) return null;
+    if (weightKg == null || targetWeightKg == null || weeks == null) return null;
     return buildPlan({ weightKg, targetWeightKg, weeks });
-  }, [submitted, weightKg, targetWeightKg, weeks]);
+  }, [ready, errors, weightKg, targetWeightKg, weeks]);
 
   /** 詳しい入力がそろっていれば、1日の目標カロリーとPFCを出す。 */
   const macros = useMemo(() => {
@@ -143,16 +185,11 @@ export default function PlanTool() {
     return result == null ? null : { ...result, capped };
   }, [plan, detailed, sex, age, height, activity, weightKg]);
 
-  function submit(event: SyntheticEvent) {
-    event.preventDefault();
-    setSubmitted(true);
-  }
-
   function reset() {
     setWeight('');
     setTarget('');
+    setPeriod('3');
     setDate(defaultTargetDate());
-    setSubmitted(false);
     setDetailed(false);
     setAge('');
     setHeight('');
@@ -163,7 +200,7 @@ export default function PlanTool() {
 
   return (
     <div className="tool">
-      <form onSubmit={submit} noValidate>
+      <div>
         <Slip code="PLAN" title="いつまでに、何kg">
           <div className="row">
             <NumberField
@@ -184,38 +221,52 @@ export default function PlanTool() {
             />
           </div>
 
-          <DateField
-            label="目標日"
-            value={date}
-            onChange={setDate}
-            min={toDateValue(new Date())}
-            error={errorFor('weeks')}
-            hint="この日までに届くかどうかを判定します。"
+          <Segmented
+            label="いつまでに"
+            value={period}
+            onChange={setPeriod}
+            options={PERIOD_OPTIONS}
           />
 
-          <div className="tool__actions">
-            <button type="submit" className="button button--lg button--block">
-              計画を立てる
-            </button>
-            {submitted && (
+          {period === 'date' && (
+            <DateField
+              label="目標日"
+              value={date}
+              onChange={setDate}
+              min={toDateValue(new Date())}
+              error={errorFor('weeks')}
+            />
+          )}
+
+          {period !== 'date' && errorFor('weeks') && (
+            <p className="field__error">{errorFor('weeks')}</p>
+          )}
+
+          <p className="tool__note">
+            目標は <strong>{formatDate(targetDate)}</strong>（あと
+            {weeks == null ? '—' : fmt(weeks, 0)}週）です。
+          </p>
+
+          {(weight !== '' || target !== '') && (
+            <div className="tool__actions">
               <button type="button" className="button button--ghost button--block" onClick={reset}>
                 入力をクリア
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <p className="tool__note">
             入力した内容は送信も保存もされません。この端末の中だけで計算しています。
           </p>
         </Slip>
-      </form>
+      </div>
 
       {plan && verdict && band && (
         <>
           <div className={`slip record ${verdict.tone}`}>
             <div className="slip__band">
               <span>{plan.mode === 'cut' ? 'FAT LOSS PLAN' : 'WEIGHT GAIN PLAN'}</span>
-              <span>{formatDate(date)}まで</span>
+              <span>{formatDate(targetDate)}まで</span>
             </div>
 
             <div className="record__body">

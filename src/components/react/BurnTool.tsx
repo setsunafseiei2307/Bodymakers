@@ -13,12 +13,13 @@ import { useMemo, useState } from 'react';
 import { fmt, parseNumber } from '../../lib/format';
 import { ACTIVITIES, METS_SOURCE, activityGroups, burnedKcal, findActivity, minutesForKcal } from '../../lib/mets';
 import { PORTIONS, foodEquivalents } from '../../lib/foodEquivalent';
+import { formatPace, pace, runningKcal } from '../../lib/running';
 import { FOOD_SOURCE, findFood } from '../../lib/foods';
 import { url } from '../../lib/url';
 import { NumberField, Segmented, SelectField, Slip } from './ui';
 import { useQueryDefaults } from './useQueryDefaults';
 
-type Mode = 'burn' | 'food';
+type Mode = 'burn' | 'run' | 'food';
 
 /** 分を「1時間20分」の形にする。 */
 function formatMinutes(minutes: number): string {
@@ -37,6 +38,10 @@ export default function BurnTool() {
   const [activityId, setActivityId] = useState(ACTIVITIES[0].id);
   const [minutes, setMinutes] = useState('30');
   const [portionId, setPortionId] = useState(PORTIONS[0].foodId);
+  // 走った距離と時間。「ランニング30分」だけでは、分速134mなのか
+  // ゆっくりなのかが分からず、消費カロリーが倍近く変わる。
+  const [distance, setDistance] = useState('5');
+  const [runMinutes, setRunMinutes] = useState('30');
 
   // 記事から /tools/burn?activity=walk-brisk のように送られてくる。
   // 収録していない活動IDや範囲外の数値は無視して既定値のままにする。
@@ -89,6 +94,36 @@ export default function BurnTool() {
     })).filter((row) => row.minutes != null);
   }, [portionKcal, weightKg, weightError]);
 
+  const distanceValue = parseNumber(distance);
+  const runMinutesValue = parseNumber(runMinutes);
+
+  const distanceError =
+    distance !== '' && (distanceValue == null || distanceValue <= 0 || distanceValue > 300)
+      ? '0より大きく300km以下で入力してください。'
+      : undefined;
+  const runMinutesError =
+    runMinutes !== '' && (runMinutesValue == null || runMinutesValue <= 0 || runMinutesValue > 1440)
+      ? '0より大きく1440分以下で入力してください。'
+      : undefined;
+
+  /** ペースと、そのペースで使うメッツの段 */
+  const paceResult = useMemo(() => {
+    if (distanceError || runMinutesError) return null;
+    if (distanceValue == null || runMinutesValue == null) return null;
+    return pace(distanceValue, runMinutesValue);
+  }, [distanceValue, runMinutesValue, distanceError, runMinutesError]);
+
+  const runBurned = useMemo(() => {
+    if (paceResult == null || weightKg == null || weightError) return null;
+    if (distanceValue == null || runMinutesValue == null) return null;
+    return runningKcal(distanceValue, runMinutesValue, weightKg);
+  }, [paceResult, weightKg, weightError, distanceValue, runMinutesValue]);
+
+  const runEquivalents = useMemo(
+    () => (runBurned == null ? [] : foodEquivalents(runBurned)),
+    [runBurned],
+  );
+
   return (
     <div className="tool">
       <Slip code="BURN" title="運動と食べ物を行き来する">
@@ -98,6 +133,7 @@ export default function BurnTool() {
           onChange={setMode}
           options={[
             { value: 'burn', label: '運動 → カロリー' },
+            { value: 'run', label: '走った距離から' },
             { value: 'food', label: '食べ物 → 運動時間' },
           ]}
         />
@@ -132,6 +168,36 @@ export default function BurnTool() {
               inputMode="numeric"
               error={minutesError}
             />
+          </>
+        ) : mode === 'run' ? (
+          <>
+            <div className="row row--2">
+              <NumberField
+                label="走った（歩いた）距離"
+                unit="km"
+                value={distance}
+                onChange={setDistance}
+                placeholder="5"
+                error={distanceError}
+              />
+              <NumberField
+                label="かかった時間"
+                unit="分"
+                value={runMinutes}
+                onChange={setRunMinutes}
+                placeholder="30"
+                inputMode="numeric"
+                error={runMinutesError}
+              />
+            </div>
+            {paceResult && (
+              <p className="tool__note">
+                ペースは <strong className="num">{formatPace(paceResult.minutesPerKm)}</strong>
+                （時速 {fmt(paceResult.kmPerHour, 1)}km・分速 {fmt(paceResult.metersPerMinute, 0)}m）。
+                メッツ表の「{paceResult.step.label}」の行
+                （{paceResult.step.mets} メッツ）で計算します。
+              </p>
+            )}
           </>
         ) : (
           <SelectField
@@ -195,6 +261,64 @@ export default function BurnTool() {
               カロリーは{FOOD_SOURCE.publisher}「{FOOD_SOURCE.title}」の収載値
               （{FOOD_SOURCE.basis}）です。1食ぶんのグラム数は当サイトで決めた目安で、
               各行の括弧内に書いてあります。実際の量が違えばそのぶん増減します。
+            </p>
+          </Slip>
+        </>
+      )}
+
+      {/* --- 走った距離 → カロリー --- */}
+      {mode === 'run' && runBurned != null && paceResult && (
+        <>
+          <div className="slip record lv-intermediate">
+            <div className="slip__band">
+              <span>RUN</span>
+              <span>
+                {fmt(distanceValue, 1)}km を {formatMinutes(runMinutesValue ?? 0)}
+              </span>
+            </div>
+            <div className="record__body">
+              <div className="record__head">
+                <p className="record__level num">{fmt(runBurned, 0)}</p>
+                <p className="record__ratio">
+                  <span>消費</span>
+                  <em className="num">kcal</em>
+                </p>
+              </div>
+              <div className="record__bar" aria-hidden="true" />
+              <p className="record__total">
+                {formatPace(paceResult.minutesPerKm)}
+                <span className="record__sep">/</span>
+                {paceResult.step.mets} メッツ × {formatMinutes(runMinutesValue ?? 0)} × 体重{' '}
+                {fmt(weightKg, 1)}kg
+              </p>
+            </div>
+          </div>
+
+          <Slip code="FOOD" title="食べ物でいうと">
+            <ul className="burn__list">
+              {runEquivalents.map((item) => (
+                <li className="burn__row" key={item.food.id}>
+                  <span className="burn__name">
+                    {item.food.emoji && <span aria-hidden="true">{item.food.emoji} </span>}
+                    {item.label}
+                    <span className="burn__sub">
+                      {fmt(item.kcalPerPortion, 0)}kcal（{item.note}）
+                    </span>
+                  </span>
+                  <span className="burn__value num">
+                    <small>× </small>
+                    {fmt(item.portions, 1)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="source-note" style={{ marginTop: 'var(--s4)' }}>
+              メッツ値は{METS_SOURCE.publisher}「{METS_SOURCE.title}」の収載値です。
+              ペースから表のどの行を使うかを決めています。表には分速139m・161m・188mの
+              行もありますが、当サイトでは値を一次資料で確認できていないため入れていません。
+              そのため分速134mより速いペースは、すべて8.3メッツで計算しています
+              （消費カロリーは少なめに出ます）。
             </p>
           </Slip>
         </>

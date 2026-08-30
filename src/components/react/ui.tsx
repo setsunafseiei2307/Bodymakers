@@ -205,9 +205,12 @@ export function Slip({
 }) {
   return (
     <section className="slip">
+      {/* 帯のタイトルは、このまとまりの見出しそのもの。
+          span のままだと、ページ内の見出しが h1 の次にいきなり h3 になり
+          （表やパネルの中の見出しが h3 のため）階層が飛んでいた。 */}
       <div className="slip__band">
         <span>{code}</span>
-        <span>{title}</span>
+        <h2 className="slip__title">{title}</h2>
       </div>
       <div className="slip__body">{children}</div>
     </section>

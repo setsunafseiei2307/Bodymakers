@@ -253,9 +253,12 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
             const repsId = `${formId}-${lift}-reps`;
             const errorId = `${formId}-${lift}-error`;
             return (
-              <div className="lift-input" key={lift}>
+              // 種目名は入力欄のまとまりを示すラベルであって、
+              // 文書の見出しではない。h3 にしていたためトップページで
+              // h1 → h3 と見出しが飛んでいた。group にして名前で結ぶ。
+              <div className="lift-input" key={lift} role="group" aria-label={LIFT_LABELS[lift]}>
                 <div className="lift-input__header">
-                  <h3 className="lift-input__name">{LIFT_LABELS[lift]}</h3>
+                  <span className="lift-input__name">{LIFT_LABELS[lift]}</span>
                   {!(quickStart && !expanded) && (
                     <p className="lift-input__hint">{LIFT_HINTS[lift]}</p>
                   )}

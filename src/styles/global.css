@@ -350,6 +350,17 @@ code {
   letter-spacing: 0.16em;
 }
 
+/* 帯の中の見出し。帯の文字組みをそのまま引き継ぐ
+   （h2 の既定の大きさ・余白を打ち消す） */
+.slip__title {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
 .slip__body { padding: var(--s5) var(--s4); }
 
 /* --- ボタン --- */
@@ -597,6 +608,10 @@ code {
 }
 
 /* 料理一覧のカテゴリ見出しと、調理済み収載の注記 */
+.dish__group {
+  margin-top: var(--s5);
+}
+
 .dish__group + .dish__group {
   margin-top: var(--s6);
 }

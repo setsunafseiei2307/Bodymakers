@@ -4,6 +4,8 @@ import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { FOOD_SOURCE } from '../lib/foods';
 import { url } from '../lib/url';
+import { METS_SOURCE } from '../lib/mets';
+import NextSteps from '../components/NextSteps.astro';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -221,7 +223,86 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         算出しており、たんぱく質×4＋脂質×9＋炭水化物×4 では収載値と一致しないためです。
       </p>
 
-      <h2>3. データに関する方針</h2>
+      <h2>3. 料理の栄養価</h2>
+      <p>
+        成分表に「カツ丼」や「親子丼」は収載されていません。そこで、
+        成分表にある食材を組み合わせて1食ぶんを作っています。
+      </p>
+      <ul>
+        <li>
+          <strong>カロリーとPFCは成分表の収載値そのまま</strong>です。
+          当サイトが決めているのは「何をどれだけ使ったか」だけで、
+          その配合は画面にすべて表示しています。
+        </li>
+        <li>
+          素材から組めるものは素材から組んでいます。
+          「親子丼の具」のような調理済みの収載食品を1行使えば数字は出ますが、
+          鶏肉が何g入っているのかが読む人に分からなくなるためです。
+        </li>
+        <li>
+          例外は<strong>揚げ物と炒め物</strong>で、こちらは調理済みの収載値を使います。
+          生の材料から吸油量を見積もると、そこが推測になるためです。
+          その場合は画面に理由を表示しています。
+        </li>
+        <li>
+          分量は標準的な一人前として当サイトが決めたものです。
+          店や作り方で変わるため、必ず内訳と一緒に表示しています。
+        </li>
+      </ul>
+
+      <h2>4. 運動の強度（メッツ）</h2>
+      <p>
+        消費カロリーの計算に使うメッツ値は
+        <strong>{METS_SOURCE.publisher}「{METS_SOURCE.title}」</strong>
+        の収載値です。元になっているのは {METS_SOURCE.original} です。
+      </p>
+      <ul>
+        <li>
+          出典:{' '}
+          <a href={METS_SOURCE.url} target="_blank" rel="noopener noreferrer">
+            {METS_SOURCE.url}
+          </a>
+        </li>
+        <li>
+          収録しているのは<strong>日常的な活動の抜粋のみ</strong>です。
+          全項目を入れるには公式PDFの取り込みが必要で、
+          収録していない活動は「データなし」として扱っています。
+          近い値で埋めることはしていません。
+        </li>
+        <li>
+          ランニング・ウォーキングは、距離と時間からペースを求めて
+          表のどの行を使うかを決めています。ただし
+          <strong>分速の記載を確認できた4行だけ</strong>を収録しており、
+          表にある分速139m・161m・188mの行は値を一次資料で確認できていないため
+          入れていません。そのため分速134mより速いペースは
+          すべて8.3メッツで計算しており、消費カロリーは少なめに出ます。
+        </li>
+        <li>
+          消費カロリーは <code>メッツ × 時間 × 体重 × 1.05</code> で計算しています。
+          安静時（1メッツ）ぶんを含んだ総消費量で、
+          「その活動で余分に使った量」ではありません。
+        </li>
+      </ul>
+
+      <h2>5. 筋トレ種目と部位</h2>
+      <p>
+        種目ごとの「どの筋肉を使うか」は解剖の情報として持っています。
+        一方で、<strong>種目別のメッツ値（消費カロリー）は持っていません。</strong>
+      </p>
+      <ul>
+        <li>
+          厚生労働省のメッツ表にも Compendium of Physical Activities にも
+          種目個別の値は収載されておらず、筋力トレーニングはまとめて
+          扱われています。種目別の消費カロリーを出すには推測が必要になるため、
+          出していません。
+        </li>
+        <li>
+          筋トレの消費カロリーは、従来どおりメッツ表の
+          「筋力トレーニング」の行で計算します。
+        </li>
+      </ul>
+
+      <h2>6. データに関する方針</h2>
       <ul>
         <li>AIによる推測値・補完値をデータに加えることはしません。</li>
         <li>すべての数値に出典を記録し、画面上にも表示します。</li>
@@ -231,7 +312,7 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         </li>
       </ul>
 
-      <h2>4. 免責</h2>
+      <h2>7. 免責</h2>
       <p>
         本サイトの内容は一般的な情報提供を目的としたものであり、
         医学的な診断・治療・指導を行うものではありません。
@@ -240,7 +321,8 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         詳細は<a href={url('/disclaimer')}>免責事項</a>をご確認ください。
       </p>
     </div>
-  </div>
+    <NextSteps title="このデータを使ってみる" tools={['strength', 'foods', 'burn']} articles={true} />
+</div>
 </BaseLayout>
 
 <style>

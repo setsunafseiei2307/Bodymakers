@@ -85,6 +85,10 @@
 .lift-input__header { margin-bottom: var(--s3); }
 
 .lift-input__name {
+  /* h3 から span に変えたので、ブロックであることを明示する
+     （見出しではなく入力欄のまとまりを示すラベルのため） */
+  display: block;
+  color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 900;
 }

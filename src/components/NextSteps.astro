@@ -1,0 +1,125 @@
+---
+/**
+ * ページの終わりに置く行き先。
+ *
+ * 【なぜ必要か】
+ * 出典ページ・このサイトについて・404 は、読み終わったあとに行き場が
+ * なかった。ヘッダーはあるが、スマホでは追従しないので画面外にある。
+ * 最後まで読んだ人が、そこで止まってしまう。
+ *
+ * 出す行き先は呼び出し側が決める。どのページでも同じものを出すと、
+ * 記事末のCTAと同じ「全ページ同一の誘導」になってしまう。
+ */
+import { findTool, type ToolKey } from '../config/tools';
+import { url } from '../lib/url';
+
+interface Props {
+  /** 見出し。省略すると「次はこちら」 */
+  title?: string;
+  /** 出すツールのキー */
+  tools: ToolKey[];
+  /** 記事一覧へのリンクも出すか */
+  articles?: boolean;
+}
+
+const { title = '次はこちら', tools, articles = true } = Astro.props;
+const entries = tools.map((key) => findTool(key)).filter((tool) => tool != null);
+---
+
+{
+  /* ツールが空でも、記事への導線だけを出したい場面がある */
+  (entries.length > 0 || articles) && (
+    <nav class="next-steps" aria-label={title}>
+      <h2 class="next-steps__title">{title}</h2>
+      <ul class="next-steps__list">
+        {entries.map((tool) => (
+          <li>
+            <a class="next-steps__item" href={url(tool!.href)}>
+              <span class="next-steps__code">{tool!.code}</span>
+              <span class="next-steps__name">{tool!.label}</span>
+              <span class="next-steps__desc">{tool!.summary}</span>
+            </a>
+          </li>
+        ))}
+        {articles && (
+          <li>
+            <a class="next-steps__item" href={url('/articles')}>
+              <span class="next-steps__code">ARTICLES</span>
+              <span class="next-steps__name">記事を読む</span>
+              <span class="next-steps__desc">
+                筋力・トレーニング・栄養・ダイエットについて、出典を示しながら解説しています。
+              </span>
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .next-steps {
+    margin-top: var(--s8);
+    padding-top: var(--s6);
+    border-top: 1px solid var(--hair);
+  }
+
+  .next-steps__title {
+    margin-bottom: var(--s4);
+    font-size: 1rem;
+  }
+
+  .next-steps__list {
+    display: grid;
+    gap: var(--s3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .next-steps__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s1);
+    padding: var(--s4) var(--s5);
+    border: 1px solid var(--hair);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .next-steps__item:hover {
+    border-color: var(--signal);
+    color: inherit;
+  }
+
+  .next-steps__code {
+    color: var(--signal);
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .next-steps__name {
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .next-steps__item:hover .next-steps__name {
+    color: var(--signal);
+  }
+
+  .next-steps__desc {
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+  }
+
+  @media (min-width: 40rem) {
+    .next-steps__list {
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+  }
+</style>

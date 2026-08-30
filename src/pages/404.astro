@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { url } from '../lib/url';
+import NextSteps from '../components/NextSteps.astro';
 ---
 
 <BaseLayout title="ページが見つかりません" noindex>
@@ -15,7 +16,8 @@ import { url } from '../lib/url';
       <a class="button" href={url('/strength-standards')}>筋力レベル診断へ</a>
       <a class="button button--ghost" href={url('/articles')}>記事一覧へ</a>
     </div>
-  </div>
+    <NextSteps title="こちらからお進みください" tools={['strength', 'today', 'nutrition']} articles={true} />
+</div>
 </BaseLayout>
 
 <style>

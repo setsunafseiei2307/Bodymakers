@@ -2,7 +2,7 @@
 title: 「筋力レベル」の基準はどこから来ているのか
 description: 初心者・中級者・上級者といった筋力の区分は、何を根拠に線が引かれているのでしょうか。当サイトの判定基準の作り方と、その限界を説明します。
 publishedAt: 2026-08-28
-category: basics
+category: strength
 tags:
   - 筋力レベル
   - データ

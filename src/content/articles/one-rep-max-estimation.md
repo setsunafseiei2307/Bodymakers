@@ -2,7 +2,7 @@
 title: 1RMを実測せずに推定する方法と、その誤差
 description: 高重量の実測は事故のリスクがあります。挙上重量とレップ数から1RMを推定する換算式の仕組みと、どのくらいの誤差を見込むべきかを整理します。
 publishedAt: 2026-08-27
-category: training
+category: strength
 tags:
   - 1RM
   - トレーニング計画

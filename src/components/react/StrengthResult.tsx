@@ -40,7 +40,9 @@ const RADAR_AXES: readonly LiftId[] = ['squat', 'deadlift', 'bench'] as const;
 
 /** 順位の言い換え。数字の向きを読み違えられないよう「◯%より強い」で出す。 */
 function rankText(percentile: number, bound: 'in-range' | 'below' | 'above'): string {
-  if (bound === 'below') return '基準表の範囲外（上位99%未満）';
+  // 「範囲外」とだけ返すと、競技会の記録より下にいる人＝ほとんどの人を
+  // 突き放すことになる。どこにいるかを事実として伝える言い方にする。
+  if (bound === 'below') return '競技会の記録を基準にした表より下';
   if (bound === 'above') return `上位${fmt(topPercent(percentile), 0)}%以内`;
   return `競技者の${fmt(percentile, 1)}%より上`;
 }
@@ -153,10 +155,13 @@ function ThresholdTable({
   thresholds,
   currentLevelId,
   oneRmKg,
+  bodyweightKg,
 }: {
   thresholds: LevelThreshold[];
   currentLevelId: LevelId;
   oneRmKg: number;
+  /** 体重比を出すために使う。0以下なら比の列は出さない */
+  bodyweightKg: number;
 }) {
   return (
     <div className="table-scroll">
@@ -168,6 +173,7 @@ function ThresholdTable({
           <tr>
             <th scope="col">レベル</th>
             <th scope="col">必要な推定1RM</th>
+            <th scope="col">体重比</th>
             <th scope="col">差</th>
           </tr>
         </thead>
@@ -184,6 +190,11 @@ function ThresholdTable({
                 </th>
                 <td className="num">
                   {threshold.weightKg > 0 ? `${fmt(threshold.weightKg, 1)} kg` : '—'}
+                </td>
+                <td className="num">
+                  {threshold.weightKg > 0 && bodyweightKg > 0
+                    ? `${fmt(threshold.weightKg / bodyweightKg, 2)} 倍`
+                    : '—'}
                 </td>
                 <td className="num">
                   {threshold.weightKg <= 0 ? (
@@ -204,7 +215,7 @@ function ThresholdTable({
 }
 
 /** 種目1行ぶんの台帳表示。 */
-function LiftRow({ lift }: { lift: LiftDiagnosis }) {
+function LiftRow({ lift, bodyweightKg }: { lift: LiftDiagnosis; bodyweightKg: number }) {
   return (
     <details className={`lift ${LEVEL_CLASS[lift.level.id]}`}>
       <summary className="lift__row">
@@ -237,6 +248,7 @@ function LiftRow({ lift }: { lift: LiftDiagnosis }) {
           thresholds={lift.thresholds}
           currentLevelId={lift.level.id}
           oneRmKg={lift.oneRmKg}
+          bodyweightKg={bodyweightKg}
         />
 
         <p className="source-note">
@@ -313,12 +325,44 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
             {lifts.length >= 2 && <Radar lifts={lifts} />}
             <div className="record__lifts">
               {lifts.map((lift) => (
-                <LiftRow key={lift.lift} lift={lift} />
+                <LiftRow key={lift.lift} lift={lift} bodyweightKg={bodyweightKg} />
               ))}
               <p className="record__hint">種目名を押すと内訳が開きます</p>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* この物差しが何なのかを、結果のすぐ下で必ず説明する。
+          競技会の記録との比較なので、一般の人の中での順位ではない。
+          そこを書かないと「初心者」の3文字だけが残ってしまう。 */}
+      <div className="yardstick">
+        <h3 className="yardstick__title">この判定は何と比べたものか</h3>
+        <p className="yardstick__text">
+          基準にしているのは<strong>公式競技会に出場した{fmt(sampleSize, 0)}人の記録</strong>です。
+          ジムに通う人や一般の人と比べたものではありません。
+        </p>
+        <p className="yardstick__text">
+          競技会に出る人は、そもそも何年もトレーニングを続けている人たちです。
+          つまり<strong>この表はかなり厳しい物差し</strong>で、
+          ここで「初心者」や「初級」と出ても、一般の人と比べれば十分に強い可能性が高いです。
+          {headline.bound === 'below' && (
+            <>
+              　表より下と出た場合も同じです。競技者の記録が並ぶ表の外側にいるだけで、
+              おかしなことは何も起きていません。
+            </>
+          )}
+        </p>
+        <p className="yardstick__text yardstick__text--muted">
+          一般人口を対象にした信頼できる大規模データは公開されていないため、
+          当サイトでは「一般の人の中で上位何%」という数字は出していません。
+          推測で基準を作ることはしない方針です。
+        </p>
+        <p className="yardstick__ratio">
+          比べる相手を変えたいときは<strong>体重比</strong>を見てください。
+          今回は<em className="num"> {fmt(headlineRatio, 2)}倍 </em>です。
+          他人ではなく、前回の自分と比べられます。
+        </p>
       </div>
 
       {/* --- 共有カード。結果票とは別物として、投稿用の1枚だけを作る --- */}

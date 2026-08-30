@@ -27,26 +27,23 @@ import {
   validatePlanInput,
   weeksUntil,
   type PaceVerdict,
-  type PlanMode,
   type PlanResult,
 } from '../../lib/plan';
 import { url } from '../../lib/url';
 import { DateField, NumberField, SelectField, Segmented, Slip } from './ui';
 
-/** 判定ごとの見出しと色。文言は減量と増量で変える。 */
-const VERDICT_TEXT: Record<PlanMode, Record<PaceVerdict, { label: string; tone: string }>> = {
-  cut: {
-    gentle: { label: 'ゆるやか', tone: 'lv-novice' },
-    recommended: { label: '推奨ペース', tone: 'lv-intermediate' },
-    fast: { label: '速い', tone: 'lv-advanced' },
-    unrealistic: { label: '無理がある', tone: 'lv-elite' },
-  },
-  bulk: {
-    gentle: { label: 'ゆるやか', tone: 'lv-novice' },
-    recommended: { label: '推奨ペース', tone: 'lv-intermediate' },
-    fast: { label: '速い', tone: 'lv-advanced' },
-    unrealistic: { label: '脂肪が増えやすい', tone: 'lv-elite' },
-  },
+/**
+ * 判定ごとの見出しと色。
+ *
+ * 目標を持って来た人に「無理だ」と言い渡す画面にはしない。
+ * どの速さでも計算結果は出したうえで、その速さで何が起きやすいかを添える。
+ * 見出しは可否ではなく、速さの度合いだけを表す言葉にしている。
+ */
+const VERDICT_TEXT: Record<PaceVerdict, { label: string; tone: string }> = {
+  gentle: { label: 'じっくりコース', tone: 'lv-novice' },
+  recommended: { label: 'ちょうどいいペース', tone: 'lv-intermediate' },
+  fast: { label: 'ややがんばるペース', tone: 'lv-advanced' },
+  aggressive: { label: 'かなり攻めたペース', tone: 'lv-elite' },
 };
 
 /** 今日から数えて既定で置く目標日（3か月後）。 */
@@ -136,7 +133,7 @@ export default function PlanTool() {
     // 期限が無理な計画では、そこから出た過不足をそのまま摂取カロリーに直すと
     // 飢餓状態の数字が「1日の目標」として出てしまう。
     // その場合は推奨ペースの上限から出した過不足に置き換える。
-    const capped = plan.verdict === 'unrealistic';
+    const capped = plan.verdict === 'aggressive';
     const gap = capped ? plan.recommendedDailyKcalGap.steepest : plan.dailyKcalGap;
 
     const ratio = gap / tdee;
@@ -161,13 +158,13 @@ export default function PlanTool() {
     setHeight('');
   }
 
-  const verdict = plan ? VERDICT_TEXT[plan.mode][plan.verdict] : null;
+  const verdict = plan ? VERDICT_TEXT[plan.verdict] : null;
   const band = plan ? PACE_BANDS[plan.mode] : null;
 
   return (
     <div className="tool">
       <form onSubmit={submit} noValidate>
-        <Slip code="PLAN" title="いつまでに、どれだけ">
+        <Slip code="PLAN" title="いつまでに、何kg">
           <div className="row">
             <NumberField
               label="今の体重"
@@ -255,36 +252,58 @@ export default function PlanTool() {
               <p className="plan__verdict">
                 {plan.verdict === 'recommended' && (
                   <>
-                    この速さは、{plan.mode === 'cut' ? '除脂肪量（筋肉）を保ちやすい' : '脂肪の増加を抑えやすい'}
-                    とされる<strong>週{band.min}〜{band.max}%</strong>の範囲に収まっています。
+                    いいペースです。この速さは
+                    {plan.mode === 'cut'
+                      ? '、落ちるぶんに筋肉が含まれにくいとされる'
+                      : '、増えるぶんの脂肪を抑えやすいとされる'}
+                    <strong>週{band.min}〜{band.max}%</strong>の範囲に収まっています。
+                    生活を大きく変えずに続けやすい範囲でもあります。
                   </>
                 )}
                 {plan.verdict === 'gentle' && (
                   <>
-                    推奨の下限（週{band.min}%）より{plan.mode === 'cut' ? 'ゆっくり' : '控えめ'}です。
-                    余裕があるので、途中で崩れても取り返せます。
-                    急ぐ必要があれば、期限を<strong>{dateAfterWeeks(plan.recommendedWeeks.slowest)}</strong>
-                    より手前に置くこともできます。
+                    余裕のあるペースです。多少ゆらいでも取り返せるので、
+                    はじめての方や、長く続けたい方に向いています。
+                    もう少し早めたいときは、
+                    <strong>{dateAfterWeeks(plan.recommendedWeeks.slowest)}</strong>
+                    あたりを目標にする手もあります。
                   </>
                 )}
                 {plan.verdict === 'fast' && (
                   <>
-                    推奨の上限（週{band.max}%）を超えています。
-                    {plan.mode === 'cut'
-                      ? '達成できても、落ちた体重に筋肉が多く含まれる可能性があります。'
-                      : '増えた体重に脂肪が多く含まれる可能性があります。'}
-                    推奨の範囲に収めるなら、目標日は
-                    <strong>{dateAfterWeeks(plan.recommendedWeeks.fastest)}</strong>以降になります。
+                    ややがんばりが要るペースです。計算上はこの期限で届きます。
+                    ただ{plan.mode === 'cut'
+                      ? '、体には環境に慣れようとする働き（ホメオスタシス）があり、減量が進むほど消費カロリーも下がっていきます。後半は同じ食事量でも落ちにくくなるかもしれません。'
+                      : '、増えるスピードが上がるほど、増えた体重に占める脂肪の割合も上がっていきます。'}
+                    <strong>{dateAfterWeeks(plan.recommendedWeeks.fastest)}</strong>
+                    ごろまで見ておくと、気持ちに余裕を持って進められます。
                   </>
                 )}
-                {plan.verdict === 'unrealistic' && (
+                {plan.verdict === 'aggressive' && (
                   <>
-                    この期限では週{fmt(plan.weeklyPercent, 2)}%
-                    {plan.mode === 'cut' ? '減らす' : '増やす'}必要があり、
-                    推奨の上限（週{band.max}%）の1.5倍を超えます。
-                    {plan.mode === 'cut'
-                      ? 'この速さの減量は、筋肉の減少と体調の悪化を招きやすいことが知られています。'
-                      : 'この速さで増やすと、増えた体重の多くが脂肪になります。'}
+                    かなり攻めたペースです。理論上は1日
+                    <strong>
+                      {plan.dailyKcalGap < 0 ? '−' : '+'}
+                      {fmt(Math.abs(plan.dailyKcalGap), 0)}kcal
+                    </strong>
+                    で届く計算になります。
+                    {plan.mode === 'cut' ? (
+                      <>
+                        {' '}
+                        ただ正直なところ、この速さを保つのは簡単ではありません。
+                        体には環境に慣れようとする働き（ホメオスタシス）があり、
+                        減量が進むと消費カロリーが体重の減少以上に下がることが報告されています。
+                        後半は同じ食事量でも落ちにくくなり、日常生活もしんどくなりがちです。
+                      </>
+                    ) : (
+                      <>
+                        {' '}
+                        ただこの速さだと、増えた体重の多くが脂肪になりやすくなります。
+                        あとで落とす手間を考えると、急がないほうが近道かもしれません。
+                      </>
+                    )}{' '}
+                    <strong>{dateAfterWeeks(plan.recommendedWeeks.fastest)}</strong>
+                    ごろを目安にすると、続けながら届きやすくなります。
                   </>
                 )}
               </p>
@@ -370,10 +389,12 @@ export default function PlanTool() {
                   <>
                     {macros.capped && (
                       <p className="note note--warn" style={{ marginTop: 'var(--s4)' }}>
-                        <span className="note__title">目標日ではなく、推奨ペースで計算しています</span>
-                        設定した期限に間に合わせるには極端に少ない食事量が必要になり、
-                        目標として出すべき数字ではありません。ここでは推奨の上限
-                        （週{PACE_BANDS[plan.mode].max}%）で進めた場合の数字を出しています。
+                        <span className="note__title">続けやすいペースで計算しています</span>
+                        設定した目標日に合わせると食事量がかなり少なくなってしまうため、
+                        ここでは週{PACE_BANDS[plan.mode].max}%
+                        （{plan.mode === 'cut' ? '筋肉を保ちやすいとされる上限' : '脂肪を抑えやすいとされる上限'}）
+                        で進めた場合の数字を出しています。目標日を少し後ろにずらすと、
+                        この食事量のまま届きます。
                       </p>
                     )}
 

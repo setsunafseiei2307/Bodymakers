@@ -35,14 +35,14 @@ describe('judgePace', () => {
     expect(judgePace(0.5, 'cut')).toBe('recommended');
     expect(judgePace(1.0, 'cut')).toBe('recommended');
     expect(judgePace(1.3, 'cut')).toBe('fast');
-    expect(judgePace(2.0, 'cut')).toBe('unrealistic');
+    expect(judgePace(2.0, 'cut')).toBe('aggressive');
   });
 
   it('増量は減量より狭い範囲になる', () => {
     expect(PACE_BANDS.bulk.max).toBeLessThan(PACE_BANDS.cut.max);
     expect(judgePace(0.3, 'bulk')).toBe('recommended');
     expect(judgePace(0.7, 'bulk')).toBe('fast');
-    expect(judgePace(1.2, 'bulk')).toBe('unrealistic');
+    expect(judgePace(1.2, 'bulk')).toBe('aggressive');
   });
 });
 
@@ -80,12 +80,12 @@ describe('buildPlan', () => {
     const light = buildPlan({ weightKg: 50, targetWeightKg: 42, weeks: 10 })!;
     expect(heavy.weeklyChangeKg).toBeCloseTo(light.weeklyChangeKg, 6);
     expect(heavy.verdict).toBe('recommended');
-    expect(light.verdict).toBe('unrealistic');
+    expect(light.verdict).toBe('aggressive');
   });
 
   it('無理な期限には、推奨ペースで必要な週数を返す', () => {
     const plan = buildPlan({ weightKg: 80, targetWeightKg: 70, weeks: 4 })!;
-    expect(plan.verdict).toBe('unrealistic');
+    expect(plan.verdict).toBe('aggressive');
     // 週1%（0.8kg）で10kg落とすなら12.5週
     expect(plan.recommendedWeeks.fastest).toBeCloseTo(12.5, 5);
     // 週0.5%（0.4kg）なら25週

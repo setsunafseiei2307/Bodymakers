@@ -7,7 +7,6 @@ tags:
   - ダイエット
   - カロリー
   - 基礎代謝
-  - 基礎
 primaryTool: plan
 ctaLabel: 自分の減量ペースを計算する
 takeaways:

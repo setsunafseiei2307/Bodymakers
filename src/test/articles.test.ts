@@ -157,6 +157,43 @@ describe('記事の frontmatter', () => {
     }
   });
 
+  /**
+   * 「基礎」「計算」のような分類寄りのタグは、主題が違う記事どうしを
+   * 結びつけてしまう。実際に 1RM の記事とダイエットの記事が
+   * 「基礎」だけで関連記事になっていた。カテゴリで表せるものは
+   * タグにしない。
+   */
+  it('分類・メタのタグを主題タグとして使っていない', () => {
+    const metaTags = ['基礎', '計算', '選び方', '統計', 'まとめ', '入門', '解説'];
+    for (const article of articles) {
+      const tags = (article.raw.match(/^tags:\n((?:  - .*\n?)+)/m)?.[1] ?? '')
+        .split('\n')
+        .filter((line) => line.startsWith('  - '))
+        .map((line) => line.slice(4).trim());
+      for (const tag of tags) {
+        expect(metaTags, `${article.slug}: 「${tag}」は分類であって主題ではありません`).not.toContain(
+          tag,
+        );
+      }
+    }
+  });
+
+  it('どの記事も、ほかの記事と最低1つはタグを共有している', () => {
+    const tagsOf = (article: Frontmatter) =>
+      (article.raw.match(/^tags:\n((?:  - .*\n?)+)/m)?.[1] ?? '')
+        .split('\n')
+        .filter((line) => line.startsWith('  - '))
+        .map((line) => line.slice(4).trim());
+
+    for (const article of articles) {
+      const mine = new Set(tagsOf(article));
+      const shared = articles.some(
+        (other) => other.slug !== article.slug && tagsOf(other).some((t) => mine.has(t)),
+      );
+      expect(shared, `${article.slug} はどの記事ともタグを共有していません`).toBe(true);
+    }
+  });
+
   it('本文からサイト内のリンク先がすべて実在する', () => {
     for (const article of articles) {
       const links = [...article.body.matchAll(/\]\((\/articles\/[a-z0-9-]+)\)/g)];

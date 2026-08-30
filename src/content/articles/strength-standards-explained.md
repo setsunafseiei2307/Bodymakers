@@ -6,7 +6,7 @@ category: basics
 tags:
   - 筋力レベル
   - データ
-  - 統計
+  - ベンチプレス
 primaryTool: strength
 ctaLabel: 自分の記録で診断する
 takeaways:

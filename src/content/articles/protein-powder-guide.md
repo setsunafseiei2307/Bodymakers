@@ -7,7 +7,6 @@ tags:
   - プロテイン
   - たんぱく質
   - サプリメント
-  - 選び方
 primaryTool: foods
 ctaLabel: 食事から何g摂れているか調べる
 toolQuery: q=鶏むね

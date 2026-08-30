@@ -8,6 +8,7 @@ tags:
   - トレーニング原則
   - ボリューム
   - セット数
+  - トレーニング計画
 primaryTool: oneRm
 ctaLabel: 前回からどれだけ伸びたか計算する
 toolQuery: reps=8

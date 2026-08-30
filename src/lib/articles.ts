@@ -43,8 +43,35 @@ export async function getArticlesByCategory(category: string): Promise<Article[]
 
 /**
  * 関連記事を選ぶ。
- * 同じタグを多く共有する記事を優先し、足りなければ同カテゴリの新しい記事で埋める。
+ *
+ * 【なぜ素朴な「同カテゴリの新着3件」ではだめか】
+ * カテゴリは3つしかなく、basics には筋力・ダイエット・栄養が混在している。
+ * 同カテゴリというだけで並べると、ベンチプレス100kgの記事に
+ * 「体脂肪率」「エネルギー収支」が並ぶ。実際そうなっていた。
+ *
+ * そこで、
+ *  - タグの一致を最も重く見る（書き手が付けた主題そのもの）
+ *  - 送り先のツールが同じなら、読者の目的が近い
+ *  - 「次に読む」で結ばれた関係は双方向で効かせる
+ * とし、カテゴリが同じだけの記事は関連として出さない。
+ *
+ * 3件を埋めることより、関係のない記事を出さないことを優先する。
  */
+
+/** タグが1つ一致したときの点。主題が同じという最も強い手がかり */
+const SCORE_SHARED_TAG = 3;
+/** 送り先のツールが同じときの点。読者の目的が近い */
+const SCORE_SAME_TOOL = 2;
+/** 「次に読む」で結ばれているときの点。向きは問わない */
+const SCORE_NEXT_LINK = 2;
+/** カテゴリが同じときの点。これ単独では関連と見なさない */
+const SCORE_SAME_CATEGORY = 1;
+/**
+ * これ未満の記事は出さない。
+ * カテゴリ一致だけ（1点）では足りない、という線引き。
+ */
+const MIN_SCORE = SCORE_SAME_TOOL;
+
 export async function getRelatedArticles(
   current: Article,
   limit = 3,
@@ -56,11 +83,28 @@ export async function getRelatedArticles(
     const sharedTags = article.data.tags.filter((tag) =>
       current.data.tags.includes(tag),
     ).length;
-    const sameCategory = article.data.category === current.data.category ? 1 : 0;
-    return { article, score: sharedTags * 2 + sameCategory };
+
+    const sameTool =
+      current.data.primaryTool != null &&
+      article.data.primaryTool === current.data.primaryTool;
+
+    const nextLinked =
+      current.data.nextArticle === article.id ||
+      article.data.nextArticle === current.id;
+
+    const sameCategory = article.data.category === current.data.category;
+
+    const score =
+      sharedTags * SCORE_SHARED_TAG +
+      (sameTool ? SCORE_SAME_TOOL : 0) +
+      (nextLinked ? SCORE_NEXT_LINK : 0) +
+      (sameCategory ? SCORE_SAME_CATEGORY : 0);
+
+    return { article, score };
   });
 
   return scored
+    .filter((item) => item.score >= MIN_SCORE)
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return byNewest(a.article, b.article);

@@ -5,8 +5,8 @@ publishedAt: 2026-08-27
 category: training
 tags:
   - 1RM
-  - 計算
-  - 基礎
+  - トレーニング計画
+  - 筋力レベル
 primaryTool: oneRm
 ctaLabel: 今日のセットから1RMを計算する
 toolQuery: reps=5

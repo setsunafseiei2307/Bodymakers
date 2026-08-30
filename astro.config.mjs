@@ -5,13 +5,19 @@ import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
 
 /**
- * 公開URL。独自ドメインを取得したら SITE_URL を差し替えるだけで
- * sitemap・RSS・canonical・OGP がすべて追従する。
+ * 公開URL。canonical・OGP・sitemap・RSS がすべてここを基準にする。
  *
+ * 既定値は現在の本番URL。ここが実在しないドメインだと、canonical が
+ * 「本物は別の場所にある」と宣言することになり、検索結果から実ページが
+ * 落ちうる。そのため既定値はプレースホルダにせず、実際の配信先にしておく。
+ *
+ * 独自ドメインを取得したら SITE_URL を設定すれば、そちらが優先される。
  * CF_PAGES_URL は Cloudflare Pages がビルド時に入れる自分のURL。
- * Workers ビルドでは入らないので、その場合はダッシュボードで SITE_URL を設定する。
  */
-const site = process.env.SITE_URL ?? process.env.CF_PAGES_URL ?? 'https://bodymakers.example.com';
+const site =
+  process.env.SITE_URL ??
+  process.env.CF_PAGES_URL ??
+  'https://bodymakers.shushushu1990.workers.dev';
 
 /**
  * サブディレクトリ配信（GitHub Pages の project pages など）に対応するためのベースパス。
@@ -54,6 +60,43 @@ function satteriBasePath(prefix) {
   };
 }
 
+/**
+ * 記事本文の表を、横スクロールできる箱で包む。
+ *
+ * Markdown で書いた表は素の <table> になるため、列が多いと
+ * スマホでページ全体が横に伸びる（実測: 6列の表で 360px の画面に対し 419px）。
+ * ツール側の表は JSX で .table-scroll を書いているが、Markdown ではそれができない。
+ * そこで変換時に包む。
+ *
+ * role="region" と tabindex="0" を付けるのは、スクロールできる領域を
+ * キーボードでも操作できるようにするため（付けないと矢印キーで動かせない）。
+ */
+function satteriTableScroll() {
+  return {
+    name: 'bodymakers-table-scroll',
+    element: {
+      filter: ['table'],
+      /**
+       * @param {import('hast').Element} node
+       * @param {{ wrapNode(node: unknown, parent: unknown): void }} ctx
+       */
+      visit(node, ctx) {
+        ctx.wrapNode(node, {
+          type: 'element',
+          tagName: 'div',
+          properties: {
+            className: ['table-scroll'],
+            role: 'region',
+            tabIndex: 0,
+            'aria-label': '表（横にスクロールできます）',
+          },
+          children: [],
+        });
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site,
   base,
@@ -74,10 +117,14 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   markdown: {
-    // 既定の Sätteri プロセッサのまま、リンクの書き換えだけを足す
-    processor: satteri(
-      basePrefix === '' ? {} : { hastPlugins: [satteriBasePath(basePrefix)] },
-    ),
+    // 既定の Sätteri プロセッサのまま、必要な書き換えだけを足す
+    processor: satteri({
+      hastPlugins: [
+        satteriTableScroll(),
+        // ルート直下配信のときはリンク書き換えが不要なので差し込まない
+        ...(basePrefix === '' ? [] : [satteriBasePath(basePrefix)]),
+      ],
+    }),
     shikiConfig: {
       themes: { light: 'github-light', dark: 'github-dark' },
       wrap: true,

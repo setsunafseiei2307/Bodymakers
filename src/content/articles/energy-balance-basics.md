@@ -2,12 +2,18 @@
 title: ダイエットは何で決まるのか——エネルギー収支の基本
 description: 体重が増えるか減るかは「食べた分」と「使った分」の差で決まります。その差がどれくらいで1kgになるのか、なぜ途中で止まるのか、筋肉を増やすと本当に代謝が上がるのかを、出典を示しながら整理します。
 publishedAt: 2026-08-30
-category: basics
+category: diet
 tags:
   - ダイエット
   - カロリー
   - 基礎代謝
-  - 基礎
+primaryTool: plan
+ctaLabel: 自分の減量ペースを計算する
+takeaways:
+  - 体重が動くかどうかは、摂取カロリーと消費カロリーの差で決まる
+  - 脂肪1kgを減らすにはおよそ7,200kcalの差が必要
+  - 筋肉1kgが増えて上がる安静時代謝は1日約13kcal。よく言われる50kcalではない
+nextArticle: exercise-calorie-reality
 references:
   - title: 厚生労働省 e-ヘルスネット「肥満」
     url: https://www.e-healthnet.mhlw.go.jp/information/dictionary-summaries/m-obesity

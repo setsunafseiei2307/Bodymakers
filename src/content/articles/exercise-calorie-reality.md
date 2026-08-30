@@ -2,12 +2,20 @@
 title: 運動で消費できるカロリーは、思っているより少ない
 description: ウォーキング30分は何kcalなのか。メッツを使った計算方法と、「運動した分を食べ物に換算するとどれくらいか」を実際の数字で確かめます。運動を否定する話ではなく、期待値を合わせるための記事です。
 publishedAt: 2026-08-30
-category: basics
+category: diet
 tags:
   - ダイエット
   - 有酸素運動
   - カロリー
   - メッツ
+primaryTool: burn
+ctaLabel: 自分の体重で消費カロリーを出す
+toolQuery: activity=jog-slow&minutes=30
+takeaways:
+  - 運動の消費カロリーは、多くの人が思っているより小さい
+  - 同じ運動でも体重が重い人ほど多く消費する
+  - 食事のほうが動かしやすい変数。運動はそれを補強するもの
+nextArticle: pfc-balance-basics
 references:
   - title: 厚生労働省「健康づくりのための身体活動基準2013」（参考資料 生活活動・運動のメッツ表）
     url: https://www.e-healthnet.mhlw.go.jp/information/exercise/guidelines_2013.html

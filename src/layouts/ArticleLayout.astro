@@ -4,14 +4,28 @@ import ArticleCard from '../components/ArticleCard.astro';
 import { CATEGORIES, SITE_NAME, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
 import AdSlot from '../components/AdSlot.astro';
+import ArticleToc from '../components/ArticleToc.astro';
+import ToolCta from '../components/ToolCta.astro';
+import { readingMinutes } from '../lib/readingTime';
 import { url } from '../lib/url';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
 
 interface Props {
   article: Article;
   related: Article[];
+  /** 目次に使う見出し。render() が返すものをそのまま渡す */
+  headings: Heading[];
+  /** 書き手が指定した「次に読む」記事。無ければ関連記事だけ出す */
+  nextArticle?: Article;
 }
 
-const { article, related } = Astro.props;
+const { article, related, headings, nextArticle } = Astro.props;
+const minutes = readingMinutes(article.body ?? '');
 const { data } = article;
 const category = CATEGORIES[data.category as CategoryKey];
 
@@ -65,6 +79,7 @@ const structuredData = {
               </time>
             )
           }
+          <span>約{minutes}分で読めます</span>
         </div>
         <h1>{data.title}</h1>
         <p class="article-header__description">{data.description}</p>
@@ -78,6 +93,23 @@ const structuredData = {
           )
         }
       </header>
+
+      {
+        data.takeaways.length > 0 && (
+          <section class="takeaways" aria-labelledby="takeaways-title">
+            <h2 class="takeaways__title" id="takeaways-title">
+              この記事で分かること
+            </h2>
+            <ul class="takeaways__list">
+              {data.takeaways.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <ArticleToc headings={headings} />
 
       <div class="article-body">
         <slot />
@@ -101,6 +133,9 @@ const structuredData = {
                 </li>
               ))}
             </ol>
+            <p class="references__more">
+              <a href={url('/sources')}>当サイトが使っているデータの出どころ</a>
+            </p>
           </section>
         )
       }
@@ -120,23 +155,27 @@ const structuredData = {
           本文とは区別できるようこのブロック内に置き、PR表記を添えること。 */}
       <AdSlot id="article-end" />
 
-      {/* --- 診断への回遊導線。記事からツールへ送る --- */}
-      <aside class="cta-card">
-        <h2 class="cta-card__title">自分の筋力レベルを確認する</h2>
-        <p class="cta-card__text">
-          挙上重量とレップ数を入れるだけで、同じ性別・体重の人の中での位置が分かります。
-          登録不要・データ保存なし。
-        </p>
-        <a class="button button--block" href={url('/strength-standards')}>筋力レベル診断へ</a>
-      </aside>
+      {/* 記事ごとに行き先が変わる導線。primaryTool が無い記事では出ない。 */}
+      <ToolCta toolKey={data.primaryTool} label={data.ctaLabel} query={data.toolQuery} />
     </article>
+
+    {
+      nextArticle && (
+        <section class="next-up">
+          <h2 class="next-up__title">次に読む</h2>
+          <ArticleCard article={nextArticle} />
+        </section>
+      )
+    }
 
     {
       related.length > 0 && (
         <section class="related">
           <div class="section-head">
-            <h2>関連記事</h2>
-            <a href={url('/articles')}>記事一覧へ</a>
+            <h2>{nextArticle ? 'ほかの関連記事' : '関連記事'}</h2>
+            <a href={url(`/articles/category/${category.slug}`)}>
+              {category.label}の記事をもっと見る
+            </a>
           </div>
           <div class="card-grid">
             {related.map((item) => (
@@ -248,32 +287,60 @@ const structuredData = {
     margin-top: var(--s6);
   }
 
-  .cta-card {
-    margin-top: var(--s6);
-    padding: var(--s6) var(--s5);
-    border: 1px solid color-mix(in srgb, var(--signal) 30%, transparent);
-    border-radius: var(--r-md);
-    background: var(--signal-soft);
-    text-align: center;
+  /* 冒頭の「この記事で分かること」。
+     検索から来た人が、読む前に自分の疑問と合っているか判断できるようにする。 */
+  .takeaways {
+    margin-top: var(--s5);
+    padding: var(--s5);
+    border-left: 3px solid var(--signal);
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+    background: var(--inset);
   }
 
-  .cta-card__title {
+  .takeaways__title {
+    margin-bottom: var(--s3);
+    font-size: 0.9375rem;
+  }
+
+  .takeaways__list {
+    margin: 0;
+    padding-left: 1.3em;
+    color: var(--body);
+    font-size: 0.9375rem;
+    line-height: 1.85;
+  }
+
+  .takeaways__list li + li {
+    margin-top: var(--s2);
+  }
+
+  .references__more {
+    margin-top: var(--s4);
+    font-size: 0.8125rem;
+  }
+
+  .next-up {
+    margin-top: var(--s8);
+    padding-top: var(--s6);
+    border-top: 1px solid var(--hair);
+  }
+
+  .next-up__title {
+    margin-bottom: var(--s4);
     font-size: 1.125rem;
   }
 
-  .cta-card__text {
-    margin: var(--s3) 0 var(--s5);
-    color: var(--body);
-    font-size: 0.9375rem;
-    line-height: 1.8;
-  }
-
-  .cta-card .button {
-    max-width: 22rem;
-    margin-inline: auto;
-  }
-
   .related {
+    margin-top: var(--s7);
+  }
+
+  /* 「次に読む」が無いときだけ、関連記事の上に区切り線を置く */
+  .next-up + .related {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .article-page > .related:not(.next-up + .related) {
     margin-top: var(--s8);
     padding-top: var(--s6);
     border-top: 1px solid var(--hair);

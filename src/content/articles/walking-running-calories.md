@@ -2,13 +2,21 @@
 title: ウォーキング・ランニングで何kcal消費するのか——メッツで計算する
 description: 歩く・走るで消費するカロリーを、厚生労働省のメッツ表の値だけを使って体重別に計算しました。食べ物に置き換えるとどれくらいかも併記しています。
 publishedAt: 2026-08-30
-category: basics
+category: diet
 tags:
   - ウォーキング
   - ランニング
   - 消費カロリー
   - メッツ
   - ダイエット
+primaryTool: burn
+ctaLabel: あなたが30分歩くと何kcal？
+toolQuery: activity=walk-brisk&minutes=30
+takeaways:
+  - 消費カロリー = メッツ × 時間 × 体重 × 1.05
+  - 体重60kgなら速歩30分で126kcal、ランニング30分で261kcal
+  - 速歩30分はビール350ml缶1本ぶん。脂肪1kgぶんは約29時間
+nextArticle: exercise-calorie-reality
 references:
   - title: 健康づくりのための身体活動基準2013（参考資料 生活活動・運動のメッツ表）
     url: https://www.e-healthnet.mhlw.go.jp/information/exercise/guidelines_2013.html

@@ -8,6 +8,15 @@ tags:
   - トレーニング原則
   - ボリューム
   - セット数
+  - トレーニング計画
+primaryTool: oneRm
+ctaLabel: 前回からどれだけ伸びたか計算する
+toolQuery: reps=8
+takeaways:
+  - 体は今の要求に合わせて適応する。要求が変わらなければ変わらない
+  - 増やせるのは重量だけではない。回数・セット数・頻度・動作の質
+  - 週あたりのセット数は、部位あたり週10セット前後で頭打ちになる可能性がある
+nextArticle: rpe-basics
 references:
   - title: "American College of Sports Medicine (2009). Position Stand: Progression Models in Resistance Training for Healthy Adults. Medicine & Science in Sports & Exercise, 41(3), 687-708."
     url: https://doi.org/10.1249/MSS.0b013e3181915670

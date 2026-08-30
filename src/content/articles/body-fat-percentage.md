@@ -2,12 +2,19 @@
 title: 体脂肪率と除脂肪体重——体重計の数字より見るべきもの
 description: 体重が減らなくても体は変わっていることがあります。体脂肪率の測定がどれくらいずれるのか、除脂肪体重をどう使うのかを、比較研究の数値をもとに整理します。
 publishedAt: 2026-08-30
-category: basics
+category: diet
 tags:
   - 体脂肪率
   - 除脂肪体重
   - 体組成計
   - ダイエット
+primaryTool: nutrition
+ctaLabel: 除脂肪体重からPFCを計算する
+takeaways:
+  - 減らしたいのは体重ではなく脂肪量。除脂肪体重は保つ
+  - 家庭用の体組成計は水分量からの推定。DXAとは平均4.0%ずれる
+  - 絶対値ではなく、同じ条件で測った変化の向きを見る
+nextArticle: weight-loss-plateau
 references:
   - title: "Reliability, biological variability, and accuracy of multi-frequency bioelectrical impedance analysis for measuring body composition components. Frontiers in Nutrition (2024), 11, 1491931."
     url: https://doi.org/10.3389/fnut.2024.1491931

@@ -63,12 +63,24 @@ export const FOOTER_ITEMS: readonly NavItem[] = [
 
 /**
  * 記事カテゴリ。content collection のスキーマ（src/content.config.ts）と対で管理する。
- * フェーズ2で「食事メニュー」「種目解説」を足す想定でカテゴリを先に切ってある。
+ *
+ * 【なぜこの4つか】
+ * 以前は training / nutrition / basics の3つだったが、basics が
+ * 筋力・ダイエット・栄養の寄せ集めになっていて、探す側の役に立っていなかった。
+ * 実際、ベンチプレスの記事とダイエットの記事が同じ棚に並んでいた。
+ *
+ * 分け方の基準は「読む人が何を知りたくて来たか」。
+ *   筋力・データ … 自分の強さを知りたい
+ *   トレーニング … 伸ばし方を知りたい
+ *   栄養・食事   … 何をどれだけ食べるかを知りたい
+ *   ダイエット   … 体重を落としたい
+ * サイトの都合ではなく、来訪の動機で切っている。
  */
 export const CATEGORIES = {
+  strength: { slug: 'strength', label: '筋力・データ' },
   training: { slug: 'training', label: 'トレーニング' },
   nutrition: { slug: 'nutrition', label: '栄養・食事' },
-  basics: { slug: 'basics', label: '基礎知識' },
+  diet: { slug: 'diet', label: 'ダイエット' },
 } as const;
 
 export type CategoryKey = keyof typeof CATEGORIES;

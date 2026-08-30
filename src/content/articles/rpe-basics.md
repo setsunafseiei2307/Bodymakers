@@ -8,6 +8,14 @@ tags:
   - 1RM
   - トレーニング計画
   - 強度
+primaryTool: rpe
+ctaLabel: RPEから今日の重量を逆算する
+toolQuery: reps=5&rpe=8
+takeaways:
+  - RPEは「限界まであと何回残っているか」で強度を表す
+  - 同じ100kg×5回でも、RPE10なら1RM 115.9kg、RPE8なら123.3kg
+  - 主観指標なので個人差・日差がある。結果は目安として扱う
+nextArticle: one-rep-max-estimation
 references:
   - title: "Zourdos, M. C. et al. (2016). Novel Resistance Training-Specific Rating of Perceived Exertion Scale Measuring Repetitions in Reserve. Journal of Strength and Conditioning Research, 30(1), 267-275."
     url: https://doi.org/10.1519/JSC.0000000000001049

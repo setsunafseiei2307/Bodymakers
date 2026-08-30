@@ -752,3 +752,50 @@
   font-family: var(--f-mono);
   font-size: 0.6875rem;
 }
+
+/* 診断結果の直後に置く「この物差しは何か」の説明。
+   競技者との比較であることを書かないと、「初心者」の3文字だけが残る。 */
+.yardstick {
+  margin-top: var(--s5);
+  padding: var(--s5);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--signal);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: var(--inset);
+}
+
+.yardstick__title {
+  margin-bottom: var(--s3);
+  font-size: 0.9375rem;
+}
+
+.yardstick__text {
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.9;
+}
+
+.yardstick__text + .yardstick__text {
+  margin-top: var(--s3);
+}
+
+.yardstick__text--muted {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.yardstick__ratio {
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hair);
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.9;
+}
+
+.yardstick__ratio em {
+  color: var(--signal);
+  font-size: 1.25rem;
+  font-style: normal;
+  font-weight: 900;
+}

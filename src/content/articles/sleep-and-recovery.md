@@ -8,6 +8,12 @@ tags:
   - 回復
   - ダイエット
   - 筋肉量
+primaryTool: plan
+ctaLabel: 今のペースを見直す
+takeaways:
+  - 同じ食事でも、睡眠5.5時間では脂肪の減少が55%少なかった（10人の試験）
+  - 成人の推奨睡眠時間は7〜9時間。個人差がある
+  - 忙しい時期はペースを緩める判断も有効
 references:
   - title: "Nedeltcheva, A. V. et al. (2010). Insufficient sleep undermines dietary efforts to reduce adiposity. Annals of Internal Medicine, 153(7), 435-441."
     url: https://doi.org/10.7326/0003-4819-153-7-201010050-00006

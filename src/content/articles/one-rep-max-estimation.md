@@ -2,11 +2,19 @@
 title: 1RMを実測せずに推定する方法と、その誤差
 description: 高重量の実測は事故のリスクがあります。挙上重量とレップ数から1RMを推定する換算式の仕組みと、どのくらいの誤差を見込むべきかを整理します。
 publishedAt: 2026-08-27
-category: training
+category: strength
 tags:
   - 1RM
-  - 計算
-  - 基礎
+  - トレーニング計画
+  - 筋力レベル
+primaryTool: oneRm
+ctaLabel: 今日のセットから1RMを計算する
+toolQuery: reps=5
+takeaways:
+  - 1RMは実測しなくても、通常のセットから推定できる
+  - 換算式によって結果は変わる。当サイトは7式の平均とばらつきを出す
+  - レップ数が多いほど誤差は大きくなる
+nextArticle: rpe-basics
 references:
   - title: 'Epley, B. (1985). Poundage Chart. Boyd Epley Workout. Lincoln, NE: Body Enterprises.'
     note: 1RM推定式のうち最も広く使われるものの原典

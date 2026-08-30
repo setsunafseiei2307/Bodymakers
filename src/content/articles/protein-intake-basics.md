@@ -7,6 +7,13 @@ tags:
   - たんぱく質
   - PFC
   - 食事
+primaryTool: nutrition
+ctaLabel: 自分に必要なたんぱく質量を出す
+takeaways:
+  - 体重1kgあたり約1.6gが、筋肥大の効果が頭打ちになる目安
+  - 普通の食事だけでも到達できる量。サプリは必須ではない
+  - 「多いほど良い」ではなく、届いているかどうかが問題
+nextArticle: protein-powder-guide
 references:
   - title: 'Morton, R. W. et al. (2018). A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. British Journal of Sports Medicine, 52(6), 376-384.'
     url: https://doi.org/10.1136/bjsports-2017-097608

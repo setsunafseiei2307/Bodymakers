@@ -9,24 +9,37 @@
 import { useMemo, useState } from 'react';
 
 import { fmt } from '../../lib/format';
-import { DISHES, calcDish } from '../../lib/dishes';
+import { calcDish, dishesByCategory } from '../../lib/dishes';
 import { FOOD_SOURCE } from '../../lib/foods';
 import { Slip } from './ui';
 
 export default function DishPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const results = useMemo(() => DISHES.map((dish) => calcDish(dish)), []);
+  // カテゴリごとにまとめて計算しておく。品数が増えたので、
+  // 一列に並べると目当ての料理を探しにくい。
+  const groups = useMemo(
+    () =>
+      dishesByCategory().map((group) => ({
+        category: group.category,
+        results: group.dishes.map((dish) => calcDish(dish)),
+      })),
+    [],
+  );
+  const total = groups.reduce((sum, group) => sum + group.results.length, 0);
 
   return (
     <Slip code="DISH" title="料理から調べる">
       <p className="tool__note">
         成分表に載っているのは食材です。料理は当サイトで材料を組み合わせて計算しています。
-        押すと<strong>使った材料とグラム数を全部</strong>表示します。
+        押すと<strong>使った材料とグラム数を全部</strong>表示します。全{total}品。
       </p>
 
+      {groups.map((group) => (
+      <section key={group.category} className="dish__group">
+      <h3 className="dish__groupTitle">{group.category}</h3>
       <ul className="dish__list">
-        {results.map(({ dish, totals, rows }) => {
+        {group.results.map(({ dish, totals, rows }) => {
           const open = openId === dish.id;
           return (
             <li key={dish.id} className="dish__item">
@@ -72,6 +85,13 @@ export default function DishPanel() {
                     食物繊維 {fmt(totals.fiber, 1)}g ／ 食塩相当量 {fmt(totals.salt, 1)}g
                   </p>
 
+                  {dish.composite && dish.compositeNote && (
+                    <p className="dish__composite">
+                      <strong>この料理の内訳について：</strong>
+                      {dish.compositeNote}
+                    </p>
+                  )}
+
                   {/* ここが本題。配合を伏せたまま数字だけ出さない */}
                   <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
                     <table className="rows">
@@ -115,6 +135,8 @@ export default function DishPanel() {
           );
         })}
       </ul>
+      </section>
+      ))}
     </Slip>
   );
 }

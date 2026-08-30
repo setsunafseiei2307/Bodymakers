@@ -1,12 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import RpeTool from '../../components/react/RpeTool';
+import MaxTool from '../../components/react/MaxTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
 
 const title = 'RPE換算';
-const description = 'RPE（あと何回できたか）と実施したセットから1RMを逆算し、次のセットの目安重量表を出します。';
+const description = 'RPE（あと何回できたか）と実施したセットから1RMを逆算し、次のセットの目安重量表を出します。レップ数だけの換算、懸垂やディップスの体重込みの計算にも同じ画面で切り替えられます。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -27,7 +27,7 @@ const description = 'RPE（あと何回できたか）と実施したセット�
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
-    <RpeTool client:load />
+    <MaxTool client:load defaultMode="rpe" />
 
     <AdSlot id="tool-bottom" />
   </div>

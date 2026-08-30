@@ -8,6 +8,14 @@ tags:
   - コンビニ
   - 外食
   - たんぱく質
+primaryTool: foods
+ctaLabel: 食べたものの栄養を調べる
+toolQuery: q=おにぎり
+takeaways:
+  - コンビニでもPFCは組める。鍵はたんぱく質を先に確保すること
+  - 丼ものや揚げ物は、材料の内訳を見ると数字の理由が分かる
+  - 完璧に合わせるより、たんぱく質を落とさないことを優先する
+nextArticle: pfc-balance-basics
 references:
   - title: 文部科学省「日本食品標準成分表（八訂）増補2023年」
     url: https://www.mext.go.jp/a_menu/syokuhinseibun/mext_00001.html

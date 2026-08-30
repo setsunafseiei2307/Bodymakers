@@ -19,6 +19,7 @@ import { fmt, parseNumber } from '../../lib/format';
 import { DISHES, calcDish } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
+import { exercisesByEquipment, findExercise, musclesWorked } from '../../lib/exercises';
 import { type BodyInput, type Sex } from '../../lib/nutrition';
 import {
   MUSCLE_GROUPS,
@@ -51,6 +52,11 @@ export default function TodayTool() {
   const [minutes, setMinutes] = useState('30');
 
   const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  /**
+   * やった筋トレ種目。部位だけを選ぶ形だと「胸」としか残らず、
+   * ベンチプレスもダンベルフライも同じ記録になってしまう。
+   */
+  const [doneExercises, setDoneExercises] = useState<string[]>([]);
 
   // 「1か月で何kg」を出すのに要る情報。押した人だけ入力する
   const [detailed, setDetailed] = useState(false);
@@ -123,13 +129,36 @@ export default function TodayTool() {
     setExercises((list) => [...list, { activityId, minutes: value }]);
   }
 
+  /**
+   * 鍛えた部位。選んだ種目から出したものと、手で足したものを合わせる。
+   * 種目から出したほうを主働筋、手で足したぶんもそこに含める
+   * （手で足す人は「狙って鍛えた部位」を入れているため）。
+   */
+  const worked = useMemo(() => {
+    const fromExercises = musclesWorked(doneExercises);
+    const primary = [...new Set<string>([...fromExercises.primary, ...muscles])];
+    const secondary = fromExercises.secondary.filter((muscle) => !primary.includes(muscle));
+    return { primary, secondary };
+  }, [doneExercises, muscles]);
+
+  function toggleExercise(id: string) {
+    setDoneExercises((list) =>
+      list.includes(id) ? list.filter((item) => item !== id) : [...list, id],
+    );
+  }
+
   function toggleMuscle(group: MuscleGroup) {
     setMuscles((list) =>
       list.includes(group) ? list.filter((g) => g !== group) : [...list, group],
     );
   }
 
-  const hasAnything = meals.length > 0 || exercises.length > 0;
+  // 筋トレの種目や部位だけを記録したい日もあるので、それだけでも集計を出す
+  const hasAnything =
+    meals.length > 0 ||
+    exercises.length > 0 ||
+    doneExercises.length > 0 ||
+    muscles.length > 0;
 
   return (
     <div className="tool">
@@ -273,9 +302,40 @@ export default function TodayTool() {
           <p className="tool__note">体重を入れると、運動の消費カロリーを計算できます。</p>
         )}
 
-        {/* 部位は計算で求まるものではなく、選んだ内容をそのまま記録する */}
+        {/* やった種目を選ぶ。部位は種目から決まるので入力させない */}
+        <details className="today__exercises">
+          <summary className="today__exercisesSummary">
+            筋トレの種目を選ぶ
+            {doneExercises.length > 0 && <span className="num"> （{doneExercises.length}種目）</span>}
+          </summary>
+          {exercisesByEquipment().map((group) => (
+            <fieldset key={group.equipment} className="today__muscles">
+              <legend className="field__label">{group.equipment}</legend>
+              <div className="today__chips">
+                {group.exercises.map((exercise) => (
+                  <button
+                    key={exercise.id}
+                    type="button"
+                    className={`today__chip${doneExercises.includes(exercise.id) ? ' is-on' : ''}`}
+                    aria-pressed={doneExercises.includes(exercise.id)}
+                    onClick={() => toggleExercise(exercise.id)}
+                  >
+                    {exercise.name}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+        </details>
+
+        {/* 種目を選ばずに部位だけ残したい人のための入力。
+            種目を選んでいればそちらが優先されるので、その旨を出す。 */}
         <fieldset className="today__muscles">
-          <legend className="field__label">鍛えた部位（筋トレをした場合）</legend>
+          <legend className="field__label">
+            {doneExercises.length > 0
+              ? '部位を手で足す（種目から出したものに加算されます）'
+              : '鍛えた部位（種目を選ばない場合）'}
+          </legend>
           <div className="today__chips">
             {MUSCLE_GROUPS.map((group) => (
               <button
@@ -344,9 +404,24 @@ export default function TodayTool() {
               </p>
             )}
 
-            {muscles.length > 0 && (
+            {worked.primary.length > 0 && (
               <p className="today__muscle-result">
-                鍛えた部位: <strong>{muscles.join('・')}</strong>
+                鍛えた部位: <strong>{worked.primary.join('・')}</strong>
+                {worked.secondary.length > 0 && (
+                  <span className="today__muscle-sub">
+                    　補助的に使った部位: {worked.secondary.join('・')}
+                  </span>
+                )}
+              </p>
+            )}
+
+            {doneExercises.length > 0 && (
+              <p className="today__done">
+                やった種目:{' '}
+                {doneExercises
+                  .map((id) => findExercise(id)?.name)
+                  .filter(Boolean)
+                  .join('・')}
               </p>
             )}
           </div>
@@ -368,7 +443,7 @@ export default function TodayTool() {
                   }),
                   intake: intake.totals,
                   exerciseKcal: exercise?.kcal ?? 0,
-                  muscles,
+                  muscles: worked.primary,
                   balance,
                 }),
                 SITE_NAME,
@@ -376,7 +451,7 @@ export default function TodayTool() {
             }
             filename="bodymakers-today.png"
             title="今日の記録"
-            revision={`${Math.round(intake.totals.kcal)}-${Math.round(exercise?.kcal ?? 0)}-${muscles.join()}-${balance ? Math.round(balance.balanceKcal) : 'x'}`}
+            revision={`${Math.round(intake.totals.kcal)}-${Math.round(exercise?.kcal ?? 0)}-${worked.primary.join()}-${balance ? Math.round(balance.balanceKcal) : 'x'}`}
           />
         </Slip>
       )}

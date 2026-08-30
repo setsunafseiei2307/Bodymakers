@@ -621,3 +621,46 @@ code {
   font-size: 0.8125rem;
   line-height: 1.8;
 }
+
+/* 今日の記録：筋トレ種目の選択 */
+.today__exercises {
+  margin-top: var(--s5);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  background: var(--inset);
+}
+
+.today__exercisesSummary {
+  padding: var(--s3) var(--s4);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.today__exercisesSummary:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -2px;
+}
+
+.today__exercises .today__muscles {
+  padding: 0 var(--s4) var(--s4);
+  border: none;
+  margin: 0;
+}
+
+/* 補助的に使った部位は、狙って鍛えた部位と区別する */
+.today__muscle-sub {
+  display: block;
+  margin-top: var(--s1);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.today__done {
+  margin-top: var(--s2);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}

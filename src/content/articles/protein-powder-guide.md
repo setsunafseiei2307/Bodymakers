@@ -10,6 +10,7 @@ tags:
   - 選び方
 primaryTool: foods
 ctaLabel: 食事から何g摂れているか調べる
+toolQuery: q=鶏むね
 takeaways:
   - プロテインは「食事で足りないぶんを埋める道具」であって必須ではない
   - ホエイ・カゼイン・ソイの違いは吸収の速さと使いどころ

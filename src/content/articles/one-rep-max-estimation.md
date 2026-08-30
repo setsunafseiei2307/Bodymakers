@@ -9,6 +9,7 @@ tags:
   - 基礎
 primaryTool: oneRm
 ctaLabel: 今日のセットから1RMを計算する
+toolQuery: reps=5
 takeaways:
   - 1RMは実測しなくても、通常のセットから推定できる
   - 換算式によって結果は変わる。当サイトは7式の平均とばらつきを出す

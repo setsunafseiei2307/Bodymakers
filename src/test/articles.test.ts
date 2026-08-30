@@ -6,6 +6,10 @@ import { describe, it, expect } from 'vitest';
 import { TOOLS } from '../config/tools';
 import { CATEGORY_KEYS } from '../config/site';
 import { readingMinutes } from '../lib/readingTime';
+import { findActivity } from '../lib/mets';
+import { searchFoods } from '../lib/foods';
+import { RPE_MAX_REPS, RPE_VALUES } from '../lib/rpe';
+import { MAX_REPS } from '../lib/onerm';
 
 /**
  * 記事の frontmatter が、記事→ツールの導線として成立しているかを検査する。
@@ -26,6 +30,7 @@ interface Frontmatter {
   title: string;
   category: string;
   primaryTool?: string;
+  toolQuery?: string;
   nextArticle?: string;
   takeaways: string[];
   references: number;
@@ -61,6 +66,7 @@ function parse(file: string): Frontmatter {
     title: scalar('title') ?? '',
     category: scalar('category') ?? '',
     primaryTool: scalar('primaryTool'),
+    toolQuery: scalar('toolQuery'),
     nextArticle: scalar('nextArticle'),
     takeaways: list('takeaways'),
     references: (raw.match(/^ {2}- title:/gm) ?? []).length,
@@ -105,6 +111,51 @@ describe('記事の frontmatter', () => {
       }
     },
   );
+
+  /**
+   * toolQuery はツールの初期値になる。存在しない活動IDや範囲外の数値を
+   * 書くと、ツール側で黙って無視されて「記事が約束した状態で開かない」。
+   * 静かに壊れるので、ここで実データと突き合わせる。
+   */
+  it('toolQuery の値が、送り先のツールで実際に使えるものになっている', () => {
+    for (const article of articles) {
+      if (!article.toolQuery) continue;
+      const params = new URLSearchParams(article.toolQuery);
+      const where = `${article.slug} (${article.primaryTool})`;
+
+      const activity = params.get('activity');
+      if (activity) {
+        expect(findActivity(activity), `${where}: 活動ID ${activity} は未収録`).toBeDefined();
+      }
+
+      const minutes = params.get('minutes');
+      if (minutes) {
+        expect(Number(minutes)).toBeGreaterThan(0);
+        expect(Number(minutes)).toBeLessThanOrEqual(600);
+      }
+
+      const reps = params.get('reps');
+      if (reps) {
+        const limit = article.primaryTool === 'rpe' ? RPE_MAX_REPS : MAX_REPS;
+        expect(Number.isInteger(Number(reps))).toBe(true);
+        expect(Number(reps), `${where}: reps=${reps} は範囲外`).toBeGreaterThanOrEqual(1);
+        expect(Number(reps), `${where}: reps=${reps} は範囲外`).toBeLessThanOrEqual(limit);
+      }
+
+      const rpe = params.get('rpe');
+      if (rpe) {
+        expect(
+          RPE_VALUES.map(String),
+          `${where}: RPE ${rpe} は換算表にない`,
+        ).toContain(rpe);
+      }
+
+      const q = params.get('q');
+      if (q) {
+        expect(searchFoods(q).length, `${where}: 「${q}」で食品が1件も出ない`).toBeGreaterThan(0);
+      }
+    }
+  });
 
   it('本文からサイト内のリンク先がすべて実在する', () => {
     for (const article of articles) {

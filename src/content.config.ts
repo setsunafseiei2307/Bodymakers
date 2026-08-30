@@ -39,6 +39,12 @@ const articles = defineCollection({
      */
     ctaLabel: z.string().max(60).optional(),
     /**
+     * ツールに渡す初期値（クエリ文字列。先頭の ? は書かない）。
+     * 例: 'activity=walk-brisk' と書くと /tools/burn?activity=walk-brisk へ送る。
+     * 受け取ったツール側で値を検証するので、無効な値は無視される。
+     */
+    toolQuery: z.string().max(120).optional(),
+    /**
      * 「この記事で分かること」。冒頭に出す。
      * 検索から来た人が、読む前に自分の疑問と合っているか判断できるようにする。
      * 本文の要約ではなく、読者が持ち帰れる結論を書く。

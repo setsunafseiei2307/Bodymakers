@@ -16,6 +16,7 @@ import { PORTIONS, foodEquivalents } from '../../lib/foodEquivalent';
 import { FOOD_SOURCE, findFood } from '../../lib/foods';
 import { url } from '../../lib/url';
 import { NumberField, Segmented, SelectField, Slip } from './ui';
+import { useQueryDefaults } from './useQueryDefaults';
 
 type Mode = 'burn' | 'food';
 
@@ -36,6 +37,21 @@ export default function BurnTool() {
   const [activityId, setActivityId] = useState(ACTIVITIES[0].id);
   const [minutes, setMinutes] = useState('30');
   const [portionId, setPortionId] = useState(PORTIONS[0].foodId);
+
+  // 記事から /tools/burn?activity=walk-brisk のように送られてくる。
+  // 収録していない活動IDや範囲外の数値は無視して既定値のままにする。
+  useQueryDefaults((params) => {
+    const id = params.get('activity');
+    if (id && findActivity(id)) setActivityId(id);
+
+    const min = params.get('minutes');
+    const minValue = min == null ? null : parseNumber(min);
+    if (minValue != null && minValue > 0 && minValue <= 600) setMinutes(String(minValue));
+
+    const kg = params.get('weight');
+    const kgValue = kg == null ? null : parseNumber(kg);
+    if (kgValue != null && kgValue >= 30 && kgValue <= 300) setWeight(String(kgValue));
+  });
 
   const weightKg = parseNumber(weight);
   const minutesValue = parseNumber(minutes);

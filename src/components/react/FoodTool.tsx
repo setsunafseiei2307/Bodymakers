@@ -35,6 +35,7 @@ const NUTRIENTS: { key: NutrientKey; label: string; unit: string; digits: number
   { key: 'fiber', label: '食物繊維', unit: 'g', digits: 1 },
   { key: 'salt', label: '食塩相当量', unit: 'g', digits: 2 },
 ];
+import { useQueryDefaults } from './useQueryDefaults';
 
 const MAX_GRAMS = 5000;
 const RESULT_LIMIT = 60;
@@ -53,6 +54,14 @@ export default function FoodTool() {
    * それ以外を調べたい人が自分で広げる形にしている。
    */
   const [showAll, setShowAll] = useState(false);
+
+  // 記事から /tools/foods?q=鶏むね のように送られてくる。
+  // 検索語はそのまま検索欄に入れる（絞り込みに使うだけで、表示には出さない）。
+  useQueryDefaults((params) => {
+    const q = params.get('q');
+    if (q && q.length <= 40) setQuery(q);
+    if (params.get('all') === '1') setShowAll(true);
+  });
 
   const categories = useMemo(() => categorySummaries(), []);
   const commonTotal = useMemo(() => commonFoodCount(), []);

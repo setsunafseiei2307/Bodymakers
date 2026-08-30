@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import { buildRpeMatrix, oneRmFromRpe, rpePercent, RPE_MAX_REPS, RPE_VALUES } from '../../lib/rpe';
+import { useQueryDefaults } from './useQueryDefaults';
 import { BigNumber, NumberField, SelectField, Slip, Waiting } from './ui';
 
 const MIN_WEIGHT = 1;
@@ -42,6 +43,30 @@ export default function RpeTool() {
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
   const [rpe, setRpe] = useState('8');
+
+  // 記事から /tools/rpe?reps=5&rpe=8 のように送られてくる。
+  // 換算表に無い組み合わせは無視して既定値のままにする。
+  useQueryDefaults((params) => {
+    const r = params.get('reps');
+    const repsParam = r == null ? null : parseNumber(r);
+    if (
+      repsParam != null &&
+      Number.isInteger(repsParam) &&
+      repsParam >= 1 &&
+      repsParam <= RPE_MAX_REPS
+    ) {
+      setReps(String(repsParam));
+    }
+
+    const e = params.get('rpe');
+    if (e != null && RPE_VALUES.some((value) => String(value) === e)) setRpe(e);
+
+    const w = params.get('weight');
+    const weightParam = w == null ? null : parseNumber(w);
+    if (weightParam != null && weightParam >= MIN_WEIGHT && weightParam <= MAX_WEIGHT) {
+      setWeight(String(weightParam));
+    }
+  });
 
   const weightValue = parseNumber(weight);
   const repsValue = parseNumber(reps);

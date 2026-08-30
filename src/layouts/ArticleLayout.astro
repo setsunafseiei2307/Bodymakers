@@ -156,7 +156,7 @@ const structuredData = {
       <AdSlot id="article-end" />
 
       {/* 記事ごとに行き先が変わる導線。primaryTool が無い記事では出ない。 */}
-      <ToolCta toolKey={data.primaryTool} label={data.ctaLabel} />
+      <ToolCta toolKey={data.primaryTool} label={data.ctaLabel} query={data.toolQuery} />
     </article>
 
     {

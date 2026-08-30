@@ -10,6 +10,7 @@ tags:
   - たんぱく質
 primaryTool: foods
 ctaLabel: 食べたものの栄養を調べる
+toolQuery: q=おにぎり
 takeaways:
   - コンビニでもPFCは組める。鍵はたんぱく質を先に確保すること
   - 丼ものや揚げ物は、材料の内訳を見ると数字の理由が分かる

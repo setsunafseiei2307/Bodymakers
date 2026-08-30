@@ -11,6 +11,7 @@ tags:
   - ダイエット
 primaryTool: burn
 ctaLabel: あなたが30分歩くと何kcal？
+toolQuery: activity=walk-brisk&minutes=30
 takeaways:
   - 消費カロリー = メッツ × 時間 × 体重 × 1.05
   - 体重60kgなら速歩30分で126kcal、ランニング30分で261kcal

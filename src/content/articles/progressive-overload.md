@@ -10,6 +10,7 @@ tags:
   - セット数
 primaryTool: oneRm
 ctaLabel: 前回からどれだけ伸びたか計算する
+toolQuery: reps=8
 takeaways:
   - 体は今の要求に合わせて適応する。要求が変わらなければ変わらない
   - 増やせるのは重量だけではない。回数・セット数・頻度・動作の質

@@ -10,6 +10,7 @@ tags:
   - 強度
 primaryTool: rpe
 ctaLabel: RPEから今日の重量を逆算する
+toolQuery: reps=5&rpe=8
 takeaways:
   - RPEは「限界まであと何回残っているか」で強度を表す
   - 同じ100kg×5回でも、RPE10なら1RM 115.9kg、RPE8なら123.3kg

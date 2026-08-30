@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react';
 import { fmt, parseNumber } from '../../lib/format';
 import { estimateOneRM, repTableFromOneRM, MAX_REPS } from '../../lib/onerm';
 import { BigNumber, NumberField, Slip, Waiting } from './ui';
+import { useQueryDefaults } from './useQueryDefaults';
 
 /** 受け付ける重量の範囲（kg）。 */
 const MIN_WEIGHT = 1;
@@ -18,6 +19,26 @@ const MAX_WEIGHT = 600;
 export default function OneRmTool() {
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
+
+  // 記事から /tools/one-rep-max?weight=100&reps=5 のように送られてくる。
+  useQueryDefaults((params) => {
+    const w = params.get('weight');
+    const weightParam = w == null ? null : parseNumber(w);
+    if (weightParam != null && weightParam >= MIN_WEIGHT && weightParam <= MAX_WEIGHT) {
+      setWeight(String(weightParam));
+    }
+
+    const r = params.get('reps');
+    const repsParam = r == null ? null : parseNumber(r);
+    if (
+      repsParam != null &&
+      Number.isInteger(repsParam) &&
+      repsParam >= 1 &&
+      repsParam <= MAX_REPS
+    ) {
+      setReps(String(repsParam));
+    }
+  });
 
   const weightValue = parseNumber(weight);
   const repsValue = parseNumber(reps);

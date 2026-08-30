@@ -10,6 +10,7 @@ tags:
   - メッツ
 primaryTool: burn
 ctaLabel: 自分の体重で消費カロリーを出す
+toolQuery: activity=jog-slow&minutes=30
 takeaways:
   - 運動の消費カロリーは、多くの人が思っているより小さい
   - 同じ運動でも体重が重い人ほど多く消費する

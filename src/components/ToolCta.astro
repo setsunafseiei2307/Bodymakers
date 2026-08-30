@@ -17,10 +17,14 @@ interface Props {
   toolKey?: string;
   /** 記事ごとの問いかけ。省略するとツール側の既定文言 */
   label?: string;
+  /** ツールに渡す初期値（クエリ文字列。先頭の ? は書かない） */
+  query?: string;
 }
 
-const { toolKey, label } = Astro.props;
+const { toolKey, label, query } = Astro.props;
 const tool = findTool(toolKey);
+// 初期値つきで開くと、記事で読んだ条件をツール側で入れ直さずに済む。
+const href = tool ? url(tool.href) + (query ? `?${query}` : '') : '';
 ---
 
 {
@@ -29,7 +33,7 @@ const tool = findTool(toolKey);
       <p class="tool-cta__eyebrow">あなたの場合は？</p>
       <h2 class="tool-cta__title">{label ?? tool.cta}</h2>
       <p class="tool-cta__text">{tool.ctaText}</p>
-      <a class="button button--block" href={url(tool.href)}>
+      <a class="button button--block" href={href}>
         {tool.label}を開く
       </a>
       <p class="tool-cta__note">登録不要。入力した内容は送信も保存もされません。</p>

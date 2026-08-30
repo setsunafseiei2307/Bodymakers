@@ -11,15 +11,30 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { SITE_NAME } from '../../config/site';
-import { buildShareCard, drawShareCard, CARD_SIZE } from '../../lib/strength/shareCard';
-import type { Diagnosis } from '../../lib/strength/diagnose';
+import { CARD_SIZE } from '../../lib/strength/shareCard';
 
 /** 描画に使う書体。読み込みが終わる前に描くと別の書体になってしまう。 */
 const REQUIRED_FONTS = ['900 40px "Noto Sans JP"', '180px Anton', '700 46px "Roboto Mono"'];
 
 type Status = 'drawing' | 'ready' | 'failed';
 
-export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
+/**
+ * 何を描くかは呼び出し側が決める。
+ * 筋力診断と今日の記録で中身は違うが、
+ * 書体の読み込み待ち・共有・保存の扱いは同じなのでここにまとめてある。
+ */
+interface Props {
+  /** 1080×1080 のキャンバスに描く処理 */
+  draw: (ctx: CanvasRenderingContext2D) => void;
+  /** 保存するときのファイル名 */
+  filename: string;
+  /** 共有シートに出すタイトル */
+  title: string;
+  /** 再描画のきっかけ。値が変わると描き直す */
+  revision: string;
+}
+
+export default function ShareCard({ draw, filename, title, revision }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState<Status>('drawing');
   const [message, setMessage] = useState<string | null>(null);
@@ -47,7 +62,7 @@ export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
       }
       if (cancelled) return;
 
-      drawShareCard(ctx, buildShareCard(diagnosis), SITE_NAME);
+      draw(ctx);
       setStatus('ready');
     }
 
@@ -55,7 +70,9 @@ export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
     return () => {
       cancelled = true;
     };
-  }, [diagnosis]);
+    // draw は毎回新しい関数になるため、描き直しの判断は revision で行う
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revision]);
 
   // 画像ファイルを共有できるかは端末による。判定してからボタンの出し分けをする
   useEffect(() => {
@@ -75,7 +92,7 @@ export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
       const canvas = canvasRef.current;
       if (canvas == null) return resolve(null);
       canvas.toBlob((blob) => {
-        resolve(blob ? new File([blob], 'bodymakers-strength.png', { type: 'image/png' }) : null);
+        resolve(blob ? new File([blob], filename, { type: 'image/png' }) : null);
       }, 'image/png');
     });
   }
@@ -87,7 +104,7 @@ export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
       return;
     }
     try {
-      await navigator.share({ files: [file], title: `${SITE_NAME} 筋力レベル診断` });
+      await navigator.share({ files: [file], title: `${SITE_NAME} ${title}` });
     } catch (error) {
       // 利用者が共有シートを閉じただけの場合は何も言わない
       if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -121,7 +138,7 @@ export default function ShareCard({ diagnosis }: { diagnosis: Diagnosis }) {
           width={CARD_SIZE}
           height={CARD_SIZE}
           role="img"
-          aria-label="診断結果の共有用カード画像"
+          aria-label={`${title}の共有用カード画像`}
         />
         {status === 'drawing' && <p className="share__loading">カードを作成中…</p>}
       </div>

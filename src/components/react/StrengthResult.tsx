@@ -22,6 +22,8 @@ import {
   type LiftDiagnosis,
 } from '../../lib/strength/diagnose';
 import ShareCard from './ShareCard';
+import { SITE_NAME } from '../../config/site';
+import { buildShareCard, drawShareCard } from '../../lib/strength/shareCard';
 import { url } from '../../lib/url';
 
 /** レベルIDごとのCSSクラス。色はCSS側のトークンで持つ。 */
@@ -326,7 +328,12 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
           <span>結果を保存・共有する</span>
         </div>
         <div className="slip__body">
-          <ShareCard diagnosis={diagnosis} />
+          <ShareCard
+            draw={(ctx) => drawShareCard(ctx, buildShareCard(diagnosis), SITE_NAME)}
+            filename="bodymakers-strength.png"
+            title="筋力レベル診断"
+            revision={`${headline.level.id}-${headline.oneRmKg}-${lifts.length}`}
+          />
         </div>
       </div>
 

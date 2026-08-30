@@ -16,6 +16,7 @@
 import { useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
+import { DISHES, calcDish } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
 import { type BodyInput, type Sex } from '../../lib/nutrition';
@@ -28,7 +29,10 @@ import {
   type MealEntry,
   type MuscleGroup,
 } from '../../lib/today';
+import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
+import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
+import ShareCard from './ShareCard';
 import { NumberField, Segmented, SelectField, Slip } from './ui';
 
 /** 検索していないときに出す候補の数 */
@@ -92,6 +96,20 @@ export default function TodayTool() {
     setQuery('');
   }
 
+  /**
+   * 料理をまとめて追加する。
+   * 料理は材料の組み合わせとして持っているので、その材料をそのまま入れる。
+   * 内訳が記録に残るので、あとから「卵は1個だった」と直せる。
+   */
+  function addDish(dishId: string) {
+    const dish = DISHES.find((d) => d.id === dishId);
+    if (dish == null) return;
+    setMeals((list) => [
+      ...list,
+      ...dish.ingredients.map((i) => ({ foodId: i.foodId, grams: i.grams })),
+    ]);
+  }
+
   function setGrams(index: number, value: string) {
     const grams = parseNumber(value);
     setMeals((list) =>
@@ -136,6 +154,27 @@ export default function TodayTool() {
           placeholder="ごはん / 鶏むね / ビール"
           hint="押すと100gで追加します。あとから分量を変えられます。"
         />
+
+        {/* よく食べる料理は、材料をまとめて入れられるようにする */}
+        <div className="today__dishes">
+          <span className="field__label">料理からまとめて追加</span>
+          <div className="today__chips">
+            {DISHES.map((dish) => (
+              <button
+                key={dish.id}
+                type="button"
+                className="today__chip"
+                onClick={() => addDish(dish.id)}
+              >
+                <span aria-hidden="true">{dish.emoji} </span>
+                {dish.name}
+                <span className="today__chip-kcal">
+                  {Math.round(calcDish(dish).totals.kcal)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <ul className="today__suggest">
           {suggestions.map((food) => (
@@ -312,6 +351,34 @@ export default function TodayTool() {
             )}
           </div>
         </div>
+      )}
+
+      {/* --- 共有カード。記録の要点だけを1枚にする --- */}
+      {hasAnything && intake.totals.kcal > 0 && (
+        <Slip code="SHARE" title="今日の記録を保存・共有する">
+          <ShareCard
+            draw={(ctx) =>
+              drawTodayCard(
+                ctx,
+                buildTodayCard({
+                  date: new Date().toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }),
+                  intake: intake.totals,
+                  exerciseKcal: exercise?.kcal ?? 0,
+                  muscles,
+                  balance,
+                }),
+                SITE_NAME,
+              )
+            }
+            filename="bodymakers-today.png"
+            title="今日の記録"
+            revision={`${Math.round(intake.totals.kcal)}-${Math.round(exercise?.kcal ?? 0)}-${muscles.join()}-${balance ? Math.round(balance.balanceKcal) : 'x'}`}
+          />
+        </Slip>
       )}
 
       {/* --- 1か月の見通し --- */}

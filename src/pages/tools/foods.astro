@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FoodTool from '../../components/react/FoodTool';
+import DishPanel from '../../components/react/DishPanel';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
@@ -27,6 +28,9 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
+    {/* 料理は成分表に無いので、材料の組み合わせとして別枠で出す */}
+    <DishPanel client:load />
+
     <FoodTool client:load />
 
     <AdSlot id="tool-bottom" />

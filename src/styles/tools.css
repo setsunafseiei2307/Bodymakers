@@ -651,3 +651,104 @@
   color: var(--body);
   font-size: 0.875rem;
 }
+
+/* ============================================================
+   料理（材料の組み合わせ）
+   ============================================================ */
+
+.dish__list {
+  display: grid;
+  gap: 1px;
+  margin: var(--s4) 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+/* グリッド項目の既定の min-width は auto なので、
+   中の表の固有幅で一覧ごと横に広がってしまう。0 を明示して抑える */
+.dish__item {
+  min-width: 0;
+  background: var(--surface);
+}
+
+.dish__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--s3);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dish__head:hover { background: var(--inset); }
+.dish__head.is-open { background: var(--inset); }
+
+.dish__name {
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.dish__kcal {
+  flex-shrink: 0;
+  color: var(--signal);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dish__kcal small {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+.dish__detail {
+  min-width: 0;
+  padding: 0 var(--s3) var(--s4);
+  border-top: 1px solid var(--hair);
+}
+
+.dish__serving {
+  margin: var(--s3) 0 var(--s4);
+  color: var(--body);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}
+
+.dish__salt {
+  margin-top: var(--s3);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* 材料の収載名。出典を追えるように必ず併記する */
+.dish__official {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* 今日の記録から料理をまとめて入れる */
+.today__dishes {
+  margin-bottom: var(--s4);
+}
+
+.today__chip-kcal {
+  margin-left: var(--s2);
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+}

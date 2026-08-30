@@ -3,6 +3,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ArticleCard from '../../../components/ArticleCard.astro';
 import { getArticlesByCategory } from '../../../lib/articles';
 import { CATEGORIES, type CategoryKey } from '../../../config/site';
+import { url } from '../../../lib/url';
 
 /**
  * カテゴリ別の一覧。
@@ -27,8 +28,8 @@ const articles = await getArticlesByCategory(slug as string);
   <div class="container list-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/articles">記事</a></li>
+        <li><a href={url('/')}>ホーム</a></li>
+        <li><a href={url('/articles')}>記事</a></li>
       </ol>
     </nav>
 
@@ -43,7 +44,7 @@ const articles = await getArticlesByCategory(slug as string);
 
     <nav class="category-nav" aria-label="カテゴリ">
       <ul>
-        <li><a class="category-nav__link" href="/articles">すべて</a></li>
+        <li><a class="category-nav__link" href={url('/articles')}>すべて</a></li>
         {
           Object.values(CATEGORIES).map((item) => (
             <li>
@@ -52,7 +53,7 @@ const articles = await getArticlesByCategory(slug as string);
                   'category-nav__link',
                   item.slug === slug && 'category-nav__link--active',
                 ]}
-                href={`/articles/category/${item.slug}`}
+                href={url(`/articles/category/${item.slug}`)}
                 aria-current={item.slug === slug ? 'page' : undefined}
               >
                 {item.label}
@@ -74,7 +75,7 @@ const articles = await getArticlesByCategory(slug as string);
         <div class="empty">
           <strong class="empty__title">記事はまだありません</strong>
           <p>
-            <a href="/articles">すべての記事を見る</a>
+            <a href={url('/articles')}>すべての記事を見る</a>
           </p>
         </div>
       )

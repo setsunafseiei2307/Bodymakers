@@ -1,6 +1,7 @@
 ---
 import { FOOTER_ITEMS, SITE_NAME, SITE_TAGLINE } from '../config/site';
 import AdSlot from './AdSlot.astro';
+import { url } from '../lib/url';
 
 const year = new Date().getFullYear();
 ---
@@ -22,7 +23,7 @@ const year = new Date().getFullYear();
           {
             FOOTER_ITEMS.map((item) => (
               <li>
-                <a class="site-footer__link" href={item.href}>
+                <a class="site-footer__link" href={url(item.href)}>
                   {item.label}
                 </a>
               </li>

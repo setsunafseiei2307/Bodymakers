@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import NutritionTool from '../../components/react/NutritionTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
 
 const title = 'PFC・カロリー計算';
 const description = '基礎代謝と活動量から1日の消費カロリーを求め、目標に応じたカロリーとPFC（たんぱく質・脂質・炭水化物）の配分を計算します。';
@@ -12,8 +13,8 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
   <div class="container tool-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/tools">ツール</a></li>
+        <li><a href={url('/')}>ホーム</a></li>
+        <li><a href={url('/tools')}>ツール</a></li>
       </ol>
     </nav>
 

@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import FoodTool from '../../components/react/FoodTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
 
 const title = '食品の栄養価を調べる';
 const description = '日本食品標準成分表の全2,538食品から、カロリーとPFCを調べます。分量を変えると成分値も変わります。';
@@ -12,8 +13,8 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
   <div class="container tool-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/tools">ツール</a></li>
+        <li><a href={url('/')}>ホーム</a></li>
+        <li><a href={url('/tools')}>ツール</a></li>
       </ol>
     </nav>
 

@@ -1,6 +1,7 @@
 ---
 import { CATEGORIES, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
+import { url } from '../lib/url';
 
 interface Props {
   article: Article;
@@ -11,7 +12,7 @@ const category = CATEGORIES[article.data.category as CategoryKey];
 ---
 
 <article class="article-card">
-  <a class="article-card__link" href={`/articles/${article.id}`}>
+  <a class="article-card__link" href={url(`/articles/${article.id}`)}>
     <div class="article-card__meta">
       <span class="tag">{category.label}</span>
       <time datetime={toISODate(article.data.publishedAt)}>

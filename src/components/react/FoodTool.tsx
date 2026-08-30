@@ -22,6 +22,7 @@ import {
   type NutrientKey,
 } from '../../lib/foods';
 import { NumberField, Slip } from './ui';
+import { url } from '../../lib/url';
 
 /** 表示する成分と、その見出し・単位。 */
 const NUTRIENTS: { key: NutrientKey; label: string; unit: string; digits: number }[] = [
@@ -250,7 +251,7 @@ export default function FoodTool() {
           </p>
 
           <p className="next" style={{ marginTop: 'var(--s4)' }}>
-            <a href="/tools/nutrition">1日のPFC目標を計算する →</a>
+            <a href={url('/tools/nutrition')}>1日のPFC目標を計算する →</a>
           </p>
         </Slip>
       )}
@@ -269,7 +270,7 @@ export default function FoodTool() {
           出典ページ
         </a>
         {' / '}
-        <a href="/sources">当サイトのデータの扱い</a>
+        <a href={url('/sources')}>当サイトのデータの扱い</a>
       </p>
     </div>
   );

@@ -22,6 +22,7 @@ import {
   type LiftDiagnosis,
 } from '../../lib/strength/diagnose';
 import ShareCard from './ShareCard';
+import { url } from '../../lib/url';
 
 /** レベルIDごとのCSSクラス。色はCSS側のトークンで持つ。 */
 const LEVEL_CLASS: Record<LevelId, string> = {
@@ -403,7 +404,7 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
               openpowerlifting.org
             </a>
             {' / '}
-            <a href="/sources">当サイトの集計方法</a>
+            <a href={url('/sources')}>当サイトの集計方法</a>
           </p>
 
           <p className="note note--warn" style={{ marginTop: 'var(--s4)' }}>
@@ -424,13 +425,13 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
         <div className="slip__body">
           <ul className="next">
             <li>
-              <a href="/articles/category/training">トレーニングの記事を読む</a>
+              <a href={url('/articles/category/training')}>トレーニングの記事を読む</a>
             </li>
             <li>
-              <a href="/articles/category/nutrition">栄養・食事の記事を読む</a>
+              <a href={url('/articles/category/nutrition')}>栄養・食事の記事を読む</a>
             </li>
             <li>
-              <a href="/sources">この診断の集計方法と出典をくわしく見る</a>
+              <a href={url('/sources')}>この診断の集計方法と出典をくわしく見る</a>
             </li>
           </ul>
         </div>

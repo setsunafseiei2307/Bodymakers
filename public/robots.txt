@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://bodymakers.example.com/sitemap-index.xml

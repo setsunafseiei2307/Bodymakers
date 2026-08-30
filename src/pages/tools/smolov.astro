@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import SmolovTool from '../../components/react/SmolovTool';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
 
 const title = 'Smolov プログラム生成';
 const description = '1RMから Smolov（ロシア発の高頻度・高ボリュームなプログラム）の4週間分のメニューを生成します。';
@@ -12,8 +13,8 @@ const description = '1RMから Smolov（ロシア発の高頻度・高ボリュ�
   <div class="container tool-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/tools">ツール</a></li>
+        <li><a href={url('/')}>ホーム</a></li>
+        <li><a href={url('/tools')}>ツール</a></li>
       </ol>
     </nav>
 

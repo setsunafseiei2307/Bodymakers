@@ -2,6 +2,7 @@ import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 
 import { getPublishedArticles } from '../lib/articles';
+import { url } from '../lib/url';
 import { SITE_DESCRIPTION, SITE_NAME } from '../config/site';
 
 /**
@@ -14,12 +15,13 @@ export async function GET(context: APIContext) {
   return rss({
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    site: context.site ?? 'https://bodymakers.example.com',
+    // サブディレクトリ配信のときは、フィードの基準URLもその下を指す
+    site: new URL(url('/'), context.site ?? 'https://bodymakers.example.com'),
     items: articles.map((article) => ({
       title: article.data.title,
       description: article.data.description,
       pubDate: article.data.publishedAt,
-      link: `/articles/${article.id}`,
+      link: url(`/articles/${article.id}`),
       categories: [article.data.category, ...article.data.tags],
     })),
     customData: '<language>ja</language>',

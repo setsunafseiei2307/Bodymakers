@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { FOOD_SOURCE } from '../lib/foods';
+import { url } from '../lib/url';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -236,7 +237,7 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         医学的な診断・治療・指導を行うものではありません。
         診断結果は統計上の位置を示す目安であり、
         個人の健康状態やトレーニングの適切さを評価するものではありません。
-        詳細は<a href="/disclaimer">免責事項</a>をご確認ください。
+        詳細は<a href={url('/disclaimer')}>免責事項</a>をご確認ください。
       </p>
     </div>
   </div>

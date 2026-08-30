@@ -21,6 +21,7 @@ import {
   type Sex,
 } from '../../lib/nutrition';
 import { NumberField, Segmented, SelectField, Slip, Waiting } from './ui';
+import { url } from '../../lib/url';
 
 /** 入力の受け付け範囲。範囲外は計算式の前提から外れる。 */
 const RANGE = {
@@ -316,7 +317,7 @@ export default function NutritionTool() {
             </p>
 
             <p className="next" style={{ marginTop: 'var(--s4)' }}>
-              <a href="/tools/foods">食品ごとのPFCを調べる →</a>
+              <a href={url('/tools/foods')}>食品ごとのPFCを調べる →</a>
             </p>
           </Slip>
 

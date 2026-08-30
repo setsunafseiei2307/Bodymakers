@@ -1,0 +1,64 @@
+name: GitHub Pages への公開
+
+on:
+  push:
+    branches:
+      - main
+      - claude/fitness-comprehensive-site-5oabdo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開は同時に1つだけ。実行中のものは終わらせてから次に進む
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: ビルド
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Astro 7 の要求は >=22.12。20 では起動時に落ちる
+          node-version: '22'
+          cache: npm
+
+      - name: 依存関係のインストール
+        run: npm ci
+
+      - name: ビルド
+        run: npm run build
+        env:
+          # プロジェクトページは https://<user>.github.io/<repo>/ で配信される。
+          # サイト内リンクはこの BASE_PATH を見て組み立てられる。
+          SITE_URL: https://${{ github.repository_owner }}.github.io
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: サイト内リンクの検査
+        run: npm run check:links
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    name: 公開
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

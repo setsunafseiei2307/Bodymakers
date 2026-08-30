@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_NAME } from '../config/site';
+import { url } from '../lib/url';
 ---
 
 <BaseLayout
@@ -76,7 +77,7 @@ import { SITE_NAME } from '../config/site';
       <p>
         診断ツールに入力された数値は、ブラウザ内での計算にのみ使用され、
         サーバーへ送信されることも保存されることもありません。
-        詳細は<a href="/about">このサイトについて</a>をご確認ください。
+        詳細は<a href={url('/about')}>このサイトについて</a>をご確認ください。
       </p>
 
       <h2>内容の変更</h2>

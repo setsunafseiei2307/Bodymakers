@@ -123,10 +123,34 @@ SITE_URL=https://example.com npm run build
 ```
 
 `dist/` を配信する。`SITE_URL` は sitemap・RSS・canonical・OGP に使われる。
-サブディレクトリ配信が必要なら `BASE_PATH` を設定する。
 
-CI（`.github/workflows/ci.yml`）は push のたびに
-型チェック → テスト → ビルド を実行する。
+### サブディレクトリ配信
+
+GitHub Pages のプロジェクトページのように `https://example.com/Bodymakers/` の下へ
+置く場合は `BASE_PATH` を設定する。
+
+```
+SITE_URL=https://example.com BASE_PATH=/Bodymakers npm run build
+```
+
+サイト内リンクは `src/lib/url.ts` の `url()` を通す決まりにしてある。
+記事本文（Markdown）のリンクは、`astro.config.mjs` のプラグインが
+ビルド時に同じ接頭辞を付けるので、書き手は `/strength-standards` と書けばよい。
+
+付け忘れは `npm run check:links` が見つける（CI でも実行する）。
+
+### 公開状態
+
+`.github/workflows/deploy.yml` が GitHub Pages へ公開する。
+リポジトリの Settings → Pages で Source を「GitHub Actions」にしておく必要がある。
+
+検索エンジンへの掲載は `src/config/site.ts` の `SEARCH_INDEXING` で切り替える。
+中身が揃うまでは `false`（`robots.txt` と各ページの `meta robots` が同時に効く）。
+
+### CI
+
+`.github/workflows/ci.yml` は push のたびに
+型チェック → テスト → ビルド → リンク検査 を実行する。
 
 ## ドキュメント
 

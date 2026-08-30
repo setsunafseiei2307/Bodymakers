@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_NAME } from '../config/site';
+import { url } from '../lib/url';
 ---
 
 <BaseLayout
@@ -27,7 +28,7 @@ import { SITE_NAME } from '../config/site';
       </p>
       <p>
         判定の基準は、公開されている公式競技会の記録データを統計処理したものです。
-        基準の作り方は<a href="/sources">出典・データについて</a>にすべて書いています。
+        基準の作り方は<a href={url('/sources')}>出典・データについて</a>にすべて書いています。
       </p>
 
       <h3>記事</h3>
@@ -97,7 +98,7 @@ import { SITE_NAME } from '../config/site';
 
       <h2>お問い合わせ・免責</h2>
       <p>
-        ご利用にあたっては<a href="/disclaimer">免責事項</a>をご確認ください。
+        ご利用にあたっては<a href={url('/disclaimer')}>免責事項</a>をご確認ください。
       </p>
     </div>
   </div>

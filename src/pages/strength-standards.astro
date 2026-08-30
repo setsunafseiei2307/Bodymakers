@@ -8,6 +8,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import '../styles/tools.css';
 import '../styles/strength.css';
 import AdSlot from '../components/AdSlot.astro';
+import { url } from '../lib/url';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -88,7 +89,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
             集計日: {STRENGTH_STANDARDS.generatedAt} ／ 対象:{' '}
             {STRENGTH_STANDARDS.sinceYear}年以降の大会
           </p>
-          <a class="button button--ghost button--block" href="/sources">
+          <a class="button button--ghost button--block" href={url('/sources')}>
             集計方法をくわしく見る
           </a>
         </section>
@@ -103,7 +104,7 @@ const articles = (await getPublishedArticles()).slice(0, 3);
         <section class="page__related">
           <div class="section-head">
             <h2>関連する記事</h2>
-            <a href="/articles">記事一覧へ</a>
+            <a href={url('/articles')}>記事一覧へ</a>
           </div>
           <div class="card-grid">
             {articles.map((article) => (

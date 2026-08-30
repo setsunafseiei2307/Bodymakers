@@ -4,6 +4,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import { CATEGORIES, SITE_NAME, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
 import AdSlot from '../components/AdSlot.astro';
+import { url } from '../lib/url';
 
 interface Props {
   article: Article;
@@ -42,10 +43,10 @@ const structuredData = {
   <div class="container article-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/articles">記事</a></li>
+        <li><a href={url('/')}>ホーム</a></li>
+        <li><a href={url('/articles')}>記事</a></li>
         <li>
-          <a href={`/articles/category/${category.slug}`}>{category.label}</a>
+          <a href={url(`/articles/category/${category.slug}`)}>{category.label}</a>
         </li>
       </ol>
     </nav>
@@ -126,7 +127,7 @@ const structuredData = {
           挙上重量とレップ数を入れるだけで、同じ性別・体重の人の中での位置が分かります。
           登録不要・データ保存なし。
         </p>
-        <a class="button button--block" href="/strength-standards">筋力レベル診断へ</a>
+        <a class="button button--block" href={url('/strength-standards')}>筋力レベル診断へ</a>
       </aside>
     </article>
 
@@ -135,7 +136,7 @@ const structuredData = {
         <section class="related">
           <div class="section-head">
             <h2>関連記事</h2>
-            <a href="/articles">記事一覧へ</a>
+            <a href={url('/articles')}>記事一覧へ</a>
           </div>
           <div class="card-grid">
             {related.map((item) => (

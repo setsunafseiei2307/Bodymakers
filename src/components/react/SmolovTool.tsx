@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react';
 import { fmt, fmtComma, parseNumber } from '../../lib/format';
 import { buildSmolov, smolovToText, type SmolovVariant } from '../../lib/smolov';
 import { NumberField, Segmented, Slip, Waiting } from './ui';
+import { url } from '../../lib/url';
 
 const MIN_ONE_RM = 20;
 const MAX_ONE_RM = 600;
@@ -114,7 +115,7 @@ export default function SmolovTool() {
           </div>
           <p className="tool__note">
             1RMが分からない場合は
-            <a href="/tools/one-rep-max"> 1RM換算ツール </a>
+            <a href={url('/tools/one-rep-max')}> 1RM換算ツール </a>
             で推定してください。
           </p>
         </div>

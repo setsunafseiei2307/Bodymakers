@@ -1,9 +1,10 @@
 ---
 import { NAV_ITEMS, SITE_SHORT_NAME } from '../config/site';
 import ThemeToggle from './ThemeToggle.astro';
+import { sitePath, url } from '../lib/url';
 
-/** 現在のパス。ナビの現在地表示に使う。 */
-const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+/** 現在のパス。ナビの現在地表示に使う。配信先のベースパスは取り除く。 */
+const pathname = sitePath(Astro.url.pathname);
 
 function isCurrent(href: string): boolean {
   if (href === '/') return pathname === '/';
@@ -13,7 +14,7 @@ function isCurrent(href: string): boolean {
 
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="site-header__logo" href="/">
+    <a class="site-header__logo" href={url('/')}>
       <svg class="site-header__mark" viewBox="0 0 32 32" aria-hidden="true">
         <!-- バーベルを模した記号。装飾なのでテキストは持たせない -->
         <rect x="2" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
@@ -31,7 +32,7 @@ function isCurrent(href: string): boolean {
           NAV_ITEMS.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={url(item.href)}
                 class:list={[
                   'site-header__link',
                   item.primary && 'site-header__link--primary',

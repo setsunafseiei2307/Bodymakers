@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOOLS } from '../../config/tools';
 import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
 
 const title = 'ツール一覧';
 const description =
@@ -23,7 +24,7 @@ const description =
       {
         TOOLS.map((tool) => (
           <li>
-            <a class:list={['tool-card', tool.primary && 'tool-card--primary']} href={tool.href}>
+            <a class:list={['tool-card', tool.primary && 'tool-card--primary']} href={url(tool.href)}>
               <span class="tool-card__code">{tool.code}</span>
               <span class="tool-card__name">{tool.label}</span>
               <span class="tool-card__desc">{tool.summary}</span>

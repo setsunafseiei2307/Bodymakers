@@ -4,6 +4,7 @@ import ArticleCard from '../../components/ArticleCard.astro';
 import { getPublishedArticles } from '../../lib/articles';
 import { CATEGORIES } from '../../config/site';
 import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
 
 const articles = await getPublishedArticles();
 ---
@@ -22,11 +23,11 @@ const articles = await getPublishedArticles();
 
     <nav class="category-nav" aria-label="カテゴリ">
       <ul>
-        <li><a class="category-nav__link category-nav__link--active" href="/articles">すべて</a></li>
+        <li><a class="category-nav__link category-nav__link--active" href={url('/articles')}>すべて</a></li>
         {
           Object.values(CATEGORIES).map((category) => (
             <li>
-              <a class="category-nav__link" href={`/articles/category/${category.slug}`}>
+              <a class="category-nav__link" href={url(`/articles/category/${category.slug}`)}>
                 {category.label}
               </a>
             </li>

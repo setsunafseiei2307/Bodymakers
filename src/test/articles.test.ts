@@ -210,6 +210,31 @@ describe('記事の frontmatter', () => {
       expect(hasCta, `${article.slug} に導線がありません`).toBe(true);
     }
   });
+
+  /**
+   * 記事末のCTAは全記事にあるが、本文の中にリンクが無いと
+   * 「最後まで読んだ人しか次に進めない」記事になる。
+   * 実際、検索需要が最も大きい記事の本文がリンクゼロだった。
+   *
+   * 数を課すのは、増やすこと自体が目的になると不自然な文章になるため
+   * 最小限にとどめる。
+   */
+  it('本文の中にも、ほかの記事かツールへのリンクが2つ以上ある', () => {
+    const MIN_LINKS = 2;
+    for (const article of articles) {
+      const links = new Set(
+        [
+          ...article.body.matchAll(
+            /\]\((\/articles\/[a-z0-9-]+|\/tools\/[a-z-]+|\/strength-standards|\/sources)\)/g,
+          ),
+        ].map((m) => m[1]),
+      );
+      expect(
+        links.size,
+        `${article.slug}: 本文内のリンクが${links.size}件しかありません（${MIN_LINKS}件以上必要）`,
+      ).toBeGreaterThanOrEqual(MIN_LINKS);
+    }
+  });
 });
 
 describe('readingMinutes', () => {

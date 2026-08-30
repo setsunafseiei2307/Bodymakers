@@ -8,6 +8,13 @@ tags:
   - 筋力レベル
   - データ
   - 平均
+primaryTool: strength
+ctaLabel: あなたのベンチは上位何%？
+takeaways:
+  - 男性・体重60kgでベンチ100kgなら競技者の上位25%、体重100kgなら上位91%
+  - 同じ100kgでも体重によって意味がまったく違う
+  - この順位は競技会出場者の中でのもの。一般の人と比べれば十分に強い
+nextArticle: strength-standards-explained
 references:
   - title: OpenPowerlifting — 公式競技会の記録データベース
     url: https://www.openpowerlifting.org

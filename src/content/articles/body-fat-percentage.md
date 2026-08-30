@@ -8,6 +8,13 @@ tags:
   - 除脂肪体重
   - 体組成計
   - ダイエット
+primaryTool: nutrition
+ctaLabel: 除脂肪体重からPFCを計算する
+takeaways:
+  - 減らしたいのは体重ではなく脂肪量。除脂肪体重は保つ
+  - 家庭用の体組成計は水分量からの推定。DXAとは平均4.0%ずれる
+  - 絶対値ではなく、同じ条件で測った変化の向きを見る
+nextArticle: weight-loss-plateau
 references:
   - title: "Reliability, biological variability, and accuracy of multi-frequency bioelectrical impedance analysis for measuring body composition components. Frontiers in Nutrition (2024), 11, 1491931."
     url: https://doi.org/10.3389/fnut.2024.1491931

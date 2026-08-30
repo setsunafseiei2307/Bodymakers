@@ -8,6 +8,13 @@ tags:
   - たんぱく質
   - サプリメント
   - 選び方
+primaryTool: foods
+ctaLabel: 食事から何g摂れているか調べる
+takeaways:
+  - プロテインは「食事で足りないぶんを埋める道具」であって必須ではない
+  - ホエイ・カゼイン・ソイの違いは吸収の速さと使いどころ
+  - まず食事で何g摂れているかを数えてから、足りないぶんを考える
+nextArticle: convenience-store-pfc
 references:
   - title: 'Morton, R. W. et al. (2018). A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. British Journal of Sports Medicine, 52(6), 376-384.'
     url: https://doi.org/10.1136/bjsports-2017-097608

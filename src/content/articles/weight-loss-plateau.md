@@ -7,6 +7,13 @@ tags:
   - ダイエット
   - 停滞期
   - 代謝
+primaryTool: today
+ctaLabel: 今日の収支を確認する
+takeaways:
+  - 停滞は失敗ではなく、体重が減ったぶん消費カロリーも下がった結果
+  - 体重は水分と胃の中身で日々1〜2kg動く。1週間の平均で見る
+  - 減らし続けるより、いったん維持に戻す選択肢もある
+nextArticle: sleep-and-recovery
 references:
   - title: 'Trexler, E. T., Smith-Ryan, A. E., & Norton, L. E. (2014). Metabolic adaptation to weight loss: implications for the athlete. Journal of the International Society of Sports Nutrition, 11, 7.'
     url: https://doi.org/10.1186/1550-2783-11-7

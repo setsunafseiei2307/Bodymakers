@@ -7,6 +7,13 @@ tags:
   - 筋力レベル
   - データ
   - 統計
+primaryTool: strength
+ctaLabel: 自分の記録で診断する
+takeaways:
+  - 基準は公式競技会の記録387,265人分。自己申告ではない
+  - 「上位◯%」は競技会に出た人の中での順位。一般人口との比較ではない
+  - 体重帯ごとに比較するので、同じ条件の人と並べられる
+nextArticle: bench-press-100kg
 references:
   - title: OpenPowerlifting — 公式競技会の記録データベース
     url: https://www.openpowerlifting.org

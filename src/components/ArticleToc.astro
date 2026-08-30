@@ -1,0 +1,93 @@
+---
+/**
+ * 記事の目次。
+ *
+ * 記事はスマホで7,000〜9,500px あり、現在地の手がかりがない状態だった。
+ * ただし目次そのものが場所を取ると本文が遠くなるので、
+ * <details> で畳んでおく。JavaScript は使わない。
+ *
+ * 見出しが少ない記事では目次の価値がないので、
+ * MIN_HEADINGS 未満なら何も出さない。
+ */
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+/** これ未満の見出し数なら目次を出さない */
+const MIN_HEADINGS = 4;
+
+const { headings } = Astro.props;
+
+// h2 だけを拾う。h3 まで入れると畳んでいても長くなり、探しにくくなる。
+const items = headings.filter((heading) => heading.depth === 2);
+---
+
+{
+  items.length >= MIN_HEADINGS && (
+    <details class="toc">
+      <summary class="toc__summary">目次（{items.length}項目）</summary>
+      <nav aria-label="目次">
+        <ol class="toc__list">
+          {items.map((heading) => (
+            <li>
+              <a class="toc__link" href={`#${heading.slug}`}>
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  )
+}
+
+<style>
+  .toc {
+    margin-top: var(--s5);
+    border: 1px solid var(--hair);
+    border-radius: var(--r-md);
+    background: var(--inset);
+  }
+
+  .toc__summary {
+    padding: var(--s3) var(--s4);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .toc__summary:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: -2px;
+  }
+
+  .toc__list {
+    margin: 0;
+    padding: 0 var(--s5) var(--s4) calc(var(--s4) + 1.4em);
+    color: var(--body);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .toc__list li + li {
+    margin-top: var(--s2);
+  }
+
+  .toc__link {
+    color: var(--body);
+    text-decoration: none;
+  }
+
+  .toc__link:hover {
+    color: var(--signal);
+    text-decoration: underline;
+  }
+</style>

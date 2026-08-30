@@ -1,0 +1,78 @@
+---
+/**
+ * 記事末の「あなたの場合は？」導線。
+ *
+ * 記事の frontmatter の primaryTool が指すツールへ送る。
+ * 以前はレイアウトに「筋力レベル診断へ」を直書きしていたため、
+ * ダイエットの記事を読んだ人にも競技記録との比較を勧めていた。
+ *
+ * primaryTool が無い記事では、このカードごと出さない。
+ * 関係の薄いCTAを置くくらいなら、置かないほうがよい。
+ */
+import { findTool } from '../config/tools';
+import { url } from '../lib/url';
+
+interface Props {
+  /** src/config/tools.ts のキー */
+  toolKey?: string;
+  /** 記事ごとの問いかけ。省略するとツール側の既定文言 */
+  label?: string;
+}
+
+const { toolKey, label } = Astro.props;
+const tool = findTool(toolKey);
+---
+
+{
+  tool && (
+    <aside class="tool-cta">
+      <p class="tool-cta__eyebrow">あなたの場合は？</p>
+      <h2 class="tool-cta__title">{label ?? tool.cta}</h2>
+      <p class="tool-cta__text">{tool.ctaText}</p>
+      <a class="button button--block" href={url(tool.href)}>
+        {tool.label}を開く
+      </a>
+      <p class="tool-cta__note">登録不要。入力した内容は送信も保存もされません。</p>
+    </aside>
+  )
+}
+
+<style>
+  .tool-cta {
+    margin-top: var(--s7);
+    padding: var(--s6) var(--s5);
+    border: 1px solid color-mix(in srgb, var(--signal) 30%, transparent);
+    border-radius: var(--r-md);
+    background: var(--signal-soft);
+  }
+
+  .tool-cta__eyebrow {
+    margin-bottom: var(--s2);
+    color: var(--signal);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+  }
+
+  .tool-cta__title {
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .tool-cta__text {
+    margin: var(--s3) 0 var(--s5);
+    color: var(--body);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+  }
+
+  .tool-cta .button {
+    max-width: 24rem;
+  }
+
+  .tool-cta__note {
+    margin-top: var(--s3);
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+</style>

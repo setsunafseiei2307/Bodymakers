@@ -7,6 +7,8 @@
 
 import { getCollection, type CollectionEntry } from 'astro:content';
 
+export { readingMinutes } from './readingTime';
+
 export type Article = CollectionEntry<'articles'>;
 
 /** 公開日の新しい順に並べる。 */
@@ -22,6 +24,15 @@ export async function getPublishedArticles(): Promise<Article[]> {
   const showDrafts = import.meta.env.DEV;
   const all = await getCollection('articles');
   return all.filter((article) => showDrafts || !article.data.draft).sort(byNewest);
+}
+
+/** スラッグから記事を1件引く。見つからなければ undefined。 */
+export function findArticle(
+  articles: Article[],
+  slug: string | undefined,
+): Article | undefined {
+  if (!slug) return undefined;
+  return articles.find((article) => article.id === slug);
 }
 
 /** 指定カテゴリの公開済み記事。 */

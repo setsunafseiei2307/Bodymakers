@@ -2,7 +2,11 @@
 import { render } from 'astro:content';
 
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
-import { getPublishedArticles, getRelatedArticles } from '../../lib/articles';
+import {
+  getPublishedArticles,
+  getRelatedArticles,
+  findArticle,
+} from '../../lib/articles';
 
 /**
  * 記事ページを静的に生成する。
@@ -12,17 +16,35 @@ import { getPublishedArticles, getRelatedArticles } from '../../lib/articles';
 export async function getStaticPaths() {
   const articles = await getPublishedArticles();
   return Promise.all(
-    articles.map(async (article) => ({
-      params: { slug: article.id },
-      props: { article, related: await getRelatedArticles(article) },
-    })),
+    articles.map(async (article) => {
+      // 書き手が nextArticle を指定していれば、それを「次に読む」に出す。
+      // 関連記事は自動なので、読む順番を決めたいときはこちらを使う。
+      const next = findArticle(articles, article.data.nextArticle);
+      return {
+        params: { slug: article.id },
+        props: {
+          article,
+          nextArticle: next,
+          // 「次に読む」に出した記事を関連記事にも出すと重複するので除く
+          // 1件多めに取り、「次に読む」に使ったぶんを抜いても3件残るようにする
+          related: (await getRelatedArticles(article, 4))
+            .filter((item) => item.id !== next?.id)
+            .slice(0, 3),
+        },
+      };
+    }),
   );
 }
 
-const { article, related } = Astro.props;
-const { Content } = await render(article);
+const { article, related, nextArticle } = Astro.props;
+const { Content, headings } = await render(article);
 ---
 
-<ArticleLayout article={article} related={related}>
+<ArticleLayout
+  article={article}
+  related={related}
+  headings={headings}
+  nextArticle={nextArticle}
+>
   <Content />
 </ArticleLayout>

@@ -8,6 +8,13 @@ tags:
   - たんぱく質
   - 食事
   - ダイエット
+primaryTool: nutrition
+ctaLabel: 自分のPFCを計算する
+takeaways:
+  - たんぱく質→脂質→炭水化物の順に決めると迷わない
+  - 体重1kgあたり約1.6gを超えると、たんぱく質の上乗せ効果は見えにくくなる
+  - 減量中は除脂肪体重1kgあたり2.3〜3.1gが推奨されている
+nextArticle: convenience-store-pfc
 references:
   - title: 'Helms, E. R., Aragon, A. A., & Fitschen, P. J. (2014). Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. Journal of the International Society of Sports Nutrition, 11, 20.'
     url: https://doi.org/10.1186/1550-2783-11-20

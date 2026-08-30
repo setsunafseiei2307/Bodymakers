@@ -8,6 +8,13 @@ tags:
   - 有酸素運動
   - カロリー
   - メッツ
+primaryTool: burn
+ctaLabel: 自分の体重で消費カロリーを出す
+takeaways:
+  - 運動の消費カロリーは、多くの人が思っているより小さい
+  - 同じ運動でも体重が重い人ほど多く消費する
+  - 食事のほうが動かしやすい変数。運動はそれを補強するもの
+nextArticle: pfc-balance-basics
 references:
   - title: 厚生労働省「健康づくりのための身体活動基準2013」（参考資料 生活活動・運動のメッツ表）
     url: https://www.e-healthnet.mhlw.go.jp/information/exercise/guidelines_2013.html

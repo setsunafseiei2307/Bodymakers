@@ -8,6 +8,13 @@ tags:
   - バルクアップ
   - 体重
   - カロリー
+primaryTool: plan
+ctaLabel: 自分の増量ペースを作る
+takeaways:
+  - 増量は速いほど良いわけではない。増えたぶんの中身が変わる
+  - 「どこまで増やすか」を先に決めておくと、だらだら続かない
+  - 体重1kgあたり約1.6gのたんぱく質は増量中も変わらず必要
+nextArticle: progressive-overload
 references:
   - title: 'Garthe, I., Raastad, T., Refsnes, P. E., & Sundgot-Borgen, J. (2013). Effect of nutritional intervention on body composition and performance in elite athletes. European Journal of Sport Science, 13(3), 295-303.'
     url: https://doi.org/10.1080/17461391.2011.643923

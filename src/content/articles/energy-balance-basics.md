@@ -8,6 +8,13 @@ tags:
   - カロリー
   - 基礎代謝
   - 基礎
+primaryTool: plan
+ctaLabel: 自分の減量ペースを計算する
+takeaways:
+  - 体重が動くかどうかは、摂取カロリーと消費カロリーの差で決まる
+  - 脂肪1kgを減らすにはおよそ7,200kcalの差が必要
+  - 筋肉1kgが増えて上がる安静時代謝は1日約13kcal。よく言われる50kcalではない
+nextArticle: exercise-calorie-reality
 references:
   - title: 厚生労働省 e-ヘルスネット「肥満」
     url: https://www.e-healthnet.mhlw.go.jp/information/dictionary-summaries/m-obesity

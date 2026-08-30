@@ -1,13 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import FoodTool from '../../components/react/FoodTool';
-import DishPanel from '../../components/react/DishPanel';
+import TodayTool from '../../components/react/TodayTool';
+import '../../styles/strength.css';
 import '../../styles/tools.css';
 import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
 
-const title = '食品の栄養価を調べる';
-const description = '日本食品標準成分表の全2,538食品から、カロリーとPFCを調べます。分量を変えると成分値も変わります。';
+const title = '今日の記録';
+const description =
+  '今日食べたものと動いたものを入れるだけで、摂取カロリー・PFC・消費カロリー・その差し引きが出ます。身長と年齢を足せば「この調子なら1か月で何kg」まで分かります。登録不要、保存もしません。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -20,7 +21,7 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
     </nav>
 
     <header class="tool-page__header">
-      <p class="tool-page__code">FOOD</p>
+      <p class="tool-page__code">TODAY</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
       <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
@@ -28,10 +29,7 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
-    {/* 料理は成分表に無いので、材料の組み合わせとして別枠で出す */}
-    <DishPanel client:load />
-
-    <FoodTool client:load />
+    <TodayTool client:load />
 
     <AdSlot id="tool-bottom" />
   </div>

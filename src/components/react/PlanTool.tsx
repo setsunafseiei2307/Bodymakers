@@ -453,6 +453,10 @@ export default function PlanTool() {
                     ))}
 
                     <p className="next" style={{ marginTop: 'var(--s4)' }}>
+                      <a href={url('/articles/energy-balance-basics')}>
+                        ダイエットの仕組みを読む →
+                      </a>
+                      <a href={url('/articles/pfc-balance-basics')}>PFCの決め方を読む →</a>
                       <a href={url('/tools/foods')}>食品の栄養価を調べる →</a>
                     </p>
                   </>

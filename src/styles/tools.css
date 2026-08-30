@@ -450,3 +450,305 @@
 .food__detail {
   scroll-margin-top: 8rem;
 }
+
+/* ============================================================
+   運動・食べ物の換算リスト
+   ============================================================ */
+
+.burn__list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--hair);
+  border-block: 1px solid var(--hair);
+}
+
+.burn__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  background: var(--surface);
+}
+
+.burn__name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.burn__sub {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.burn__value {
+  flex-shrink: 0;
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.burn__value small {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+/* ============================================================
+   今日の記録
+   ============================================================ */
+
+/* 追加候補。押すとその食品が記録に入る */
+.today__suggest,
+.today__list {
+  display: grid;
+  gap: 1px;
+  margin: var(--s3) 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+.today__add {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--s3);
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.today__add:hover { background: var(--inset); }
+
+.today__add-name {
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.today__add-kcal {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.today__add-kcal small { font-size: 0.625rem; }
+
+/* 追加済みの行 */
+/* 列の幅を固定して、名前の列だけが伸び縮みするようにする。
+   flexだと入力欄の固有幅が効いて、狭い画面で行がはみ出す */
+.today__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.25rem auto 4.5rem 1.75rem;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  background: var(--surface);
+}
+
+.today__row-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today__grams {
+  min-width: 0;
+  padding: var(--s1) var(--s2);
+  border: 1px solid var(--hair);
+  background: var(--inset);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.today__row-unit {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.today__row-kcal {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--body);
+  font-size: 0.75rem;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today__remove {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--hair);
+  background: none;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.today__remove:hover { border-color: var(--signal); color: var(--signal); }
+
+/* 鍛えた部位 */
+.today__muscles {
+  margin-top: var(--s4);
+  padding: 0;
+  border: 0;
+}
+
+.today__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s2);
+}
+
+.today__chip {
+  min-height: 2.25rem;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  color: var(--body);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.today__chip.is-on {
+  border-color: var(--signal);
+  background: var(--signal-soft);
+  color: var(--signal);
+  font-weight: 700;
+}
+
+.today__muscle-result {
+  margin-top: var(--s4);
+  color: var(--body);
+  font-size: 0.875rem;
+}
+
+/* ============================================================
+   料理（材料の組み合わせ）
+   ============================================================ */
+
+.dish__list {
+  display: grid;
+  gap: 1px;
+  margin: var(--s4) 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+/* グリッド項目の既定の min-width は auto なので、
+   中の表の固有幅で一覧ごと横に広がってしまう。0 を明示して抑える */
+.dish__item {
+  min-width: 0;
+  background: var(--surface);
+}
+
+.dish__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--s3);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dish__head:hover { background: var(--inset); }
+.dish__head.is-open { background: var(--inset); }
+
+.dish__name {
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.dish__kcal {
+  flex-shrink: 0;
+  color: var(--signal);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dish__kcal small {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+.dish__detail {
+  min-width: 0;
+  padding: 0 var(--s3) var(--s4);
+  border-top: 1px solid var(--hair);
+}
+
+.dish__serving {
+  margin: var(--s3) 0 var(--s4);
+  color: var(--body);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}
+
+.dish__salt {
+  margin-top: var(--s3);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* 材料の収載名。出典を追えるように必ず併記する */
+.dish__official {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* 今日の記録から料理をまとめて入れる */
+.today__dishes {
+  margin-bottom: var(--s4);
+}
+
+.today__chip-kcal {
+  margin-left: var(--s2);
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+}

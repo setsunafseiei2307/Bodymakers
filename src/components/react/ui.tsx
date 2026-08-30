@@ -65,6 +65,57 @@ export function NumberField({
   );
 }
 
+/** 日付入力。端末の日付ピッカーをそのまま使う。 */
+export function DateField({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  hint,
+  error,
+}: {
+  label: string;
+  /** YYYY-MM-DD */
+  value: string;
+  onChange: (value: string) => void;
+  min?: string;
+  max?: string;
+  hint?: string;
+  error?: string;
+}) {
+  const id = useId();
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+
+  return (
+    <div className="field">
+      <label className="field__label" htmlFor={id}>
+        {label}
+      </label>
+      <input
+        id={id}
+        className={`field__input${error ? ' field__input--error' : ''}`}
+        type="date"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
+      />
+      {error ? (
+        <p className="field__error" id={`${id}-error`} role="alert">
+          {error}
+        </p>
+      ) : hint ? (
+        <p className="field__hint" id={`${id}-hint`}>
+          {hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 /** 排他選択。選択肢が2〜4個までのときに使う。 */
 export function Segmented<T extends string>({
   label,

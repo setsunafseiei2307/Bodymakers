@@ -8,7 +8,7 @@
  * 全件を最初から出しても選べないので、検索語かカテゴリが決まるまでは一覧を出さない。
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import {
@@ -18,6 +18,8 @@ import {
   isEstimated,
   scaleFood,
   searchFoods,
+  commonFoods,
+  commonFoodCount,
   type Food,
   type NutrientKey,
 } from '../../lib/foods';
@@ -42,8 +44,29 @@ export default function FoodTool() {
   const [category, setCategory] = useState<string | null>(null);
   const [selected, setSelected] = useState<Food | null>(null);
   const [grams, setGrams] = useState('100');
+  /**
+   * 成分表の全食品を対象にするか。
+   *
+   * 既定は false（よく食べる食品だけ）。成分表には同じ食材の未調理・半調理の
+   * 状態違いが大量に入っていて、「米」で引くと85件出る。その大半は家庭の食事に
+   * 出てこない形で、探しているごはんが埋もれる。まず日常の食品だけを見せて、
+   * それ以外を調べたい人が自分で広げる形にしている。
+   */
+  const [showAll, setShowAll] = useState(false);
 
   const categories = useMemo(() => categorySummaries(), []);
+  const commonTotal = useMemo(() => commonFoodCount(), []);
+
+  /**
+   * 食品を選んだら成分表まで画面を送る。
+   * 一覧は画面の下にあるので、選んだ直後は成分表が画面の外にいる。
+   */
+  const detailRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (selected == null) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    detailRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }, [selected]);
 
   const gramsValue = parseNumber(grams);
   const gramsError =
@@ -54,13 +77,30 @@ export default function FoodTool() {
   /** 検索語があれば検索、無ければカテゴリの中身、どちらも無ければ空。 */
   const results = useMemo(() => {
     if (query.trim() !== '') {
-      return searchFoods(query, { category, limit: RESULT_LIMIT });
+      return searchFoods(query, { category, limit: RESULT_LIMIT, commonOnly: !showAll });
     }
-    if (category) return foodsInCategory(category).slice(0, RESULT_LIMIT);
+    if (category) {
+      const pool = showAll ? foodsInCategory(category) : commonFoods(category);
+      return pool.slice(0, RESULT_LIMIT);
+    }
     return [];
-  }, [query, category]);
+  }, [query, category, showAll]);
 
-  const totalInCategory = category ? foodsInCategory(category).length : 0;
+  /** 全食品まで広げたら何件になるか（「もっと探す」の案内に出す） */
+  const widerCount = useMemo(() => {
+    if (showAll) return 0;
+    if (query.trim() !== '') {
+      return searchFoods(query, { category, limit: 9999 }).length - results.length;
+    }
+    if (category) return foodsInCategory(category).length - commonFoods(category).length;
+    return 0;
+  }, [query, category, showAll, results.length]);
+
+  const totalInCategory = category
+    ? showAll
+      ? foodsInCategory(category).length
+      : commonFoods(category).length
+    : 0;
 
   const scaled = useMemo(() => {
     if (selected == null || gramsValue == null || gramsError) return null;
@@ -71,6 +111,7 @@ export default function FoodTool() {
     setQuery('');
     setCategory(null);
     setSelected(null);
+    setShowAll(false);
   }
 
   return (
@@ -89,7 +130,7 @@ export default function FoodTool() {
             hint={
               category
                 ? `「${category}」の中から探しています。`
-                : 'ひらがな・カタカナ・漢字のどれでも引けます。'
+                : `よく使う${commonTotal}件から探します。ひらがな・カタカナ・漢字のどれでも引けます。`
             }
           />
 
@@ -116,7 +157,8 @@ export default function FoodTool() {
                       {item.emoji ?? ''}
                     </span>
                     <span className="food__cat-name">{item.name}</span>
-                    <span className="food__cat-count">{item.count}</span>
+                    {/* 主に出すのは、まず見せる「よく食べる食品」の件数 */}
+                    <span className="food__cat-count">{commonFoods(item.name).length}</span>
                   </button>
                 ))}
               </div>
@@ -124,6 +166,89 @@ export default function FoodTool() {
           )}
         </div>
       </Slip>
+
+      {/* 選んだ食品の成分。一覧より先に置く。
+          結果を最後までスクロールしないと数値が見えないのを避けるため。 */}
+      {selected && (
+        <div ref={detailRef} className="food__detail">
+          <Slip code="DETAIL" title={selected.name}>
+          <NumberField
+            label="分量"
+            unit="g"
+            value={grams}
+            onChange={setGrams}
+            placeholder="100"
+            error={gramsError}
+            hint={`0〜${MAX_GRAMS}g`}
+          />
+
+          {scaled && (
+            <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
+              <table className="rows">
+                <caption className="visually-hidden">
+                  {selected.name} {fmt(gramsValue, 0)}g あたりの成分値
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">成分</th>
+                    <th scope="col">{fmt(gramsValue, 0)}g あたり</th>
+                    {gramsValue !== 100 && <th scope="col">100g あたり</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {NUTRIENTS.map((nutrient) => {
+                    const value = scaled[nutrient.key];
+                    const base = selected[nutrient.key];
+                    const estimated = isEstimated(selected, nutrient.key);
+                    return (
+                      <tr key={nutrient.key}>
+                        <th scope="row">
+                          {nutrient.label}
+                          {estimated && (
+                            <span className="food__est" title="成分表で推定値だった項目">
+                              推定
+                            </span>
+                          )}
+                        </th>
+                        <td>
+                          {value == null ? (
+                            <span className="food__na">データなし</span>
+                          ) : (
+                            `${fmt(value, nutrient.digits)} ${nutrient.unit}`
+                          )}
+                        </td>
+                        {gramsValue !== 100 && (
+                          <td>
+                            {base == null ? (
+                              <span className="food__na">データなし</span>
+                            ) : (
+                              `${fmt(base, nutrient.digits)} ${nutrient.unit}`
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <p className="source-note" style={{ marginTop: 'var(--s4)' }}>
+            出典: {FOOD_SOURCE.publisher}「{FOOD_SOURCE.title}」{FOOD_SOURCE.section}／
+            収載名「{selected.officialName}」（食品番号 {selected.id}）。
+            数値は{FOOD_SOURCE.basis}の収載値です。
+            {selected.estimated && selected.estimated.length > 0 && (
+              <>「推定」と付いた項目は、成分表で括弧付き（推定値）だったものです。</>
+            )}
+          </p>
+
+          <p className="next" style={{ marginTop: 'var(--s4)' }}>
+            <a href={url('/tools/nutrition')}>1日のPFC目標を計算する →</a>
+          </p>
+          </Slip>
+        </div>
+      )}
 
       {(query.trim() !== '' || category) && (
         <Slip
@@ -135,11 +260,29 @@ export default function FoodTool() {
           }
         >
           {results.length === 0 ? (
-            <p className="empty">
+            <div className="empty">
               <strong className="empty__title">見つかりませんでした</strong>
-              別の言い方で試してください。成分表には料理名（「さばの味噌煮」など）は
-              ほとんど収載されていません。素材名で探すと見つかります。
-            </p>
+              {widerCount > 0 ? (
+                <>
+                  よく食べる食品の中にはありませんでした。
+                  成分表の全食品まで広げると{widerCount}件見つかります。
+                  <p style={{ marginTop: 'var(--s3)' }}>
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      onClick={() => setShowAll(true)}
+                    >
+                      成分表の全食品から探す
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <>
+                  別の言い方で試してください。成分表には料理名（「さばの味噌煮」など）は
+                  ほとんど収載されていません。素材名で探すと見つかります。
+                </>
+              )}
+            </div>
           ) : (
             <>
               <ul className="food__list">
@@ -174,85 +317,35 @@ export default function FoodTool() {
                   上位{RESULT_LIMIT}件だけ表示しています。検索語を足すと絞り込めます。
                 </p>
               )}
+
+              {/* 日常の食品で足りない人だけが、自分で成分表の全件へ広げる */}
+              {showAll ? (
+                <p className="tool__note" style={{ marginTop: 'var(--s3)' }}>
+                  成分表の全食品を対象にしています。
+                  <button
+                    type="button"
+                    className="food__widen"
+                    onClick={() => setShowAll(false)}
+                  >
+                    よく食べる食品だけに戻す
+                  </button>
+                </p>
+              ) : (
+                widerCount > 0 && (
+                  <p className="tool__note" style={{ marginTop: 'var(--s3)' }}>
+                    よく食べる食品だけを出しています。
+                    <button
+                      type="button"
+                      className="food__widen"
+                      onClick={() => setShowAll(true)}
+                    >
+                      成分表の全食品から探す（他 {widerCount} 件）
+                    </button>
+                  </p>
+                )
+              )}
             </>
           )}
-        </Slip>
-      )}
-
-      {selected && (
-        <Slip code="DETAIL" title={selected.name}>
-          <NumberField
-            label="分量"
-            unit="g"
-            value={grams}
-            onChange={setGrams}
-            placeholder="100"
-            error={gramsError}
-            hint={`0〜${MAX_GRAMS}g`}
-          />
-
-          {scaled && (
-            <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
-              <table className="rows">
-                <caption className="visually-hidden">
-                  {selected.name} {fmt(gramsValue, 0)}g あたりの成分値
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">成分</th>
-                    <th scope="col">{fmt(gramsValue, 0)}g あたり</th>
-                    <th scope="col">100g あたり</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {NUTRIENTS.map((nutrient) => {
-                    const value = scaled[nutrient.key];
-                    const base = selected[nutrient.key];
-                    const estimated = isEstimated(selected, nutrient.key);
-                    return (
-                      <tr key={nutrient.key}>
-                        <th scope="row">
-                          {nutrient.label}
-                          {estimated && (
-                            <span className="food__est" title="成分表で推定値だった項目">
-                              推定
-                            </span>
-                          )}
-                        </th>
-                        <td>
-                          {value == null ? (
-                            <span className="food__na">データなし</span>
-                          ) : (
-                            `${fmt(value, nutrient.digits)} ${nutrient.unit}`
-                          )}
-                        </td>
-                        <td>
-                          {base == null ? (
-                            <span className="food__na">データなし</span>
-                          ) : (
-                            `${fmt(base, nutrient.digits)} ${nutrient.unit}`
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <p className="source-note" style={{ marginTop: 'var(--s4)' }}>
-            出典: {FOOD_SOURCE.publisher}「{FOOD_SOURCE.title}」{FOOD_SOURCE.section}／
-            収載名「{selected.officialName}」（食品番号 {selected.id}）。
-            数値は{FOOD_SOURCE.basis}の収載値です。
-            {selected.estimated && selected.estimated.length > 0 && (
-              <>「推定」と付いた項目は、成分表で括弧付き（推定値）だったものです。</>
-            )}
-          </p>
-
-          <p className="next" style={{ marginTop: 'var(--s4)' }}>
-            <a href={url('/tools/nutrition')}>1日のPFC目標を計算する →</a>
-          </p>
         </Slip>
       )}
 
@@ -265,7 +358,8 @@ export default function FoodTool() {
 
       <p className="source-note">
         {FOOD_SOURCE.publisher}「{FOOD_SOURCE.title}」{FOOD_SOURCE.section}より、
-        全2,538食品を収録しています。
+        全2,538食品を収録しています。一覧には日常的によく食べる{commonTotal}件を先に出し、
+        それ以外は「成分表の全食品から探す」で表示します。
         <a href={FOOD_SOURCE.url} target="_blank" rel="noopener noreferrer">
           出典ページ
         </a>

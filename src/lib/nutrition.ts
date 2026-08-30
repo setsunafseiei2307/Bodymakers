@@ -110,7 +110,19 @@ export interface MacroOptions {
   minFatPerKg?: number;
 }
 
-const KCAL_PER_KG_FAT = 7200;
+/**
+ * 体脂肪1kgぶんのエネルギー(kcal)。
+ *
+ * 出典によって幅がある値で、単一の公式定数ではない。
+ * - 厚生労働省 e-ヘルスネットの解説は「約7,000kcal」
+ * - 脂肪組織の約8割が脂質という前提での計算値が 9kcal/g × 1000g × 0.8 = 7,200kcal
+ * - 原典とされる Wishnofsky (1958) は 3,500kcal/lb ≒ 7,700kcal/kg
+ *
+ * 当サイトは日本で最も広く使われている 7,200 を採る。
+ * どれを使っても1割前後の差が出るため、画面には必ず「目安」であることと
+ * この幅を併記する（数字だけを独り歩きさせない）。
+ */
+export const KCAL_PER_KG_FAT = 7200;
 
 /**
  * BMR → TDEE → 目標カロリー → PFC を一括で計算する。

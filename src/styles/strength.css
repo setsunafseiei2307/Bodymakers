@@ -568,3 +568,106 @@
   background: var(--inset);
   color: var(--body);
 }
+
+/* ============================================================
+   減量・増量プラン
+   ============================================================
+   結果票は診断と同じ骨格（.record*）を使い、
+   計画に固有の部分だけをここに置く。 */
+
+.plan__verdict {
+  margin-top: var(--s4);
+  color: var(--body);
+  font-size: 0.9375rem;
+  line-height: 1.9;
+}
+
+.plan__verdict strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.plan__grid {
+  display: grid;
+  gap: 1px;
+  margin-top: var(--s5);
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+@media (min-width: 30rem) {
+  .plan__grid { grid-template-columns: 1fr 1fr; }
+}
+
+.plan__cell {
+  display: grid;
+  gap: var(--s1);
+  padding: var(--s4);
+  background: var(--surface);
+}
+
+.plan__cell-label {
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.plan__cell-value {
+  color: var(--ink);
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.plan__cell-note {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+/* 「もっと正確に出す」への導線 */
+.plan__upgrade {
+  text-align: center;
+}
+
+.plan__upgrade-text {
+  margin-bottom: var(--s4);
+  color: var(--body);
+  font-size: 0.9375rem;
+  line-height: 1.85;
+}
+
+/* 出典の一覧。1件ずつ「何の根拠か」を先に出す */
+.plan__sources {
+  display: grid;
+  gap: var(--s4);
+  margin: var(--s4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan__sources li {
+  display: grid;
+  gap: var(--s1);
+  padding-left: var(--s3);
+  border-left: 3px solid var(--data);
+}
+
+.plan__source-label {
+  color: var(--data);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.plan__source-note {
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+
+.plan__source-cite {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}

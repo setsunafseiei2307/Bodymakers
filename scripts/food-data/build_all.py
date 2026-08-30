@@ -82,6 +82,9 @@ def build() -> list[dict]:
             'salt': src['salt'],
             'officialName': src['name'],
             'estimated': src['estimated'],
+            # 手書きの表示名を当てた食品＝日常的によく食べられるもの、として扱う。
+            # 一覧の初期表示と検索の並び順で優先する（画面側の judgement はこれ1つ）。
+            'common': code in DISPLAY_NAME,
         })
     return out
 

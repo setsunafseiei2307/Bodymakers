@@ -7,8 +7,11 @@ import { satteri } from '@astrojs/markdown-satteri';
 /**
  * 公開URL。独自ドメインを取得したら SITE_URL を差し替えるだけで
  * sitemap・RSS・canonical・OGP がすべて追従する。
+ *
+ * CF_PAGES_URL は Cloudflare Pages がビルド時に入れる自分のURL。
+ * Workers ビルドでは入らないので、その場合はダッシュボードで SITE_URL を設定する。
  */
-const site = process.env.SITE_URL ?? 'https://bodymakers.example.com';
+const site = process.env.SITE_URL ?? process.env.CF_PAGES_URL ?? 'https://bodymakers.example.com';
 
 /**
  * サブディレクトリ配信（GitHub Pages の project pages など）に対応するためのベースパス。

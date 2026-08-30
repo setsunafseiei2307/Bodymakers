@@ -15,7 +15,8 @@
     "typecheck": "astro check",
     "check": "npm run typecheck && npm run test",
     "standards:build": "python3 scripts/strength-standards/build.py",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "og": "node scripts/build-og.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.3.8",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@napi-rs/canvas": "^1.0.8",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "typescript": "^5.9.0",

@@ -20,6 +20,12 @@ interface Props {
   ogType?: 'website' | 'article';
   /** 検索エンジンにインデックスさせない場合 true */
   noindex?: boolean;
+  /**
+   * OGP画像のパス（サイト内の絶対パス）。
+   * 省略すると既定の1枚を使う。SNSに貼られたときに
+   * 空白のカードが出るのを避けるため、必ず何かを出す。
+   */
+  ogImage?: string;
 }
 
 const {
@@ -27,10 +33,13 @@ const {
   description = SITE_DESCRIPTION,
   ogType = 'website',
   noindex = false,
+  ogImage = '/og/default.png',
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — ${SITE_TAGLINE}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
+// OGP画像は絶対URLでないと読み込まれない
+const ogImageUrl = new URL(url(ogImage), Astro.site ?? Astro.url.origin).href;
 ---
 
 <!doctype html>
@@ -50,7 +59,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.href} />
     <meta property="og:locale" content={SITE_LOCALE.replace('-', '_')} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title ?? SITE_NAME} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href={url('/rss.xml')} />
 

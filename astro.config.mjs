@@ -3,6 +3,40 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
+import fs from 'node:fs';
+import path from 'node:path';
+
+/**
+ * 記事の最終更新日。sitemap の lastmod に使う。
+ *
+ * sitemap の serialize には URL しか渡ってこないので、
+ * ここで Markdown を直接読んで slug → 日付の対応を作っておく。
+ * updatedAt があればそちらを優先する（内容を直した日が最終更新日）。
+ * 値は ISO 文字列で持つ。sitemap の lastmod は文字列しか受け付けない。
+ */
+const articleDates = new Map(
+  /** @type {[string, string][]} */ (
+    fs
+      .readdirSync(path.join(process.cwd(), 'src/content/articles'))
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => {
+        const source = fs.readFileSync(
+          path.join(process.cwd(), 'src/content/articles', file),
+          'utf8',
+        );
+        const updated = source.match(/^updatedAt: (\S+)/m);
+        const published = source.match(/^publishedAt: (\S+)/m);
+        const value = (updated ?? published)?.[1];
+        const date = value ? new Date(value) : null;
+        // sitemap の lastmod は文字列で渡す必要がある（Date だと型が合わない）
+        return [
+          file.replace(/\.md$/, ''),
+          date && !Number.isNaN(date.getTime()) ? date.toISOString() : null,
+        ];
+      })
+      .filter((entry) => entry[1] !== null)
+  ),
+);
 
 /**
  * 公開URL。canonical・OGP・sitemap・RSS がすべてここを基準にする。
@@ -108,7 +142,16 @@ export default defineConfig({
     // 記事ページに React は配られない（実測: 外部JS 0本。
     // 配色切り替え用のインラインスクリプト約0.9KBのみ）。
     react(),
-    sitemap(),
+    // 記事には lastmod を付けて、更新したものを優先的に再クロールしてもらう。
+    // 記事以外のページには付けない。ビルド日時を入れると毎回「更新した」
+    // ことになってしまい、かえって信用されなくなるため。
+    sitemap({
+      serialize(item) {
+        const match = item.url.match(/\/articles\/([a-z0-9-]+)\/?$/);
+        const date = match ? articleDates.get(match[1]) : undefined;
+        return date ? { ...item, lastmod: date } : item;
+      },
+    }),
   ],
   build: {
     // 記事URLを /articles/xxx/ ではなく /articles/xxx.html にしないための設定。

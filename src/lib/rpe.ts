@@ -7,7 +7,7 @@
  * 表を2次元で持たず1本の数列として保持する。
  */
 
-import { isFiniteNumber, roundTo } from './format';
+import { isFiniteNumber } from './format';
 
 /** index = (reps - 1) * 2 + (10 - rpe) * 2 に対応する %1RM */
 const PERCENT_SEQUENCE = [
@@ -40,21 +40,16 @@ export function oneRmFromRpe(weight: number, reps: number, rpe: number): number 
   return (weight * 100) / percent;
 }
 
-/**
- * 推定1RMから「このレップ数・このRPEでやるなら何kgか」を出す。
- * increment を渡すとプレート刻みに丸める。
- */
+/** 推定1RMから「このレップ数・このRPEでやるなら何kgか」を出す。 */
 export function weightForRepsAtRpe(
   oneRM: number,
   reps: number,
   rpe: number,
-  increment = 0,
 ): number | null {
   if (!isFiniteNumber(oneRM) || oneRM <= 0) return null;
   const percent = rpePercent(reps, rpe);
   if (percent == null) return null;
-  const raw = (oneRM * percent) / 100;
-  return increment > 0 ? roundTo(raw, increment) : raw;
+  return (oneRM * percent) / 100;
 }
 
 export interface RpeMatrixCell {
@@ -65,21 +60,12 @@ export interface RpeMatrixCell {
 }
 
 /** 画面表示用の換算表を作る（行=RPE、列=レップ数） */
-export function buildRpeMatrix(
-  oneRM: number | null,
-  maxReps = 8,
-  increment = 0,
-): RpeMatrixCell[][] {
+export function buildRpeMatrix(oneRM: number | null, maxReps = 8): RpeMatrixCell[][] {
   const repList = Array.from({ length: Math.min(maxReps, RPE_MAX_REPS) }, (_, i) => i + 1);
   return RPE_VALUES.map((rpe) =>
     repList.map((reps) => {
       const percent = rpePercent(reps, rpe) ?? 0;
-      const weight =
-        oneRM && oneRM > 0
-          ? increment > 0
-            ? roundTo((oneRM * percent) / 100, increment)
-            : (oneRM * percent) / 100
-          : null;
+      const weight = oneRM && oneRM > 0 ? (oneRM * percent) / 100 : null;
       return { reps, rpe, percent, weight };
     }),
   );

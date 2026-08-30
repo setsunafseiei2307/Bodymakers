@@ -1,0 +1,129 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { TOOLS } from '../../config/tools';
+import AdSlot from '../../components/AdSlot.astro';
+import { url } from '../../lib/url';
+
+const title = 'ツール一覧';
+const description =
+  '筋力レベル診断・1RM換算・RPE換算・PFC計算・食品の栄養価検索など、登録不要でその場で使える計算ツールです。入力内容は送信も保存もされません。';
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container list-page">
+    <header class="list-page__header">
+      <p class="list-page__code">TOOLS</p>
+      <h1>ツール一覧</h1>
+      <p class="list-page__lead">
+        すべてブラウザの中だけで計算します。会員登録もログインも不要で、
+        入力した内容が送信されることも保存されることもありません。
+      </p>
+    </header>
+
+    <ul class="tool-list">
+      {
+        TOOLS.map((tool) => (
+          <li>
+            <a class:list={['tool-card', tool.primary && 'tool-card--primary']} href={url(tool.href)}>
+              <span class="tool-card__code">{tool.code}</span>
+              <span class="tool-card__name">{tool.label}</span>
+              <span class="tool-card__desc">{tool.summary}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <AdSlot id="tools-bottom" />
+  </div>
+</BaseLayout>
+
+<style>
+  .list-page {
+    padding-block: var(--s6) var(--s8);
+    max-width: 52rem;
+  }
+
+  .list-page__header {
+    margin-bottom: var(--s6);
+    padding-bottom: var(--s4);
+    border-bottom: 3px solid var(--rule);
+  }
+
+  .list-page__code {
+    color: var(--signal);
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+
+  .list-page__lead {
+    margin-top: var(--s3);
+    color: var(--body);
+    font-size: 0.9375rem;
+    line-height: 1.85;
+  }
+
+  .tool-list {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--hair);
+    border: 1px solid var(--hair);
+  }
+
+  @media (min-width: 40rem) {
+    .tool-list { grid-template-columns: 1fr 1fr; }
+  }
+
+  .tool-card {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: var(--s1);
+    height: 100%;
+    padding: var(--s4);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .tool-card:hover {
+    background: var(--inset);
+    color: var(--ink);
+  }
+
+  .tool-card__code {
+    color: var(--muted);
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .tool-card__name {
+    font-size: 1.0625rem;
+    font-weight: 900;
+  }
+
+  .tool-card:hover .tool-card__name { color: var(--signal); }
+
+  .tool-card__desc {
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+  }
+
+  /* 診断は主軸の機能なので、一覧の中でも一段強調する */
+  .tool-card--primary {
+    background: var(--signal-soft);
+  }
+
+  .tool-card--primary .tool-card__code { color: var(--signal); }
+
+  @media (min-width: 40rem) {
+    .tool-card--primary { grid-column: 1 / -1; }
+  }
+</style>

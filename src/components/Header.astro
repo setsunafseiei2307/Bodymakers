@@ -1,9 +1,10 @@
 ---
 import { NAV_ITEMS, SITE_SHORT_NAME } from '../config/site';
 import ThemeToggle from './ThemeToggle.astro';
+import { sitePath, url } from '../lib/url';
 
-/** 現在のパス。ナビの現在地表示に使う。 */
-const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+/** 現在のパス。ナビの現在地表示に使う。配信先のベースパスは取り除く。 */
+const pathname = sitePath(Astro.url.pathname);
 
 function isCurrent(href: string): boolean {
   if (href === '/') return pathname === '/';
@@ -13,7 +14,7 @@ function isCurrent(href: string): boolean {
 
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="site-header__logo" href="/">
+    <a class="site-header__logo" href={url('/')}>
       <svg class="site-header__mark" viewBox="0 0 32 32" aria-hidden="true">
         <!-- バーベルを模した記号。装飾なのでテキストは持たせない -->
         <rect x="2" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
@@ -31,7 +32,7 @@ function isCurrent(href: string): boolean {
           NAV_ITEMS.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={url(item.href)}
                 class:list={[
                   'site-header__link',
                   item.primary && 'site-header__link--primary',
@@ -55,23 +56,23 @@ function isCurrent(href: string): boolean {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--hair);
   }
 
   .site-header__inner {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--s3);
     min-height: 3.5rem;
   }
 
   .site-header__logo {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    color: var(--text-strong);
+    gap: var(--s2);
+    color: var(--ink);
     text-decoration: none;
     font-weight: 800;
     font-size: 1.0625rem;
@@ -82,7 +83,7 @@ function isCurrent(href: string): boolean {
   .site-header__mark {
     width: 1.75rem;
     height: 1.75rem;
-    color: var(--brand);
+    color: var(--signal);
   }
 
   .site-header__nav {
@@ -94,7 +95,7 @@ function isCurrent(href: string): boolean {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--space-1);
+    gap: var(--s1);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -102,9 +103,9 @@ function isCurrent(href: string): boolean {
 
   .site-header__link {
     display: inline-block;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    color: var(--text-body);
+    padding: var(--s2) var(--s3);
+    border-radius: var(--r-md);
+    color: var(--body);
     font-size: 0.9375rem;
     font-weight: 700;
     text-decoration: none;
@@ -112,29 +113,29 @@ function isCurrent(href: string): boolean {
   }
 
   .site-header__link:hover {
-    background: var(--surface-2);
-    color: var(--text-strong);
+    background: var(--inset);
+    color: var(--ink);
   }
 
   .site-header__link[aria-current='page'] {
-    color: var(--brand-text);
-    background: var(--brand-soft);
+    color: var(--signal);
+    background: var(--signal-soft);
   }
 
   /* 診断への導線はナビの中でも一段強調する */
   .site-header__link--primary {
-    background: var(--brand);
-    color: var(--text-inverse);
+    background: var(--signal);
+    color: var(--paper);
   }
 
   .site-header__link--primary:hover {
-    background: var(--brand-hover);
-    color: var(--text-inverse);
+    background: var(--signal);
+    color: var(--paper);
   }
 
   .site-header__link--primary[aria-current='page'] {
-    background: var(--brand-active);
-    color: var(--text-inverse);
+    background: var(--signal);
+    color: var(--paper);
   }
 
   /* スマホではナビをロゴの下の段に落とす。
@@ -143,7 +144,7 @@ function isCurrent(href: string): boolean {
   @media (max-width: 47.99rem) {
     .site-header__inner {
       flex-wrap: wrap;
-      padding-block: var(--space-2);
+      padding-block: var(--s2);
     }
 
     .site-header__logo {

@@ -1,0 +1,22 @@
+---
+import { ADS_ENABLED, type AdVariant } from '../config/ads';
+
+interface Props {
+  /** src/config/ads.ts の AD_PLACEMENTS のキー */
+  id: string;
+  variant?: AdVariant;
+}
+
+const { id, variant = 'inline' } = Astro.props;
+---
+
+{
+  /*
+    ADS_ENABLED が false の間は何も描画しない。
+    枠だけ置くと空のグレーの箱が並び、未完成に見えるため。
+    有効化するときはこの div の中に広告タグを入れる。
+  */
+  ADS_ENABLED && (
+    <div class={`ad-slot ad-slot--${variant}`} aria-hidden="true" data-ad-slot={id} />
+  )
+}

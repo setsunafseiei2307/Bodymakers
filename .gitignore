@@ -47,9 +47,9 @@ coverage/
 scripts/strength-standards/raw/
 scripts/strength-standards/*.csv
 scripts/strength-standards/*.zip
-scripts/food-data/*.xlsx
-scripts/food-data/*.json
-!scripts/food-data/selection.json
+# 食品データの元ファイルと中間生成物（Excel 1.9MB / JSON 数百KB）。
+# 再生成の手順は docs/food-data.md にあるので、リポジトリには入れない。
+scripts/food-data/raw/
 
 # Python
 __pycache__/

@@ -36,6 +36,9 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL || 'https://bodymakers.example.com' }}
 
+      - name: サイト内リンクの検査
+        run: npm run check:links
+
       - name: ビルド成果物の保存
         uses: actions/upload-artifact@v4
         with:

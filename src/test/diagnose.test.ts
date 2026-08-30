@@ -243,6 +243,14 @@ describe('レベル境界の重量表', () => {
     }
   });
 
+  it('最下位レベルには到達重量がない（0 を入れて画面側で「—」にする）', () => {
+    const result = diagnose(baseInput())!;
+    for (const lift of result.lifts) {
+      expect(lift.thresholds[0].level.id).toBe('beginner');
+      expect(lift.thresholds[0].weightKg).toBe(0);
+    }
+  });
+
   it('次のレベルまでの不足分が負にならない', () => {
     const result = diagnose(baseInput())!;
     for (const lift of result.lifts) {

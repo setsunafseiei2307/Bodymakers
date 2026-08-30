@@ -45,7 +45,18 @@ const LIFT_HINTS: Record<LiftId, string> = {
   deadlift: '1セットで連続して挙げられた重量とレップ数',
 };
 
-export default function StrengthForm() {
+interface Props {
+  /**
+   * true にすると「ベンチプレス1種目だけ」で始まる簡易モードになる。
+   * トップページに置いて、遷移せずその場で測ってもらうために使う。
+   * 結果が出たあと、本人が押せば3種目に広がる。
+   */
+  quickStart?: boolean;
+}
+
+export default function StrengthForm({ quickStart = false }: Props = {}) {
+  // 簡易モードで始めたときだけ、最初は1種目だけを見せる
+  const [expanded, setExpanded] = useState(!quickStart);
   const formId = useId();
   const [sex, setSex] = useState<Sex>('M');
   const [bodyweight, setBodyweight] = useState('');
@@ -127,6 +138,16 @@ export default function StrengthForm() {
     setSubmitted(false);
   }
 
+  /**
+   * 入力欄に出す種目。
+   * 簡易モードではベンチプレスを先頭に置く。最初に測るなら一番馴染みがあるため。
+   */
+  const visibleLifts: LiftId[] = quickStart
+    ? expanded
+      ? ['bench', 'squat', 'deadlift']
+      : ['bench']
+    : [...LIFT_ORDER];
+
   /** 全体エラー（種目に紐づかないもの）。 */
   const globalErrors = errors.filter((error) => error.lift === null);
 
@@ -141,9 +162,9 @@ export default function StrengthForm() {
 
   return (
     <div className="strength">
-      <form className="strength__form card" onSubmit={handleSubmit} noValidate>
+      <form className="strength__form" onSubmit={handleSubmit} noValidate>
         <fieldset className="strength__fieldset">
-          <legend className="strength__legend">あなたについて</legend>
+          {!quickStart && <legend className="strength__legend">あなたについて</legend>}
 
           <div className="strength__row">
             <div className="field">
@@ -176,9 +197,11 @@ export default function StrengthForm() {
                   </button>
                 ))}
               </div>
-              <p className="field__hint">
-                基準値が男女別にしか存在しないため、2つから近いほうを選んでください。
-              </p>
+              {!quickStart && (
+                <p className="field__hint">
+                  基準値が男女別にしか存在しないため、2つから近いほうを選んでください。
+                </p>
+              )}
             </div>
 
             <div className="field">
@@ -205,7 +228,7 @@ export default function StrengthForm() {
                 <p className="field__error" id={`${formId}-bodyweight-error`} role="alert">
                   {bodyweightError.message}
                 </p>
-              ) : (
+              ) : quickStart ? null : (
                 <p className="field__hint">
                   {MIN_BODYWEIGHT_KG}〜{MAX_BODYWEIGHT_KG}kg
                 </p>
@@ -215,12 +238,16 @@ export default function StrengthForm() {
         </fieldset>
 
         <fieldset className="strength__fieldset">
-          <legend className="strength__legend">挙上重量とレップ数</legend>
+          <legend className="strength__legend">
+            {quickStart && !expanded ? 'ベンチプレスの記録' : '挙上重量とレップ数'}
+          </legend>
           <p className="strength__lead">
-            1種目だけでも診断できます。3種目そろうと合計評価と弱点の指摘が出ます。
+            {quickStart && !expanded
+              ? '直近で「あと1回は上がらない」ところまで追い込めたセットを入れてください。'
+              : '1種目だけでも診断できます。3種目そろうと合計評価と弱点の指摘が出ます。'}
           </p>
 
-          {LIFT_ORDER.map((lift) => {
+          {visibleLifts.map((lift) => {
             const error = errorFor(lift);
             const weightId = `${formId}-${lift}-weight`;
             const repsId = `${formId}-${lift}-reps`;
@@ -229,11 +256,13 @@ export default function StrengthForm() {
               <div className="lift-input" key={lift}>
                 <div className="lift-input__header">
                   <h3 className="lift-input__name">{LIFT_LABELS[lift]}</h3>
-                  <p className="lift-input__hint">{LIFT_HINTS[lift]}</p>
+                  {!(quickStart && !expanded) && (
+                    <p className="lift-input__hint">{LIFT_HINTS[lift]}</p>
+                  )}
                 </div>
 
                 <div className="lift-input__fields">
-                  <div className="field field--compact">
+                  <div className="field">
                     <label className="field__label" htmlFor={weightId}>
                       重量
                       <span className="field__unit">kg</span>
@@ -252,7 +281,7 @@ export default function StrengthForm() {
                     />
                   </div>
 
-                  <div className="field field--compact">
+                  <div className="field">
                     <label className="field__label" htmlFor={repsId}>
                       レップ数
                       <span className="field__unit">回</span>
@@ -281,7 +310,7 @@ export default function StrengthForm() {
             );
           })}
 
-          <p className="strength__note">
+          <p className="strength__note" hidden={quickStart && !expanded}>
             レップ数は1〜{MAX_REPS}回まで対応しています。それ以上の回数からの1RM推定は
             誤差が大きいため計算しません。重量は{MIN_LIFT_KG}〜{MAX_LIFT_KG}kgの範囲です。
           </p>
@@ -296,13 +325,13 @@ export default function StrengthForm() {
         <div className="strength__actions">
           <button
             type="submit"
-            className="button button--large button--block"
+            className="button button--lg button--block"
             disabled={!canSubmit}
           >
-            レベルを判定する
+            {quickStart && !expanded ? '筋力レベルを測る' : 'レベルを判定する'}
           </button>
           {(result || submitted) && (
-            <button type="button" className="button button--secondary" onClick={handleReset}>
+            <button type="button" className="button button--ghost" onClick={handleReset}>
               入力をクリア
             </button>
           )}
@@ -319,10 +348,28 @@ export default function StrengthForm() {
           （画面が勝手に動くと、入力ミスに気づいたときに戻りにくいため）。 */}
       <div className="strength__result" aria-live="polite">
         {result ? (
-          <StrengthResult diagnosis={result} />
+          <>
+            <StrengthResult diagnosis={result} />
+            {quickStart && !expanded && (
+              <div className="upgrade">
+                <p className="upgrade__title">3種目そろえると、もっと分かります</p>
+                <p className="upgrade__text">
+                  スクワットとデッドリフトを足すと、3種目合計のレベル・種目間のバランス・
+                  弱点の指摘が出ます。入力済みの内容はそのまま残ります。
+                </p>
+                <button
+                  type="button"
+                  className="button button--lg button--block"
+                  onClick={() => setExpanded(true)}
+                >
+                  スクワット・デッドリフトも測る
+                </button>
+              </div>
+            )}
+          </>
         ) : submitted && errors.length > 0 ? (
-          <div className="empty-state">
-            <strong className="empty-state__title">入力を確認してください</strong>
+          <div className="empty">
+            <strong className="empty__title">入力を確認してください</strong>
             <p>上のフォームに表示されているエラーを直すと判定できます。</p>
           </div>
         ) : null}

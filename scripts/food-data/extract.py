@@ -61,7 +61,7 @@ def clean_name(raw):
 
 
 def main():
-    wb = openpyxl.load_workbook('seibunhyo2023.xlsx', read_only=True, data_only=True)
+    wb = openpyxl.load_workbook('raw/seibunhyo2023.xlsx', read_only=True, data_only=True)
     ws = wb['表全体']
 
     foods = []
@@ -88,7 +88,7 @@ def main():
         rec['estimated'] = estimated_fields
         foods.append(rec)
 
-    with open('all_foods.json', 'w', encoding='utf-8') as f:
+    with open('raw/all_foods.json', 'w', encoding='utf-8') as f:
         json.dump(foods, f, ensure_ascii=False, indent=1)
 
     print('total foods:', len(foods))

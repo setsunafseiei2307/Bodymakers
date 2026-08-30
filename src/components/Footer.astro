@@ -1,5 +1,7 @@
 ---
 import { FOOTER_ITEMS, SITE_NAME, SITE_TAGLINE } from '../config/site';
+import AdSlot from './AdSlot.astro';
+import { url } from '../lib/url';
 
 const year = new Date().getFullYear();
 ---
@@ -8,7 +10,7 @@ const year = new Date().getFullYear();
   <div class="container">
     <!-- 広告枠（フッター）。現時点では広告タグを読み込まない。
          有効化するときはこの div の中にタグを入れる。 -->
-    <div class="ad-slot ad-slot--footer" aria-hidden="true" data-ad-slot="footer"></div>
+    <AdSlot id="footer" variant="footer" />
 
     <div class="site-footer__inner">
       <div class="site-footer__brand">
@@ -21,7 +23,7 @@ const year = new Date().getFullYear();
           {
             FOOTER_ITEMS.map((item) => (
               <li>
-                <a class="site-footer__link" href={item.href}>
+                <a class="site-footer__link" href={url(item.href)}>
                   {item.label}
                 </a>
               </li>
@@ -43,9 +45,9 @@ const year = new Date().getFullYear();
 <style>
   .site-footer {
     margin-top: auto;
-    padding-block: var(--space-6) var(--space-7);
-    background: var(--surface-1);
-    border-top: 1px solid var(--border);
+    padding-block: var(--s6) var(--s7);
+    background: var(--surface);
+    border-top: 1px solid var(--hair);
   }
 
   .site-footer__inner {
@@ -53,52 +55,52 @@ const year = new Date().getFullYear();
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--space-5);
-    padding-bottom: var(--space-5);
-    border-bottom: 1px solid var(--border);
+    gap: var(--s5);
+    padding-bottom: var(--s5);
+    border-bottom: 1px solid var(--hair);
   }
 
   .site-footer__name {
-    color: var(--text-strong);
+    color: var(--ink);
     font-weight: 800;
     font-size: 1.0625rem;
   }
 
   .site-footer__tagline {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.875rem;
   }
 
   .site-footer__list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2) var(--space-5);
+    gap: var(--s2) var(--s5);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .site-footer__link {
-    color: var(--text-body);
+    color: var(--body);
     font-size: 0.9375rem;
     text-decoration: none;
   }
 
   .site-footer__link:hover {
-    color: var(--brand-text);
+    color: var(--signal);
     text-decoration: underline;
   }
 
   .site-footer__legal {
-    margin-top: var(--space-5);
-    color: var(--text-muted);
+    margin-top: var(--s5);
+    color: var(--muted);
     font-size: 0.8125rem;
     line-height: 1.8;
   }
 
   .site-footer__copyright {
-    margin-top: var(--space-4);
-    color: var(--text-muted);
+    margin-top: var(--s4);
+    color: var(--muted);
     font-size: 0.8125rem;
   }
 </style>

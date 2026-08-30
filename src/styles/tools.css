@@ -1,0 +1,433 @@
+/*
+ * ツール画面の共通スタイル。診断・1RM換算・RPE換算・Smolov・PFC・食品検索で共有する。
+ * global.css のトークンを前提にしており、色の直接指定はしない。
+ */
+
+/* ============================================================
+   1. ツール全体のレイアウト
+   ============================================================ */
+
+.tool {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.tool__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+/* 入力欄を横に並べる。狭い画面では1列に落ちる。
+   グリッド項目の min-width は既定が auto で、中の <input> の既定幅（約208px）が
+   そのまま最小幅として効いてしまう。0 を明示して縮められるようにする。 */
+.row {
+  display: grid;
+  gap: var(--s4);
+}
+
+.row > * { min-width: 0; }
+
+@media (min-width: 34rem) {
+  .row--2 { grid-template-columns: 1fr 1fr; }
+  .row--3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+.tool__note {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+
+/* --- 入力欄 --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  /* 親がグリッド/フレックスのとき、入力欄の既定幅で押し広げられないようにする */
+  min-width: 0;
+}
+
+.field__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.field__unit {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.field__input {
+  width: 100%;
+  /* <input> は既定で約208px分の固有幅を持つ。0 にしないと親を押し広げる */
+  min-width: 0;
+  min-height: 3rem;
+  padding: var(--s2) var(--s3);
+  border: 0;
+  border-bottom: 2px solid var(--rule);
+  border-radius: 0;
+  background: var(--inset);
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.field__input::placeholder {
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.field__input:hover { border-bottom-color: var(--signal); }
+.field__input:focus-visible { outline-offset: 0; }
+
+.field__input--error {
+  border-bottom-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.field__hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s1);
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.field__error::before {
+  content: '!';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1rem;
+  height: 1rem;
+  background: var(--danger);
+  color: var(--surface);
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+}
+
+/* --- 性別のセグメント --- */
+
+.segmented {
+  display: flex;
+  border: 1.5px solid var(--rule);
+}
+
+.segmented__option {
+  flex: 1;
+  min-height: 2.75rem;
+  padding: var(--s2);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.segmented__option + .segmented__option { border-left: 1.5px solid var(--rule); }
+.segmented__option:hover { color: var(--ink); }
+
+.segmented__option[aria-checked='true'] {
+  background: var(--rule);
+  color: var(--paper);
+}
+
+/* プルダウン */
+.field__select {
+  width: 100%;
+  min-width: 0;
+  min-height: 3rem;
+  padding: var(--s2) var(--s3);
+  border: 0;
+  border-bottom: 2px solid var(--rule);
+  border-radius: 0;
+  background: var(--inset);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.field__select:hover { border-bottom-color: var(--signal); }
+
+/* ============================================================
+   2. 結果の表示
+   ============================================================ */
+
+/* 大きく1つの数値を見せる */
+.bignum { padding: var(--s2) 0; }
+
+.bignum__label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.bignum__value {
+  color: var(--signal);
+  font-family: var(--f-display);
+  font-size: clamp(2.5rem, 12vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.bignum__unit {
+  margin-left: 0.15em;
+  color: var(--muted);
+  font-family: var(--f-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.bignum__note {
+  margin-top: var(--s2);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+/* 数値を並べる台帳 */
+.rows {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.rows th,
+.rows td {
+  padding: var(--s2) var(--s2);
+  border-bottom: 1px solid var(--hair);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.rows thead th {
+  border-bottom: 2px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.rows tbody th { color: var(--body); font-weight: 700; }
+
+.rows td {
+  text-align: right;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.rows tbody tr:hover { background: var(--inset); }
+
+/* 強調したいセル（現在値など） */
+.rows .is-now {
+  background: var(--signal);
+  color: #fff;
+  font-weight: 700;
+}
+
+.rows .is-row {
+  background: var(--inset);
+}
+
+/* 主要な数値を並べる小さなブロック */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: var(--s3) var(--s4);
+}
+
+.stat__label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.stat__value {
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.stat__unit {
+  margin-left: 0.15em;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+/* PFCの構成比バー */
+.macro-bar {
+  display: flex;
+  height: 14px;
+  margin: var(--s3) 0 var(--s2);
+  overflow: hidden;
+}
+
+.macro-bar__part { height: 100%; }
+.macro-bar__part--p { background: var(--signal); }
+.macro-bar__part--f { background: var(--lv-4); }
+.macro-bar__part--c { background: var(--data); }
+
+.macro-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+}
+
+.macro-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--muted);
+}
+
+.macro-legend i {
+  width: 0.625rem;
+  height: 0.625rem;
+  font-style: normal;
+}
+
+.macro-legend i.p { background: var(--signal); }
+.macro-legend i.f { background: var(--lv-4); }
+.macro-legend i.c { background: var(--data); }
+
+/* ============================================================
+   3. 食品検索
+   ============================================================ */
+
+/* カテゴリの一覧。検索語が空のときだけ出す */
+.food__cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+.food__cat {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3);
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.food__cat:hover { background: var(--inset); color: var(--signal); }
+
+.food__cat-emoji { flex: 0 0 1.25rem; font-size: 1rem; }
+.food__cat-name { flex: 1; min-width: 0; }
+
+.food__cat-count {
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+}
+
+.food__scope { margin-top: var(--s2); }
+
+/* 検索結果 */
+.food__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.food__item {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s2);
+  width: 100%;
+  padding: var(--s3) var(--s2);
+  border: 0;
+  border-bottom: 1px solid var(--hair);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.food__list li:first-child .food__item { border-top: 1px solid var(--hair); }
+.food__item:hover { background: var(--inset); }
+
+.food__item.is-selected {
+  background: var(--signal-soft);
+  box-shadow: inset 3px 0 0 var(--signal);
+}
+
+/* 絵文字が無い食品でも名前の左端が揃うよう、幅を必ず確保する */
+.food__emoji { font-size: 1.0625rem; line-height: 1; }
+
+.food__name {
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.food__pfc {
+  display: block;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.food__kcal {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  white-space: nowrap;
+}
+
+.food__kcal small { color: var(--muted); font-size: 0.625rem; }
+
+/* 成分表で推定値だった項目に付けるしるし */
+.food__est {
+  margin-left: var(--s2);
+  padding: 0 var(--s1);
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+/* 未測定の項目 */
+.food__na { color: var(--muted); font-style: normal; }

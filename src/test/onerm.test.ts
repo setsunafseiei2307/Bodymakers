@@ -106,12 +106,6 @@ describe('repTableFromOneRM', () => {
     }
   });
 
-  it('increment を渡すと刻みに丸まる', () => {
-    const rows = repTableFromOneRM(137, 2.5);
-    for (const row of rows) {
-      expect(Math.abs(row.weight / 2.5 - Math.round(row.weight / 2.5))).toBeLessThan(1e-9);
-    }
-  });
 
   it('換算表は 100% から単調減少している', () => {
     const percents = Object.keys(REP_PERCENT_TABLE)
@@ -132,9 +126,6 @@ describe('weightAtPercent / percentOfOneRM', () => {
     expect(percentOfOneRM(160, 200)).toBe(80);
   });
 
-  it('increment で丸まる', () => {
-    expect(weightAtPercent(137, 80, 2.5)).toBe(110);
-  });
 
   it('不正入力は null', () => {
     expect(weightAtPercent(0, 80)).toBeNull();

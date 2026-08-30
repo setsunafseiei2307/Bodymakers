@@ -14,9 +14,11 @@
     "test:watch": "vitest",
     "typecheck": "astro check",
     "check": "npm run typecheck && npm run test",
-    "standards:build": "python3 scripts/strength-standards/build.py"
+    "standards:build": "python3 scripts/strength-standards/build.py",
+    "check:links": "node scripts/check-links.mjs"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "^0.3.8",
     "@astrojs/react": "^6.0.4",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",

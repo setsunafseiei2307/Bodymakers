@@ -1,55 +1,25 @@
 /*
- * 筋力レベル診断の画面スタイル。
- *
- * 診断ページでのみ読み込む。記事ページには配らない。
- * global.css のトークンを前提にしており、色の直接指定はレベル色のマッピングだけ。
+ * 筋力レベル診断の画面スタイル。診断ページでのみ読み込む。
+ * 入力欄などツール共通のパーツは tools.css にある。ここは診断固有のものだけ。
  */
 
 /* ============================================================
-   1. レベル色のマッピング
-   ============================================================
-   .level--xxx を付けた要素に、そのレベルの色を流し込む。
-   使う側（バッジ・ゲージ・ヒーロー）は --level-color / --level-bg だけを見る。 */
-
-.level--beginner {
-  --level-color: var(--level-beginner);
-  --level-bg: var(--level-beginner-soft);
-}
-
-.level--novice {
-  --level-color: var(--level-novice);
-  --level-bg: var(--level-novice-soft);
-}
-
-.level--intermediate {
-  --level-color: var(--level-intermediate);
-  --level-bg: var(--level-intermediate-soft);
-}
-
-.level--advanced {
-  --level-color: var(--level-advanced);
-  --level-bg: var(--level-advanced-soft);
-}
-
-.level--elite {
-  --level-color: var(--level-elite);
-  --level-bg: var(--level-elite-soft);
-}
-
-/* ============================================================
-   2. フォーム
+   1. フォーム
    ============================================================ */
 
 .strength {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--s6);
 }
 
 .strength__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--s6);
+  padding: var(--s5) var(--s4);
+  background: var(--surface);
+  border: 1px solid var(--hair);
 }
 
 .strength__fieldset {
@@ -59,628 +29,542 @@
 }
 
 .strength__legend {
-  padding: 0;
-  margin-bottom: var(--space-4);
-  color: var(--text-strong);
-  font-size: 1.125rem;
-  font-weight: 800;
+  width: 100%;
+  padding: 0 0 var(--s2);
+  margin-bottom: var(--s4);
+  border-bottom: 2px solid var(--rule);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
 }
 
 .strength__lead {
-  margin-bottom: var(--space-4);
-  color: var(--text-muted);
-  font-size: 0.9375rem;
+  margin-bottom: var(--s4);
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 
 .strength__row {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--s5);
 }
 
+.strength__row > * { min-width: 0; }
+
 @media (min-width: 40rem) {
-  .strength__row {
-    grid-template-columns: 1fr 1fr;
-  }
+  .strength__row { grid-template-columns: 1fr 1fr; }
 }
 
 .strength__note {
-  margin-top: var(--space-4);
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  line-height: 1.7;
+  margin-top: var(--s4);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
 }
 
 .strength__actions {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding-top: var(--space-2);
+  gap: var(--s3);
 }
 
 .strength__disabled-hint {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
+  color: var(--muted);
+  font-size: 0.75rem;
   text-align: center;
-}
-
-.strength__result {
-  scroll-margin-top: var(--space-6);
-}
-
-/* --- 入力フィールド --- */
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.field__label {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  color: var(--text-strong);
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-.field__unit {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  font-weight: 400;
-}
-
-.field__input {
-  width: 100%;
-  min-height: 3rem;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--surface-1);
-  color: var(--text-strong);
-  font-family: var(--font-numeric);
-  font-size: 1.125rem;
-  font-variant-numeric: tabular-nums;
-  transition: border-color var(--duration) var(--ease);
-}
-
-.field__input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.6;
-}
-
-.field__input:hover {
-  border-color: var(--brand);
-}
-
-.field__input--error {
-  border-color: var(--danger);
-  background: var(--danger-soft);
-}
-
-.field__hint {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  line-height: 1.6;
-}
-
-.field__error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  color: var(--danger);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.field__error::before {
-  content: '⚠';
-  flex-shrink: 0;
-}
-
-/* --- セグメント（性別選択） --- */
-
-.segmented {
-  display: flex;
-  padding: 3px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--surface-inset);
-}
-
-.segmented__option {
-  flex: 1;
-  min-height: 2.625rem;
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: calc(var(--radius-md) - 3px);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background-color var(--duration) var(--ease),
-    color var(--duration) var(--ease);
-}
-
-.segmented__option:hover {
-  color: var(--text-strong);
-}
-
-.segmented__option[aria-checked='true'] {
-  background: var(--surface-1);
-  color: var(--brand-text);
-  box-shadow: var(--shadow-sm);
 }
 
 /* --- 種目ごとの入力ブロック --- */
 
 .lift-input {
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-inset);
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--hair);
 }
 
-.lift-input + .lift-input {
-  margin-top: var(--space-4);
-}
-
-.lift-input__header {
-  margin-bottom: var(--space-3);
-}
+.lift-input__header { margin-bottom: var(--s3); }
 
 .lift-input__name {
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 0.9375rem;
+  font-weight: 900;
 }
 
 .lift-input__hint {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
+  color: var(--muted);
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 
 .lift-input__fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--s4);
 }
 
+.lift-input__fields > * { min-width: 0; }
+
 /* ============================================================
-   3. 結果表示
+   2. リザルト票
    ============================================================ */
 
 .result {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--s5);
 }
 
-/* --- 主表示（スクリーンショットの主役） --- */
+.record__body { padding: var(--s4); }
 
-.result__hero {
-  position: relative;
-  padding: var(--space-6) var(--space-5);
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--level-color) 35%, transparent);
-  background:
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--level-bg) 85%, var(--surface-1)),
-      var(--surface-1) 78%
-    );
-  box-shadow: var(--shadow-md);
-  text-align: center;
-  overflow: hidden;
-}
-
-/* レベル色の帯を上端に入れて、何色の結果かを一目で分かるようにする */
-.result__hero::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 5px;
-  background: var(--level-color);
-}
-
-.result__hero-context {
-  color: var(--text-muted);
-  font-size: 0.875rem;
+.record__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s4);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--hair);
+  color: var(--muted);
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
 }
 
-.result__hero-level {
-  margin-top: var(--space-2);
-  color: var(--level-color);
-  font-size: clamp(2.75rem, 13vw, 4rem);
-  font-weight: 900;
-  line-height: 1.1;
+.record__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-top: var(--s4);
+}
+
+.record__level {
+  color: var(--lv);
+  font-family: var(--f-display);
+  font-size: clamp(3.25rem, 17vw, 4.75rem);
+  font-weight: 400;
+  line-height: 0.86;
   letter-spacing: 0.02em;
 }
 
-.result__hero-rank {
-  margin-top: var(--space-2);
-  color: var(--text-strong);
-  font-family: var(--font-numeric);
-  font-size: clamp(1.25rem, 5vw, 1.6rem);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+.record__ratio {
+  text-align: right;
+  line-height: 1.15;
 }
 
-.result__hero-stronger {
-  margin-top: var(--space-1);
-  color: var(--text-body);
-  font-size: 0.9375rem;
+.record__ratio span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.625rem;
   font-weight: 700;
+  letter-spacing: 0.1em;
 }
 
-.result__hero-definition {
-  margin-top: var(--space-1);
-  color: var(--text-muted);
+.record__ratio em {
+  color: var(--signal);
+  font-family: var(--f-display);
+  font-size: 2rem;
+  font-style: normal;
+}
+
+/* レベル色の帯。何色の結果かを一目で示す */
+.record__bar {
+  height: 6px;
+  margin-top: var(--s3);
+  background: var(--lv);
+}
+
+.record__total {
+  margin-top: var(--s3);
+  color: var(--ink);
   font-size: 0.875rem;
-}
-
-.result__hero-gauge {
-  margin-top: var(--space-5);
-}
-
-.result__hero-total {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px solid color-mix(in srgb, var(--level-color) 22%, transparent);
-  color: var(--text-body);
-  font-family: var(--font-numeric);
-  font-size: 1rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
-/* --- ゲージ --- */
-
-.gauge {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.record__total b {
+  color: var(--signal);
+  font-size: 1.125rem;
 }
 
-.gauge__track {
-  position: relative;
-  display: flex;
-  height: 12px;
-  border-radius: var(--radius-full);
-  overflow: visible;
+.record__sep {
+  margin-inline: var(--s2);
+  color: var(--hair);
 }
 
-.gauge__band {
-  background: var(--level-color);
-  opacity: 0.85;
+.record__rule {
+  margin-top: var(--s3);
+  border-top: 3px solid var(--rule);
 }
 
-.gauge__band:first-child {
-  border-radius: var(--radius-full) 0 0 var(--radius-full);
+.record__grid {
+  display: grid;
+  gap: var(--s4);
+  align-items: start;
+  margin-top: var(--s4);
 }
 
-.gauge__band:last-child {
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+@media (min-width: 26rem) {
+  .record__grid { grid-template-columns: 10.5rem minmax(0, 1fr); }
 }
 
-.gauge__marker {
-  position: absolute;
-  top: 50%;
-  translate: -50% -50%;
-  display: block;
+/* 三角チャートを出さないとき（1種目のみ）は1列に戻す */
+.record__grid--single { grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 26rem) {
+  .record__grid--single { grid-template-columns: minmax(0, 1fr); }
 }
 
-.gauge__marker-dot {
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  background: var(--surface-1);
-  border: 4px solid var(--text-strong);
-  box-shadow: var(--shadow-md);
-}
+.record__lifts { min-width: 0; }
 
-.gauge__scale {
-  display: flex;
-  justify-content: space-between;
-}
-
-.gauge__scale-end {
-  color: var(--text-muted);
+.record__hint {
+  margin-top: var(--s2);
+  color: var(--muted);
   font-size: 0.6875rem;
+}
+
+/* --- 三角チャート --- */
+
+.radar {
+  width: 100%;
+  max-width: 11rem;
+  margin-inline: auto;
+}
+
+.radar__ring {
+  fill: none;
+  stroke: var(--hair);
+  stroke-width: 1;
+}
+
+.radar__ring--outer { stroke: var(--rule); }
+
+.radar__axis {
+  stroke: var(--hair);
+  stroke-width: 1;
+}
+
+.radar__shape {
+  fill: color-mix(in srgb, var(--data) 22%, transparent);
+  stroke: var(--data);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.radar__dot { fill: var(--data); }
+.radar__dot--weak { fill: var(--signal); }
+
+.radar__label {
+  fill: var(--muted);
+  font-family: var(--f-sans);
+  font-size: 9px;
   font-weight: 700;
-  white-space: nowrap;
 }
 
-/* --- 種目別カード --- */
+/* --- 種目の行 --- */
 
-.result__lifts {
+.lift {
+  border-top: 1px solid var(--hair);
+}
+
+.lift:last-of-type { border-bottom: 1px solid var(--hair); }
+
+.lift__row {
   display: grid;
-  gap: var(--space-4);
-}
-
-@media (min-width: 60rem) {
-  .result__lifts {
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-  }
-}
-
-.lift-result {
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
-  box-shadow: var(--shadow-sm);
-}
-
-.lift-result__header {
-  display: flex;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  cursor: pointer;
+  list-style: none;
 }
 
-.lift-result__name {
-  font-size: 1.0625rem;
-  font-weight: 800;
-}
-
-.level-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem var(--space-4);
-  border-radius: var(--radius-full);
-  background: var(--level-bg);
-  color: var(--level-color);
-  border: 1px solid color-mix(in srgb, var(--level-color) 40%, transparent);
-  font-size: 0.875rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.level-dot {
-  display: inline-block;
-  width: 0.625rem;
-  height: 0.625rem;
-  margin-right: var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--level-color);
-  vertical-align: middle;
-}
-
-.lift-result__numbers {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.stat {
+/* 推定1RMと体重比は右揃えで縦に積む（桁が揃って読みやすい） */
+.lift__nums {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
+  align-items: flex-end;
+  line-height: 1.25;
 }
 
-.stat__label {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
+.lift__row::-webkit-details-marker { display: none; }
+
+.lift__name {
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 900;
 }
 
-.stat__value {
-  color: var(--text-strong);
-  font-family: var(--font-numeric);
-  font-size: 1.5rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+.lift__kg {
+  color: var(--ink);
+  font-size: 1.0625rem;
 }
 
-.stat__value--small {
-  font-size: 1rem;
-  line-height: 1.4;
+.lift__kg small {
+  color: var(--muted);
+  font-size: 0.625rem;
 }
 
-.stat__unit {
-  margin-left: 0.15em;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
+.lift__ratio {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
 }
 
-.lift-result__definition {
-  margin-top: var(--space-3);
-  color: var(--text-muted);
+.lift__tag {
+  min-width: 3.5rem;
+  padding: 0.1rem var(--s2);
+  border: 1.5px solid var(--lv);
+  color: var(--lv);
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 900;
+}
+
+.lift[open] .lift__row { border-bottom: 1px dashed var(--hair); }
+
+.lift__detail { padding: var(--s3) 0 var(--s4); }
+
+.lift__line {
+  margin-bottom: var(--s3);
+  color: var(--body);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}
+
+.lift__delta { color: var(--signal); font-family: var(--f-mono); }
+
+/* --- 台帳テーブル --- */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.8125rem;
 }
 
-.lift-result__next {
-  margin-top: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--surface-inset);
-  color: var(--text-body);
-  font-size: 0.9375rem;
-}
-
-.lift-result__delta {
-  color: var(--brand-text);
-  font-family: var(--font-numeric);
-  font-variant-numeric: tabular-nums;
-}
-
-.lift-result__details {
-  margin-top: var(--space-4);
-}
-
-.lift-result__details summary {
-  padding: var(--space-2) 0;
-  color: var(--brand-text);
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.lift-result__details summary:hover {
-  color: var(--brand-hover);
-}
-
-.lift-result__details[open] summary {
-  margin-bottom: var(--space-3);
-}
-
-/* --- レベル別到達重量の表 --- */
-
-.threshold-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.threshold-table th,
-.threshold-table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
+.ledger th,
+.ledger td {
+  padding: var(--s2) var(--s2);
+  border-bottom: 1px solid var(--hair);
   text-align: left;
   white-space: nowrap;
 }
 
-.threshold-table thead th {
-  color: var(--text-muted);
-  font-size: 0.75rem;
+.ledger thead th {
+  border-bottom: 2px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.625rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
-.threshold-table tbody th {
-  font-weight: 700;
-  color: var(--text-body);
+.ledger tbody th { color: var(--body); font-weight: 700; }
+.ledger td { text-align: right; }
+
+.ledger__row--now { background: var(--inset); }
+.ledger__row--now tbody th { color: var(--ink); }
+
+.ledger__now {
+  margin-left: var(--s2);
+  padding: 0 var(--s1);
+  background: var(--signal);
+  color: #fff;
+  font-size: 0.625rem;
 }
 
-.threshold-table__row--current {
-  background: var(--surface-inset);
-}
+.ledger__cleared { color: var(--ok); font-weight: 700; }
 
-.threshold-table__row--current tbody th {
-  color: var(--text-strong);
-}
-
-.threshold-table__current {
-  margin-left: var(--space-2);
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--brand-soft);
-  color: var(--brand-text);
-  font-size: 0.6875rem;
-}
-
-.threshold-table__weight,
-.threshold-table__delta {
-  font-family: var(--font-numeric);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.threshold-table__cleared {
-  color: var(--success-text);
-  font-weight: 700;
-}
-
-/* --- セクション --- */
-
-.result__section {
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
-}
-
-.result__section-title {
-  margin-bottom: var(--space-4);
-  font-size: 1.0625rem;
-  font-weight: 800;
-}
-
-.result__section .note + .note {
-  margin-top: var(--space-3);
-}
-
-.result__section .source-note {
-  margin-top: var(--space-3);
+.dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: var(--s2);
+  background: var(--lv);
+  vertical-align: middle;
 }
 
 /* --- 弱点 --- */
 
-.weakness-list {
+.weak-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--s3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.weakness {
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--warning-text);
-  border-radius: var(--radius-md);
-  background: var(--surface-inset);
+.weak {
+  padding: var(--s3) var(--s4);
+  border-left: 3px solid var(--signal);
+  background: var(--inset);
 }
 
-.weakness__title {
+.weak__head {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  color: var(--text-strong);
-  font-size: 1rem;
-  font-weight: 800;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 900;
 }
 
-.weakness__body {
-  color: var(--text-body);
-  font-size: 0.9375rem;
-  line-height: 1.8;
+.weak__body {
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.85;
 }
 
 /* --- 回遊導線 --- */
 
-.next-links {
+.next {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.next-links a {
+.next a {
   display: block;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-inset);
-  color: var(--brand-text);
-  font-size: 0.9375rem;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--hair);
+  color: var(--ink);
+  font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
 }
 
-.next-links a:hover {
-  background: var(--brand-soft);
-  border-color: var(--brand);
+.next li:first-child a { border-top: 1px solid var(--hair); }
+.next a::before { content: '→ '; color: var(--signal); }
+.next a:hover { color: var(--signal); }
+
+.result__save {
+  padding: var(--s2);
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
 }
 
-.result__save-hint {
-  padding: var(--space-3);
-  color: var(--text-muted);
-  font-size: 0.8125rem;
+/* 判定後の結果が入る領域。中身が無いときは高さを持たせない */
+.strength__result:empty { display: none; }
+
+/* ============================================================
+   簡易モードから3種目へ広げる導線
+   ============================================================ */
+
+.upgrade {
+  margin-top: var(--s5);
+  padding: var(--s5) var(--s4);
+  border: 1px solid var(--signal);
+  border-top: 4px solid var(--signal);
+  background: var(--signal-soft);
   text-align: center;
+}
+
+.upgrade__title {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  font-weight: 900;
+}
+
+.upgrade__text {
+  margin: var(--s2) 0 var(--s4);
+  color: var(--body);
+  font-size: 0.875rem;
+  line-height: 1.85;
+}
+
+/* ============================================================
+   結果が出る瞬間の演出
+   ============================================================
+   派手なアニメーションは入れない。計測機器が値を確定させる感じだけを出す。
+   0.35秒で終わらせ、reduced-motion 指定があれば動かさない。 */
+
+.record {
+  animation: record-in 0.35s var(--ease) both;
+}
+
+.record__level {
+  animation: level-in 0.45s var(--ease) 0.1s both;
+}
+
+.record__bar {
+  transform-origin: left center;
+  animation: bar-in 0.5s var(--ease) 0.15s both;
+}
+
+@keyframes record-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes level-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes bar-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record,
+  .record__level,
+  .record__bar {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   共有カード
+   ============================================================
+   結果画面とは別に、投稿用の1枚画像を作って見せる。
+   Canvas は 1080×1080 の実寸で描き、表示だけを幅に合わせて縮める。 */
+
+.share {
+  display: grid;
+  gap: var(--s4);
+}
+
+.share__frame {
+  position: relative;
+  /* 描画が終わるまで枠の高さを確保しておく（できあがった瞬間に飛び跳ねない） */
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--hair);
+  background: var(--inset);
+}
+
+.share__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.share__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+}
+
+.share__actions {
+  display: grid;
+  gap: var(--s2);
+}
+
+.share__hint,
+.share__message {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+
+.share__message {
+  padding: var(--s2) var(--s3);
+  border-left: 3px solid var(--data);
+  background: var(--inset);
+  color: var(--body);
 }

@@ -23,6 +23,17 @@ export const SITE_DESCRIPTION =
  */
 export const SITE_URL = import.meta.env.SITE ?? 'https://bodymakers.example.com';
 
+/**
+ * 検索エンジンに載せるかどうか。
+ *
+ * 記事も機能もまだ揃っていない段階で検索結果に出ると、
+ * 中身の薄いサイトとして評価が固まってしまう。内容が揃うまでは false にし、
+ * URLを知っている人だけが見られる状態にしておく。
+ * 公開の準備ができたら true にするだけでよい（robots.txt と各ページの
+ * meta robots が同時に切り替わる）。
+ */
+export const SEARCH_INDEXING = false;
+
 /** 言語・地域。lang 属性と OGP に使う。 */
 export const SITE_LOCALE = 'ja-JP';
 export const SITE_LANG = 'ja';
@@ -37,6 +48,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/strength-standards', label: '筋力レベル診断', primary: true },
+  { href: '/tools', label: 'ツール' },
   { href: '/articles', label: '記事' },
   { href: '/about', label: 'このサイトについて' },
 ] as const;

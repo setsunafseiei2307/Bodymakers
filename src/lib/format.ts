@@ -22,20 +22,6 @@ export function parseNumber(input: string | number | null | undefined): number |
   return Number.isFinite(n) ? n : null;
 }
 
-/** value を increment の倍数に丸める（mode: nearest / down / up） */
-export function roundTo(
-  value: number,
-  increment: number,
-  mode: 'nearest' | 'down' | 'up' = 'nearest',
-): number {
-  if (!isFiniteNumber(value) || !isFiniteNumber(increment) || increment <= 0) return value;
-  const ratio = value / increment;
-  const rounded =
-    mode === 'down' ? Math.floor(ratio) : mode === 'up' ? Math.ceil(ratio) : Math.round(ratio);
-  // 浮動小数点誤差の除去（2.5 刻みで 62.50000000000001 が出るのを防ぐ）
-  return Number((rounded * increment).toFixed(6));
-}
-
 /**
  * 小数第 digits 位まで表示。小数部の末尾の 0 だけを落とす（62.5 → "62.5", 60.0 → "60"）。
  * 整数部の 0 は落とさない（140 → "140"。digits=0 でも "14" にならない）。

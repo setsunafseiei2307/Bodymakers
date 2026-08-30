@@ -225,8 +225,12 @@ export function isEstimated(food: Food, key: NutrientKey): boolean {
  * カテゴリを代表する絵文字。一覧から中身を見当づけるための飾りで、
  * 個々の食品の emoji とは独立に選んでいる。
  */
+/**
+ * カテゴリの代表絵文字。キーは成分表の食品群18群に対応する。
+ * 個々の食品が持つ emoji とは独立で、カテゴリ一覧の飾りにのみ使う。
+ */
 const CATEGORY_EMOJI: Record<string, string> = {
-  '穀類・主食': '🍚',
+  '穀類': '🍚',
   'いも・でん粉': '🥔',
   '砂糖・甘味': '🍯',
   '豆類': '🫘',
@@ -240,8 +244,10 @@ const CATEGORY_EMOJI: Record<string, string> = {
   '卵類': '🥚',
   '乳類': '🥛',
   '油脂類': '🧈',
+  '菓子類': '🍰',
   'し好飲料': '🍵',
-  '調味料': '🧂',
+  '調味料・香辛料': '🧂',
+  '調理済み食品': '🍱',
 };
 
 export interface CategorySummary {

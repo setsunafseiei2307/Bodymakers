@@ -8,6 +8,7 @@ import {
   levelById,
   levelForPercentile,
   percentileForWeight,
+  tierProgress,
   weightForPercentile,
   LEVELS,
   LIFT_ORDER,
@@ -175,14 +176,14 @@ describe('レベル定義', () => {
 
   it('levelForPercentile が境界値で正しいレベルを返す', () => {
     expect(levelForPercentile(0).id).toBe('beginner');
-    expect(levelForPercentile(9.99).id).toBe('beginner');
-    expect(levelForPercentile(10).id).toBe('novice');
-    expect(levelForPercentile(29.99).id).toBe('novice');
-    expect(levelForPercentile(30).id).toBe('intermediate');
-    expect(levelForPercentile(64.99).id).toBe('intermediate');
-    expect(levelForPercentile(65).id).toBe('advanced');
-    expect(levelForPercentile(89.99).id).toBe('advanced');
-    expect(levelForPercentile(90).id).toBe('elite');
+    expect(levelForPercentile(0.99).id).toBe('beginner');
+    expect(levelForPercentile(1).id).toBe('novice');
+    expect(levelForPercentile(9.99).id).toBe('novice');
+    expect(levelForPercentile(10).id).toBe('intermediate');
+    expect(levelForPercentile(29.99).id).toBe('intermediate');
+    expect(levelForPercentile(30).id).toBe('advanced');
+    expect(levelForPercentile(69.99).id).toBe('advanced');
+    expect(levelForPercentile(70).id).toBe('elite');
     expect(levelForPercentile(100).id).toBe('elite');
   });
 
@@ -372,5 +373,45 @@ describe('種目の定義', () => {
         expect(curve!.length).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+describe('tierProgress', () => {
+  it('各レベルの下限でちょうど整数になる', () => {
+    expect(tierProgress(0)).toBeCloseTo(0, 6);
+    expect(tierProgress(1)).toBeCloseTo(1, 6);
+    expect(tierProgress(10)).toBeCloseTo(2, 6);
+    expect(tierProgress(30)).toBeCloseTo(3, 6);
+    expect(tierProgress(70)).toBeCloseTo(4, 6);
+    expect(tierProgress(100)).toBeCloseTo(5, 6);
+  });
+
+  it('レベル内では等間隔に進む', () => {
+    // 初級は 1〜10 パーセンタイル。その中間の 5.5 は 1.5 になる
+    expect(tierProgress(5.5)).toBeCloseTo(1.5, 6);
+    // 上級は 30〜70。中間の 50 は 3.5
+    expect(tierProgress(50)).toBeCloseTo(3.5, 6);
+  });
+
+  it('単調増加する', () => {
+    let previous = -1;
+    for (let p = 0; p <= 100; p += 0.5) {
+      const value = tierProgress(p);
+      expect(value).toBeGreaterThanOrEqual(previous);
+      previous = value;
+    }
+  });
+
+  it('0〜5 の範囲に収まる', () => {
+    for (const p of [-10, 0, 0.5, 37, 99.9, 100, 200]) {
+      const value = tierProgress(p);
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('不正な値では 0 を返す（例外を投げない）', () => {
+    expect(tierProgress(Number.NaN)).toBe(0);
+    expect(tierProgress(Number.POSITIVE_INFINITY)).toBe(0);
   });
 });

@@ -1,199 +1,202 @@
 /*
- * 全ページ共通のデザイントークンとベーススタイル。
+ * デザイントークンとベーススタイル。
  *
- * 方針:
- * - 色は必ずカスタムプロパティ経由で参照する。生の色値をコンポーネントに書かない。
- * - ライト/ダークは :root と [data-theme='dark'] の2組のトークンだけで切り替える。
- *   OSの設定に追従しつつ、ユーザーが明示的に選んだ場合はそれを優先する。
- * - 本文と背景のコントラスト比は WCAG AA（通常文字4.5:1、大きい文字3:1）以上を確保する。
- * - スマホ優先。ブレークポイントは 40rem（640px）と 60rem（960px）の2つだけにする。
+ * 方向性:「計測機器のリザルト票」。
+ *   - 骨格は公式競技会のリザルト票。細いヘアラインと台帳のような行組み、
+ *     数字は極太コンデンスと等幅で、計測された記録としての緊張感を出す。
+ *   - ライトは紙（bone paper）、ダークは計器のパネル。
+ *     同じ骨格のままダークにすると近未来的な計器の表示に見える。
+ *   - 差し色は2本だけ。signal（赤）＝判定・警告、data（シアン）＝チャートと副データ。
+ *
+ * 規則:
+ *   - 色は必ずカスタムプロパティ経由。生の色値をコンポーネントに書かない。
+ *   - ライト/ダークは :root と [data-theme] の2組のトークンだけで切り替える。
+ *   - 本文と背景のコントラスト比は WCAG AA（4.5:1）以上。
  */
 
 /* ============================================================
-   1. デザイントークン（ライト）
+   1. トークン（ライト）
    ============================================================ */
 
 :root {
   color-scheme: light;
 
-  /* --- 面の色。奥から手前へ surface-0 → surface-2 --- */
-  --surface-0: #f7f8fa;
-  --surface-1: #ffffff;
-  --surface-2: #eef1f6;
-  --surface-inset: #f2f4f8;
+  /* --- 面 --- */
+  --paper: #faf9f6;
+  --surface: #ffffff;
+  --inset: #f1efe9;
+  --band: #101014;
 
-  /* --- 文字色。body は 4.5:1 以上、muted も 4.5:1 を満たす --- */
-  --text-strong: #0f1729;
-  --text-body: #303a4d;
-  --text-muted: #5a6479;
-  --text-inverse: #ffffff;
+  /* --- 文字 --- */
+  --ink: #101014;
+  --body: #34343c;
+  --muted: #6a6862;
+  --on-band: #faf9f6;
 
-  /* --- 罫線 --- */
-  --border: #dfe3ea;
-  --border-strong: #c3cad6;
+  /* --- 罫 --- */
+  --hair: #d8d5cd;
+  --rule: #101014;
 
-  /* --- ブランドカラー（診断への導線・リンク） --- */
-  --brand: #2f4fd8;
-  --brand-hover: #253fb0;
-  --brand-active: #1d3390;
-  --brand-soft: #e8ecfd;
-  --brand-text: #2540b4;
+  /* --- 差し色は2本だけ --- */
+  --signal: #c4162e;
+  --signal-soft: #fbeaec;
+  --data: #007c8c;
+  --data-soft: #e2f2f4;
 
-  /* --- 状態色 --- */
+  /* --- 状態 --- */
   --danger: #b32020;
   --danger-soft: #fdecec;
-  --warning-text: #8a5300;
-  --warning-soft: #fef4e2;
-  --success-text: #12664a;
-  --success-soft: #e4f6ef;
+  --warn: #8a5300;
+  --warn-soft: #fdf3e3;
+  --ok: #12664a;
+  --ok-soft: #e4f6ef;
 
-  /* --- 5段階レベルの色。低→高で寒色→金へ進む --- */
-  --level-beginner: #64748b;
-  --level-beginner-soft: #eef1f5;
-  --level-novice: #0d7a70;
-  --level-novice-soft: #e2f5f2;
-  --level-intermediate: #1d64c4;
-  --level-intermediate-soft: #e6effc;
-  --level-advanced: #7038c8;
-  --level-advanced-soft: #f0e9fc;
-  --level-elite: #9a6212;
-  --level-elite-soft: #fdf1dc;
+  /* --- 5段階レベル。冷→熱で強さが上がる --- */
+  --lv-1: #7c7a73;
+  --lv-1-soft: #eeece7;
+  --lv-2: #3f7f86;
+  --lv-2-soft: #e6f1f2;
+  --lv-3: #007c8c;
+  --lv-3-soft: #e0f1f3;
+  --lv-4: #b4551e;
+  --lv-4-soft: #fbeee4;
+  --lv-5: #c4162e;
+  --lv-5-soft: #fbe9ec;
 
-  /* --- 影 --- */
-  --shadow-sm: 0 1px 2px rgb(15 23 41 / 6%), 0 1px 3px rgb(15 23 41 / 4%);
-  --shadow-md: 0 4px 12px rgb(15 23 41 / 8%), 0 1px 3px rgb(15 23 41 / 5%);
-  --shadow-lg: 0 12px 32px rgb(15 23 41 / 12%), 0 2px 8px rgb(15 23 41 / 6%);
+  /* --- 影は最小限。紙の質感を壊さない --- */
+  --shadow-sm: 0 1px 2px rgb(16 16 20 / 6%);
+  --shadow-md: 0 4px 16px rgb(16 16 20 / 9%);
 
-  /* --- 角丸 --- */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-full: 999px;
+  /* --- 角丸はほぼ使わない。票の直線的な印象を保つ --- */
+  --r-sm: 3px;
+  --r-md: 5px;
+  --r-full: 999px;
 
-  /* --- 余白スケール（4px基準） --- */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 3rem;
-  --space-8: 4rem;
+  /* --- 余白（4px基準） --- */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.5rem;
+  --s6: 2rem;
+  --s7: 3rem;
+  --s8: 4rem;
 
-  /* --- レイアウト幅 --- */
-  --width-page: 72rem;
-  --width-prose: 44rem;
+  /* --- 幅 --- */
+  --w-page: 72rem;
+  --w-prose: 42rem;
 
-  /* --- タイポグラフィ --- */
-  --font-sans:
-    'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'BIZ UDPGothic', Meiryo,
-    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-numeric:
-    ui-rounded, 'SF Pro Rounded', -apple-system, 'Segoe UI', Roboto, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  /* --- 書体 ---
+     display: 見出しと大きな数字。極太コンデンスで票の緊張感をつくる
+     sans:    日本語本文
+     mono:    計測値。等幅で桁を揃える */
+  --f-display: 'Anton', 'Noto Sans JP', sans-serif;
+  --f-sans: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo,
+    system-ui, sans-serif;
+  --f-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* --- アニメーション --- */
   --ease: cubic-bezier(0.2, 0, 0.1, 1);
-  --duration: 160ms;
+  --dur: 150ms;
 }
 
 /* ============================================================
-   2. デザイントークン（ダーク）
+   2. トークン（ダーク）
    ============================================================ */
 
-/* OSがダークで、ユーザーが明示的にライトを選んでいない場合 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --surface-0: #0e1420;
-    --surface-1: #171e2c;
-    --surface-2: #212a3b;
-    --surface-inset: #131a26;
+    --paper: #0b0d10;
+    --surface: #13161b;
+    --inset: #0f1216;
+    --band: #1b1f26;
 
-    --text-strong: #f2f5fa;
-    --text-body: #ccd4e2;
-    --text-muted: #98a3b6;
-    --text-inverse: #0e1420;
+    --ink: #edebe5;
+    --body: #c6c8cc;
+    --muted: #8d9199;
+    --on-band: #edebe5;
 
-    --border: #2b3549;
-    --border-strong: #3d4a63;
+    --hair: #262b33;
+    --rule: #3a414c;
 
-    --brand: #7b96ff;
-    --brand-hover: #93a9ff;
-    --brand-active: #a8b9ff;
-    --brand-soft: #1c2743;
-    --brand-text: #9db1ff;
+    --signal: #ff4459;
+    --signal-soft: #2e1418;
+    --data: #3fd4e6;
+    --data-soft: #0d2a30;
 
     --danger: #ff8f8f;
-    --danger-soft: #3a1e21;
-    --warning-text: #f3c26b;
-    --warning-soft: #382c15;
-    --success-text: #6fd8ad;
-    --success-soft: #14342a;
+    --danger-soft: #331a1c;
+    --warn: #f3c26b;
+    --warn-soft: #322715;
+    --ok: #6fd8ad;
+    --ok-soft: #12302a;
 
-    --level-beginner: #9aa6ba;
-    --level-beginner-soft: #232c3c;
-    --level-novice: #4fd2bf;
-    --level-novice-soft: #12332f;
-    --level-intermediate: #7db0ff;
-    --level-intermediate-soft: #16273f;
-    --level-advanced: #bb9bf5;
-    --level-advanced-soft: #291f42;
-    --level-elite: #ecb95a;
-    --level-elite-soft: #382a12;
+    --lv-1: #9a9d9f;
+    --lv-1-soft: #1b1f24;
+    --lv-2: #59b3ba;
+    --lv-2-soft: #10282b;
+    --lv-3: #3fd4e6;
+    --lv-3-soft: #0d2a30;
+    --lv-4: #f0925a;
+    --lv-4-soft: #2e1d13;
+    --lv-5: #ff4459;
+    --lv-5-soft: #2e1418;
 
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
-    --shadow-lg: 0 12px 32px rgb(0 0 0 / 55%);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 45%);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 55%);
   }
 }
 
-/* ユーザーが明示的にダークを選んだ場合（OS設定を上書きする） */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --surface-0: #0e1420;
-  --surface-1: #171e2c;
-  --surface-2: #212a3b;
-  --surface-inset: #131a26;
+  --paper: #0b0d10;
+  --surface: #13161b;
+  --inset: #0f1216;
+  --band: #1b1f26;
 
-  --text-strong: #f2f5fa;
-  --text-body: #ccd4e2;
-  --text-muted: #98a3b6;
-  --text-inverse: #0e1420;
+  --ink: #edebe5;
+  --body: #c6c8cc;
+  --muted: #8d9199;
+  --on-band: #edebe5;
 
-  --border: #2b3549;
-  --border-strong: #3d4a63;
+  --hair: #262b33;
+  --rule: #3a414c;
 
-  --brand: #7b96ff;
-  --brand-hover: #93a9ff;
-  --brand-active: #a8b9ff;
-  --brand-soft: #1c2743;
-  --brand-text: #9db1ff;
+  --signal: #ff4459;
+  --signal-soft: #2e1418;
+  --data: #3fd4e6;
+  --data-soft: #0d2a30;
 
   --danger: #ff8f8f;
-  --danger-soft: #3a1e21;
-  --warning-text: #f3c26b;
-  --warning-soft: #382c15;
-  --success-text: #6fd8ad;
-  --success-soft: #14342a;
+  --danger-soft: #331a1c;
+  --warn: #f3c26b;
+  --warn-soft: #322715;
+  --ok: #6fd8ad;
+  --ok-soft: #12302a;
 
-  --level-beginner: #9aa6ba;
-  --level-beginner-soft: #232c3c;
-  --level-novice: #4fd2bf;
-  --level-novice-soft: #12332f;
-  --level-intermediate: #7db0ff;
-  --level-intermediate-soft: #16273f;
-  --level-advanced: #bb9bf5;
-  --level-advanced-soft: #291f42;
-  --level-elite: #ecb95a;
-  --level-elite-soft: #382a12;
+  --lv-1: #9a9d9f;
+  --lv-1-soft: #1b1f24;
+  --lv-2: #59b3ba;
+  --lv-2-soft: #10282b;
+  --lv-3: #3fd4e6;
+  --lv-3-soft: #0d2a30;
+  --lv-4: #f0925a;
+  --lv-4-soft: #2e1d13;
+  --lv-5: #ff4459;
+  --lv-5-soft: #2e1418;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 45%);
-  --shadow-lg: 0 12px 32px rgb(0 0 0 / 55%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 45%);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 55%);
 }
+
+/* レベル色の割り当て。使う側は --lv / --lv-bg だけを見る */
+.lv-beginner { --lv: var(--lv-1); --lv-bg: var(--lv-1-soft); }
+.lv-novice { --lv: var(--lv-2); --lv-bg: var(--lv-2-soft); }
+.lv-intermediate { --lv: var(--lv-3); --lv-bg: var(--lv-3-soft); }
+.lv-advanced { --lv: var(--lv-4); --lv-bg: var(--lv-4-soft); }
+.lv-elite { --lv: var(--lv-5); --lv-bg: var(--lv-5-soft); }
 
 /* ============================================================
    3. リセットとベース
@@ -201,24 +204,16 @@
 
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-}
+*::after { box-sizing: border-box; }
 
 html {
-  /* スマホでの自動文字サイズ調整を止める（レイアウト崩れの原因になる） */
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -230,417 +225,319 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--surface-0);
-  color: var(--text-body);
-  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--body);
+  font-family: var(--f-sans);
   font-size: 1rem;
-  line-height: 1.8;
-  /* 日本語の約物を詰めて読みやすくする */
+  line-height: 1.85;
   font-feature-settings: 'palt' 1;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  /* 長いURLなど折り返せない文字列がページを横に広げるのを防ぐ。
+     break-word なので、収まる語は通常どおり折り返さない。 */
+  overflow-wrap: break-word;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  color: var(--text-strong);
-  font-weight: 700;
-  line-height: 1.4;
+  color: var(--ink);
+  font-weight: 900;
+  line-height: 1.35;
   letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
-h1 {
-  font-size: clamp(1.6rem, 5vw, 2.25rem);
-  line-height: 1.3;
-}
+h1 { font-size: clamp(1.6rem, 5.5vw, 2.25rem); line-height: 1.25; }
+h2 { font-size: clamp(1.25rem, 4vw, 1.5rem); }
+h3 { font-size: clamp(1.05rem, 3.4vw, 1.2rem); }
 
-h2 {
-  font-size: clamp(1.3rem, 4vw, 1.6rem);
-}
-
-h3 {
-  font-size: clamp(1.1rem, 3.5vw, 1.25rem);
-}
-
-p,
-ul,
-ol,
-dl,
-figure,
-table {
-  margin: 0;
-}
-
-img,
-svg,
-video {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+p, ul, ol, dl, figure, table { margin: 0; }
+img, svg, video { max-width: 100%; height: auto; display: block; }
 
 a {
-  color: var(--brand-text);
-  text-decoration-thickness: 1px;
+  color: var(--ink);
+  text-decoration-color: var(--signal);
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 0.2em;
 }
 
-a:hover {
-  color: var(--brand-hover);
-}
+a:hover { color: var(--signal); }
 
-/* キーボード操作時だけフォーカスリングを出す。マウスクリックでは出さない */
 :focus-visible {
-  outline: 3px solid var(--brand);
+  outline: 2px solid var(--signal);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
 }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
+button, input, select, textarea { font: inherit; color: inherit; }
 
-hr {
-  border: 0;
-  border-top: 1px solid var(--border);
-  margin: var(--space-6) 0;
-}
+hr { border: 0; border-top: 1px solid var(--hair); margin: var(--s6) 0; }
 
 code {
-  font-family: var(--font-mono);
+  font-family: var(--f-mono);
   font-size: 0.9em;
-  background: var(--surface-inset);
+  background: var(--inset);
   padding: 0.15em 0.4em;
-  border-radius: var(--radius-sm);
+}
+
+/* 数字は常に桁を揃える */
+.num {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 /* ============================================================
-   4. レイアウトのユーティリティ
+   4. レイアウト
    ============================================================ */
 
 .container {
   width: 100%;
-  max-width: var(--width-page);
+  max-width: var(--w-page);
   margin-inline: auto;
-  padding-inline: var(--space-4);
+  padding-inline: var(--s4);
 }
 
 @media (min-width: 40rem) {
-  .container {
-    padding-inline: var(--space-5);
-  }
+  .container { padding-inline: var(--s5); }
 }
 
-.prose-container {
-  max-width: var(--width-prose);
-  margin-inline: auto;
-}
+.prose-container { max-width: var(--w-prose); margin-inline: auto; }
 
-/* 支援技術にだけ読ませるテキスト */
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
 
-/* キーボードで最初にフォーカスできる「本文へ移動」リンク */
 .skip-link {
   position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
+  top: var(--s2); left: var(--s2);
   z-index: 100;
-  padding: var(--space-2) var(--space-4);
-  background: var(--brand);
-  color: var(--text-inverse);
-  border-radius: var(--radius-md);
+  padding: var(--s2) var(--s4);
+  background: var(--signal);
+  color: #fff;
   font-weight: 700;
   text-decoration: none;
   transform: translateY(-200%);
 }
 
-.skip-link:focus-visible {
-  transform: translateY(0);
-  color: var(--text-inverse);
-}
+.skip-link:focus-visible { transform: translateY(0); color: #fff; }
 
 /* ============================================================
-   5. 共通コンポーネント
+   5. 共通パーツ
    ============================================================ */
 
-/* --- カード --- */
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-sm);
+/* --- 票（カード）。角丸を持たず、細い罫で囲う --- */
+.slip {
+  background: var(--surface);
+  border: 1px solid var(--hair);
 }
+
+/* 票の見出し帯 */
+.slip__band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s2) var(--s4);
+  background: var(--band);
+  color: var(--on-band);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.slip__body { padding: var(--s5) var(--s4); }
 
 /* --- ボタン --- */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  /* タップ領域を44px以上に保つ（モバイルのアクセシビリティ基準） */
+  gap: var(--s2);
   min-height: 2.75rem;
-  padding: var(--space-3) var(--space-5);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: var(--brand);
-  color: var(--text-inverse);
+  padding: var(--s3) var(--s5);
+  border: 1.5px solid var(--signal);
+  border-radius: var(--r-sm);
+  background: var(--signal);
+  color: #fff;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 900;
+  letter-spacing: 0.04em;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    background-color var(--duration) var(--ease),
-    transform var(--duration) var(--ease),
-    box-shadow var(--duration) var(--ease);
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 
 .button:hover:not(:disabled) {
-  background: var(--brand-hover);
-  color: var(--text-inverse);
+  background: color-mix(in srgb, var(--signal) 85%, #000);
+  color: #fff;
 }
 
-.button:active:not(:disabled) {
-  background: var(--brand-active);
-  transform: translateY(1px);
-}
+.button:active:not(:disabled) { transform: translateY(1px); }
 
 .button:disabled,
 .button[aria-disabled='true'] {
-  background: var(--surface-2);
-  color: var(--text-muted);
-  border-color: var(--border);
+  background: var(--inset);
+  border-color: var(--hair);
+  color: var(--muted);
   cursor: not-allowed;
   transform: none;
 }
 
-.button--secondary {
-  background: var(--surface-1);
-  color: var(--brand-text);
-  border-color: var(--border-strong);
+.button--ghost {
+  background: transparent;
+  border-color: var(--rule);
+  color: var(--ink);
 }
 
-.button--secondary:hover:not(:disabled) {
-  background: var(--brand-soft);
-  color: var(--brand-text);
+.button--ghost:hover:not(:disabled) {
+  background: var(--inset);
+  color: var(--ink);
 }
 
-.button--secondary:active:not(:disabled) {
-  background: var(--brand-soft);
-}
+.button--lg { min-height: 3.25rem; font-size: 1.0625rem; }
+.button--block { width: 100%; }
 
-.button--large {
-  min-height: 3.25rem;
-  padding: var(--space-4) var(--space-6);
-  font-size: 1.0625rem;
-}
-
-.button--block {
-  width: 100%;
-}
-
-/* --- 注記・警告 --- */
+/* --- 注記 --- */
 .note {
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
+  padding: var(--s4);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--rule);
+  background: var(--inset);
+  color: var(--body);
   font-size: 0.9375rem;
-  line-height: 1.7;
-  border: 1px solid var(--border);
-  background: var(--surface-inset);
-  color: var(--text-body);
+  line-height: 1.8;
 }
 
-.note--warning {
-  background: var(--warning-soft);
-  border-color: color-mix(in srgb, var(--warning-text) 30%, transparent);
-  color: var(--text-body);
-}
-
-.note--danger {
-  background: var(--danger-soft);
-  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
-  color: var(--text-body);
-}
+.note--warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.note--danger { border-left-color: var(--danger); background: var(--danger-soft); }
 
 .note__title {
   display: block;
-  margin-bottom: var(--space-1);
-  font-weight: 700;
-  color: var(--text-strong);
+  margin-bottom: var(--s1);
+  color: var(--ink);
+  font-weight: 900;
 }
 
-/* --- 出典表示。データを出す画面では必ずこれを添える --- */
 .source-note {
-  font-size: 0.8125rem;
-  line-height: 1.7;
-  color: var(--text-muted);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
 }
 
-.source-note a {
-  color: var(--text-muted);
-  text-decoration: underline;
-}
+.source-note a { color: var(--muted); }
+.source-note a:hover { color: var(--signal); }
 
-.source-note a:hover {
-  color: var(--brand-text);
-}
-
-/* --- タグ・バッジ --- */
-.badge {
+/* --- タグ --- */
+.tag {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 0.15rem var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--surface-2);
-  color: var(--text-body);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.8;
+  padding: 0.1rem var(--s3);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 }
 
-.badge--brand {
-  background: var(--brand-soft);
-  color: var(--brand-text);
-}
+.tag--signal { border-color: var(--signal); background: var(--signal); color: #fff; }
 
 /* --- 空状態 --- */
-.empty-state {
-  padding: var(--space-7) var(--space-4);
+.empty {
+  padding: var(--s7) var(--s4);
+  border: 1px dashed var(--hair);
+  background: var(--inset);
+  color: var(--muted);
   text-align: center;
-  color: var(--text-muted);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface-inset);
 }
 
-.empty-state__title {
+.empty__title {
   display: block;
-  margin-bottom: var(--space-2);
-  color: var(--text-strong);
-  font-weight: 700;
+  margin-bottom: var(--s2);
+  color: var(--ink);
+  font-weight: 900;
 }
 
-/* --- セクション見出し --- */
-.section-heading {
+/* --- セクション見出し。上に太い罫を引いて区切る --- */
+.section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--s4);
   flex-wrap: wrap;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--s4);
+  padding-top: var(--s4);
+  border-top: 2px solid var(--rule);
 }
 
 /* ============================================================
-   6. 広告枠（将来の収益化用）
+   6. 広告枠（将来の収益化用。現時点でタグは読み込まない）
    ============================================================
-   現時点では広告タグを一切読み込まない。レイアウトが後から崩れないよう、
-   枠の寸法だけを先に確保しておく。有効化するときは .ad-slot の中に
-   広告タグを入れるだけで、周囲のレイアウトを触らずに済む。
-   min-height を決め打ちしてあるのは、広告読み込み時の CLS を防ぐため。 */
+   読み込み時のCLSを防ぐため寸法だけ先に確保する。
+   有効化するときは .ad-slot の中にタグを入れるだけでよい。 */
 
 .ad-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-block: var(--space-6);
-  border-radius: var(--radius-md);
-  /* 開発時に枠の存在が分かるようにする。広告を入れたら背景ごと差し替える */
-  background: var(--surface-inset);
-  color: var(--text-muted);
-  font-size: 0.75rem;
+  margin-block: var(--s6);
+  background: var(--inset);
+  border: 1px dashed var(--hair);
+  color: var(--muted);
+  font-size: 0.6875rem;
   overflow: hidden;
 }
 
-/* 記事一覧・記事本文の途中に差し込むレクタングル枠 */
-.ad-slot--inline {
-  min-height: 250px;
-}
-
-/* ページ下部のワイド枠 */
-.ad-slot--footer {
-  min-height: 90px;
-}
-
-/* サイドバー枠（960px以上でのみ表示する） */
-.ad-slot--sidebar {
-  min-height: 600px;
-}
+.ad-slot--inline { min-height: 250px; }
+.ad-slot--footer { min-height: 90px; }
+.ad-slot--sidebar { min-height: 600px; }
 
 /* ============================================================
-   7. 記事本文（Markdownから生成される部分）
+   7. 記事本文
    ============================================================ */
 
 .article-body {
   font-size: 1.0625rem;
   line-height: 1.95;
-  color: var(--text-body);
+  color: var(--body);
 }
 
-.article-body > * + * {
-  margin-top: var(--space-5);
-}
+.article-body > * + * { margin-top: var(--s5); }
 
 .article-body h2 {
-  margin-top: var(--space-7);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
+  margin-top: var(--s7);
+  padding-top: var(--s4);
+  border-top: 2px solid var(--rule);
 }
 
-.article-body h3 {
-  margin-top: var(--space-6);
-}
+.article-body h3 { margin-top: var(--s6); }
 
 .article-body ul,
-.article-body ol {
-  padding-left: 1.4em;
-}
+.article-body ol { padding-left: 1.4em; }
 
-.article-body li + li {
-  margin-top: var(--space-2);
-}
+.article-body li + li { margin-top: var(--s2); }
 
 .article-body blockquote {
   margin-left: 0;
-  padding: var(--space-3) var(--space-5);
-  border-left: 4px solid var(--border-strong);
-  background: var(--surface-inset);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  color: var(--text-muted);
+  padding: var(--s3) var(--s5);
+  border-left: 3px solid var(--signal);
+  background: var(--inset);
+  color: var(--muted);
 }
 
 .article-body pre {
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
+  padding: var(--s4);
+  border: 1px solid var(--hair);
   overflow-x: auto;
-  border: 1px solid var(--border);
 }
 
-.article-body pre code {
-  background: none;
-  padding: 0;
-}
+.article-body pre code { background: none; padding: 0; }
 
 .article-body table {
   width: 100%;
@@ -650,54 +547,23 @@ code {
 
 .article-body th,
 .article-body td {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
+  padding: var(--s2) var(--s3);
+  border-bottom: 1px solid var(--hair);
   text-align: left;
 }
 
 .article-body th {
-  background: var(--surface-2);
-  color: var(--text-strong);
+  border-bottom: 2px solid var(--rule);
+  color: var(--ink);
+  font-weight: 900;
 }
 
-/* 横に長い表はページ全体ではなく表だけを横スクロールさせる */
+.article-body td:not(:first-child) {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.article-body img {
-  border-radius: var(--radius-md);
-  margin-inline: auto;
-}
-
-/* ============================================================
-   8. レベル色（診断以外のページでも凡例を出すため global に置く）
-   ============================================================
-   strength.css を読まないページ（トップ・出典ページ）でも
-   レベルの色見本を出せるようにする。 */
-
-.level--beginner {
-  --level-color: var(--level-beginner);
-  --level-bg: var(--level-beginner-soft);
-}
-
-.level--novice {
-  --level-color: var(--level-novice);
-  --level-bg: var(--level-novice-soft);
-}
-
-.level--intermediate {
-  --level-color: var(--level-intermediate);
-  --level-bg: var(--level-intermediate-soft);
-}
-
-.level--advanced {
-  --level-color: var(--level-advanced);
-  --level-bg: var(--level-advanced-soft);
-}
-
-.level--elite {
-  --level-color: var(--level-elite);
-  --level-bg: var(--level-elite-soft);
 }

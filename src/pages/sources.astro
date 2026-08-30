@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { FOOD_SOURCE } from '../lib/foods';
+import { url } from '../lib/url';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -157,7 +158,7 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         </table>
       </div>
 
-      <div class="note note--warning">
+      <div class="note note--warn">
         <span class="note__title">母集団の性格について</span>
         <p>
           基準となるのは<strong>公式競技会に出場した人たち</strong>の記録です。
@@ -203,7 +204,7 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
             {FOOD_SOURCE.url}
           </a>
         </li>
-        <li>収録件数: 300件</li>
+        <li>収録件数: 2,538件（成分表の全収載食品）</li>
         <li>
           各食品に成分表の<strong>食品番号</strong>と<strong>収載名</strong>を保持しており、
           元データまで遡って確認できます。
@@ -236,7 +237,7 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
         医学的な診断・治療・指導を行うものではありません。
         診断結果は統計上の位置を示す目安であり、
         個人の健康状態やトレーニングの適切さを評価するものではありません。
-        詳細は<a href="/disclaimer">免責事項</a>をご確認ください。
+        詳細は<a href={url('/disclaimer')}>免責事項</a>をご確認ください。
       </p>
     </div>
   </div>
@@ -244,20 +245,20 @@ const anchorRows = STRENGTH_STANDARDS.anchors.M.map((anchor, index) => ({
 
 <style>
   .doc-page {
-    padding-block: var(--space-6) var(--space-8);
+    padding-block: var(--s6) var(--s8);
   }
 
   .doc-page__header {
-    max-width: var(--width-prose);
+    max-width: var(--w-prose);
     margin-inline: auto;
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-5);
-    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--s6);
+    padding-bottom: var(--s5);
+    border-bottom: 1px solid var(--hair);
   }
 
   .doc-page__lead {
-    margin-top: var(--space-3);
-    color: var(--text-muted);
+    margin-top: var(--s3);
+    color: var(--muted);
     font-size: 1rem;
     line-height: 1.85;
   }

@@ -27,7 +27,7 @@ describe('buildSmolov — 構造', () => {
 
 describe('buildSmolov — 重量計算', () => {
   it('working max が毎週 weeklyIncrement ずつ上がる', () => {
-    const plan = buildSmolov(100, 'jr', { weeklyIncrement: 5, roundingIncrement: 2.5 })!;
+    const plan = buildSmolov(100, 'jr', { weeklyIncrement: 5})!;
     const maxes = plan.weeks.map((w) => w.workingMax);
     expect(maxes).toEqual([100, 105, 110, 115]);
   });
@@ -37,14 +37,6 @@ describe('buildSmolov — 重量計算', () => {
     expect(new Set(plan.weeks.map((w) => w.workingMax)).size).toBe(1);
   });
 
-  it('全ての重量が丸め刻みの倍数になっている', () => {
-    const plan = buildSmolov(137, 'jr', { roundingIncrement: 2.5 })!;
-    for (const week of plan.weeks) {
-      for (const day of week.days) {
-        expect(Math.abs(day.weight / 2.5 - Math.round(day.weight / 2.5))).toBeLessThan(1e-9);
-      }
-    }
-  });
 
   it('1日の tonnage = 重量 × セット × レップ', () => {
     const plan = buildSmolov(100, 'jr')!;
@@ -75,8 +67,8 @@ describe('buildSmolov — 重量計算', () => {
   });
 
   it('1RM を2倍にすると総重量もほぼ2倍', () => {
-    const a = buildSmolov(100, 'jr', { roundingIncrement: 0.001, weeklyIncrement: 0 })!;
-    const b = buildSmolov(200, 'jr', { roundingIncrement: 0.001, weeklyIncrement: 0 })!;
+    const a = buildSmolov(100, 'jr', { weeklyIncrement: 0 })!;
+    const b = buildSmolov(200, 'jr', { weeklyIncrement: 0 })!;
     expect(b.tonnage / a.tonnage).toBeCloseTo(2, 2);
   });
 });
@@ -114,7 +106,7 @@ describe('buildSmolov — 異常系', () => {
   });
 
   it('極端に軽い1RM でもクラッシュしない', () => {
-    const plan = buildSmolov(1, 'jr', { roundingIncrement: 0.5 })!;
+    const plan = buildSmolov(1, 'jr', {})!;
     expect(plan.weeks).toHaveLength(4);
     expect(Number.isFinite(plan.tonnage)).toBe(true);
   });

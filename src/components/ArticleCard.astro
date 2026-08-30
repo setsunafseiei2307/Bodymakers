@@ -1,6 +1,7 @@
 ---
 import { CATEGORIES, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
+import { url } from '../lib/url';
 
 interface Props {
   article: Article;
@@ -11,9 +12,9 @@ const category = CATEGORIES[article.data.category as CategoryKey];
 ---
 
 <article class="article-card">
-  <a class="article-card__link" href={`/articles/${article.id}`}>
+  <a class="article-card__link" href={url(`/articles/${article.id}`)}>
     <div class="article-card__meta">
-      <span class="badge badge--brand">{category.label}</span>
+      <span class="tag">{category.label}</span>
       <time datetime={toISODate(article.data.publishedAt)}>
         {formatDate(article.data.publishedAt)}
       </time>
@@ -36,23 +37,23 @@ const category = CATEGORIES[article.data.category as CategoryKey];
   .article-card__link {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--s2);
     height: 100%;
-    padding: var(--space-5);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface-1);
+    padding: var(--s5);
+    border: 1px solid var(--hair);
+    border-radius: var(--r-md);
+    background: var(--surface);
     color: inherit;
     text-decoration: none;
     box-shadow: var(--shadow-sm);
     transition:
-      border-color var(--duration) var(--ease),
-      box-shadow var(--duration) var(--ease),
-      transform var(--duration) var(--ease);
+      border-color var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease),
+      transform var(--dur) var(--ease);
   }
 
   .article-card__link:hover {
-    border-color: var(--brand);
+    border-color: var(--signal);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
     color: inherit;
@@ -61,8 +62,8 @@ const category = CATEGORIES[article.data.category as CategoryKey];
   .article-card__meta {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    color: var(--text-muted);
+    gap: var(--s3);
+    color: var(--muted);
     font-size: 0.75rem;
   }
 
@@ -73,19 +74,19 @@ const category = CATEGORIES[article.data.category as CategoryKey];
   }
 
   .article-card__link:hover .article-card__title {
-    color: var(--brand-text);
+    color: var(--signal);
   }
 
   .article-card__description {
-    color: var(--text-muted);
+    color: var(--muted);
     font-size: 0.875rem;
     line-height: 1.75;
   }
 
   .article-card__draft {
     margin-top: auto;
-    padding-top: var(--space-2);
-    color: var(--warning-text);
+    padding-top: var(--s2);
+    color: var(--warn);
     font-size: 0.75rem;
     font-weight: 700;
   }

@@ -30,27 +30,45 @@ describe('料理データ', () => {
 });
 
 describe('calcDish', () => {
+  /**
+   * 献立そのものではなく、足し算のしかたを検査する。
+   * 材料を組み替えても壊れないよう、期待値は料理の材料から計算する。
+   * （収録レシピを直書きすると、レシピを直すたびにテストが落ちる）
+   */
+  function sumOf(dishId: string, key: 'kcal' | 'protein' | 'fat' | 'carbs'): number {
+    const dish = findDish(dishId)!;
+    return dish.ingredients.reduce((total, ingredient) => {
+      const food = findFood(ingredient.foodId)!;
+      const value = food[key];
+      return value == null ? total : total + (value * ingredient.grams) / 100;
+    }, 0);
+  }
+
   it('材料のカロリーを足し合わせる', () => {
-    // 親子丼 = ごはん260g + 親子丼の具180g
-    const rice = findFood('01088')!;
-    const topping = findFood('18030')!;
     const result = calcDish(findDish('oyakodon')!);
-    expect(result.totals.kcal).toBeCloseTo(rice.kcal! * 2.6 + topping.kcal! * 1.8, 6);
+    expect(result.totals.kcal).toBeCloseTo(sumOf('oyakodon', 'kcal'), 6);
   });
 
   it('内訳を材料の数だけ返す', () => {
-    const result = calcDish(findDish('katsudon')!);
-    expect(result.rows).toHaveLength(5);
-    expect(result.rows.map((r) => r.grams)).toEqual([260, 120, 50, 40, 60]);
+    const dish = findDish('katsudon')!;
+    const result = calcDish(dish);
+    expect(result.rows).toHaveLength(dish.ingredients.length);
+    expect(result.rows.map((r) => r.grams)).toEqual(dish.ingredients.map((i) => i.grams));
   });
 
   it('たんぱく質・脂質・炭水化物も同じように足す', () => {
-    const rice = findFood('01088')!;
-    const topping = findFood('18031')!;
     const result = calcDish(findDish('gyudon')!);
-    expect(result.totals.protein).toBeCloseTo(rice.protein! * 2.6 + topping.protein! * 1.8, 6);
-    expect(result.totals.fat).toBeCloseTo(rice.fat! * 2.6 + topping.fat! * 1.8, 6);
-    expect(result.totals.carbs).toBeCloseTo(rice.carbs! * 2.6 + topping.carbs! * 1.8, 6);
+    expect(result.totals.protein).toBeCloseTo(sumOf('gyudon', 'protein'), 6);
+    expect(result.totals.fat).toBeCloseTo(sumOf('gyudon', 'fat'), 6);
+    expect(result.totals.carbs).toBeCloseTo(sumOf('gyudon', 'carbs'), 6);
+  });
+
+  it('材料が多い料理でも、内訳の合計が総計と一致する', () => {
+    for (const dishId of ['katsudon', 'curry-rice', 'omurice', 'tuna-onigiri-set']) {
+      const result = calcDish(findDish(dishId)!);
+      const rowSum = result.rows.reduce((total, row) => total + (row.kcal ?? 0), 0);
+      expect(result.totals.kcal, dishId).toBeCloseTo(rowSum, 6);
+    }
   });
 
   it('すべての料理でカロリーが正の値になる', () => {
@@ -73,6 +91,7 @@ describe('calcDish', () => {
       id: 'test',
       name: 'テスト',
       emoji: '🍚',
+      category: '丼もの',
       serving: 'テスト',
       ingredients: [{ foodId: '99999', grams: 100 }, { foodId: '01088', grams: 100 }],
     });

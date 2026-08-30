@@ -595,3 +595,29 @@ code {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* 料理一覧のカテゴリ見出しと、調理済み収載の注記 */
+.dish__group + .dish__group {
+  margin-top: var(--s6);
+}
+
+.dish__groupTitle {
+  margin-bottom: var(--s3);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--hair);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+/* 素材の内訳が出せない料理で、その理由を本文と区別して置く */
+.dish__composite {
+  margin-top: var(--s4);
+  padding: var(--s3) var(--s4);
+  border-left: 3px solid var(--warn);
+  background: var(--inset);
+  color: var(--body);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}

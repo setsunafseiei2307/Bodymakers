@@ -41,6 +41,13 @@ export const TOOLS: readonly ToolEntry[] = [
       '「あと何回できたか」から1RMを逆算し、次のセットの目安重量表を出します。',
   },
   {
+    href: '/tools/plan',
+    label: '減量・増量プラン',
+    code: 'PLAN',
+    summary:
+      '「いつまでに何kg」から週あたりのペースと1日のカロリー収支を出し、その速さが研究の推奨範囲に収まっているかを判定します。体重・目標・日付の3つだけで結果が出ます。',
+  },
+  {
     href: '/tools/nutrition',
     label: 'PFC・カロリー計算',
     code: 'MACROS',

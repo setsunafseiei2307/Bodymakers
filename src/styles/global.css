@@ -539,10 +539,38 @@ code {
 
 .article-body pre code { background: none; padding: 0; }
 
+/* 表は .table-scroll（ビルド時に自動で付く箱）の中に入る。
+   列が多いときはこの箱だけが横に動き、ページ本体は動かない。 */
+.article-body .table-scroll {
+  /* 箱そのものが「本文の1ブロック」として余白を持つ */
+  margin-block: var(--s5);
+}
+
+.article-body .table-scroll:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
 .article-body table {
-  width: 100%;
+  /* 収まるときは全幅、収まらないときは内容ぶんの幅を取って箱の中でスクロールさせる */
+  min-width: 100%;
+  width: max-content;
+  max-width: none;
   border-collapse: collapse;
   font-size: 0.9375rem;
+}
+
+.article-body th,
+.article-body td {
+  /* 折り返しで潰れるより、横スクロールで読ませるほうが表は読みやすい */
+  white-space: nowrap;
+}
+
+/* 1列目（項目名）は長くなりがちなので折り返しを許す */
+.article-body th:first-child,
+.article-body td:first-child {
+  white-space: normal;
+  min-width: 6em;
 }
 
 .article-body th,

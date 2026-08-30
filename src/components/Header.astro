@@ -142,6 +142,14 @@ function isCurrent(href: string): boolean {
      1行に押し込むとラベルが見切れてしまい、
      一番重要な「筋力レベル診断」が読めなくなるため。 */
   @media (max-width: 47.99rem) {
+    /* スマホでは追従させない。
+       ナビが2段になるとヘッダーが165pxになり、800pxの画面の2割を
+       常に占める。記事ページは1本9,000px近くあるので、
+       読む面積を優先する。診断への導線は記事の中に置く。 */
+    .site-header {
+      position: static;
+    }
+
     .site-header__inner {
       flex-wrap: wrap;
       padding-block: var(--s2);
@@ -154,17 +162,20 @@ function isCurrent(href: string): boolean {
     .site-header__nav {
       order: 3;
       flex-basis: 100%;
-      /* リンクが3つを超えたときだけ横スクロールに逃がす */
-      overflow-x: auto;
-      scrollbar-width: none;
     }
 
-    .site-header__nav::-webkit-scrollbar {
-      display: none;
-    }
-
+    /* 横スクロールにはしない。
+       スクロールバーを隠すと「まだ右に続きがある」手がかりが無くなり、
+       実測で「このサイトについて」が 320/360/390px のすべてで画面外に
+       出ていた。折り返して全項目を見せるほうを取る。 */
     .site-header__list {
+      flex-wrap: wrap;
       justify-content: flex-start;
+      gap: var(--s1) var(--s2);
+    }
+
+    .site-header__link {
+      padding-inline: var(--s2);
     }
   }
 </style>

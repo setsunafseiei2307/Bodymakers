@@ -40,6 +40,14 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — ${SITE_T
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 // OGP画像は絶対URLでないと読み込まれない
 const ogImageUrl = new URL(url(ogImage), Astro.site ?? Astro.url.origin).href;
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  url: new URL(url('/'), Astro.site ?? Astro.url.origin).href,
+  description: SITE_DESCRIPTION,
+  inLanguage: SITE_LANG,
+};
 ---
 
 <!doctype html>
@@ -64,7 +72,10 @@ const ogImageUrl = new URL(url(ogImage), Astro.site ?? Astro.url.origin).href;
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={title ?? SITE_NAME} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ?? SITE_NAME} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
 
     <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href={url('/rss.xml')} />
 

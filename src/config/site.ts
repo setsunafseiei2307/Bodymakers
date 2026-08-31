@@ -12,10 +12,10 @@ export const SITE_NAME = 'Bodymakers';
 export const SITE_SHORT_NAME = 'Bodymakers';
 
 /** 各ページの <title> に付く接尾辞と、トップページの説明文。 */
-export const SITE_TAGLINE = '筋力レベル診断とトレーニング情報';
+export const SITE_TAGLINE = '筋力・食事・ダイエットを毎日ひとつに';
 
 export const SITE_DESCRIPTION =
-  '自分の筋力が同じ性別・体重の人と比べてどの位置にあるかを、競技会の実データをもとに判定します。登録不要・データ保存なし。';
+  '筋力・運動能力の評価、トレーニング重量、ダイエット計画、食事と毎日の記録をひとつに。登録不要で、保存した記録はこの端末だけに残ります。';
 
 /**
  * 公開URL。astro.config.mjs の site と同じ値を参照する。
@@ -50,10 +50,9 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: '/strength-standards', label: '筋力レベル診断', primary: true },
+  { href: '/tools/today', label: '今日の記録', primary: true },
   { href: '/tools', label: 'ツール' },
   { href: '/articles', label: '記事' },
-  { href: '/about', label: 'このサイトについて' },
 ] as const;
 
 /** フッターのリンク。 */

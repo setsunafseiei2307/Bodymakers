@@ -9,10 +9,21 @@ import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'ダイエット計画';
 const description =
-  '「いつまでに何kg落としたい」から、週あたりのペースと1日のカロリー収支を計算します。体重・目標体重・目標日の3つだけで結果が出ます。増量（バルクアップ）の計画も同じ画面で立てられます。';
+  '年齢・性別・身長・体重・活動量・目標日から、TDEE、摂取カロリー、PFC、減量ペース、達成予想日とマイルストーンを計算して端末に保存できます。';
+const faqAnswer = 'いいえ。目標が推奨ペースを超える場合は警告し、過度なカロリー制限を勧めない値へ調整します。TDEEも体重変化や日常活動で変わる推定値なので、2〜4週間の実測で見直してください。';
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [{
+    '@type': 'Question',
+    name: '速く落とすほど良いですか？',
+    acceptedAnswer: { '@type': 'Answer', text: faqAnswer },
+  }],
+};
 ---
 
 <BaseLayout title={title} description={description}>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <div class="container tool-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
@@ -25,12 +36,14 @@ const description =
       <p class="tool-page__code">PLAN</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
+      <p class="tool-page__privacy">計算は端末内だけ。保存ボタンを押した計画だけ、このブラウザに保存します。</p>
     </header>
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <PlanTool client:load />
+
+    <section class="note" aria-labelledby="plan-faq"><h2 id="plan-faq" class="note__title">よくある質問</h2><p><strong>速く落とすほど良いですか？</strong><br />{faqAnswer}</p></section>
 
     <ToolArticles toolKey="plan" />
 

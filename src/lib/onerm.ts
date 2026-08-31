@@ -117,6 +117,75 @@ export function percentOfOneRM(weight: number, oneRM: number): number | null {
   return (weight / oneRM) * 100;
 }
 
+/** ジムのプレート刻みに合わせて最も近い重量へ丸める。 */
+export function roundToIncrement(weight: number, increment = 2.5): number | null {
+  if (!isFiniteNumber(weight) || weight <= 0) return null;
+  if (!isFiniteNumber(increment) || increment <= 0) return null;
+  return Math.round(weight / increment) * increment;
+}
+
+export interface WarmupSet {
+  percent: number;
+  weightKg: number;
+  reps: number;
+  label: string;
+}
+
+/** ワーキング重量へ段階的に近づく、疲労をためにくいウォームアップ例。 */
+export function buildWarmupSets(
+  workingWeightKg: number,
+  barWeightKg = 20,
+  increment = 2.5,
+): WarmupSet[] {
+  if (!isFiniteNumber(workingWeightKg) || workingWeightKg <= 0) return [];
+  if (!isFiniteNumber(barWeightKg) || barWeightKg <= 0 || barWeightKg > workingWeightKg) return [];
+  const template = [
+    { percent: 0, reps: 10, label: 'バーで動作確認' },
+    { percent: 40, reps: 8, label: '軽く温める' },
+    { percent: 55, reps: 5, label: 'フォームを合わせる' },
+    { percent: 70, reps: 3, label: '強度へ近づける' },
+    { percent: 85, reps: 1, label: '最後の準備' },
+  ];
+  const seen = new Set<number>();
+  const result: WarmupSet[] = [];
+  for (const item of template) {
+    const raw = item.percent === 0 ? barWeightKg : workingWeightKg * (item.percent / 100);
+    const rounded = Math.max(barWeightKg, roundToIncrement(raw, increment) ?? raw);
+    if (rounded >= workingWeightKg || seen.has(rounded)) continue;
+    seen.add(rounded);
+    result.push({ ...item, weightKg: rounded });
+  }
+  return result;
+}
+
+export const STANDARD_PLATES_KG = [25, 20, 15, 10, 5, 2.5, 1.25] as const;
+
+export interface PlateLoad {
+  plateKg: number;
+  perSide: number;
+}
+
+/** バーベルの目標重量から片側に付ける標準プレートを求める。 */
+export function platesPerSide(
+  totalWeightKg: number,
+  barWeightKg = 20,
+  plates: readonly number[] = STANDARD_PLATES_KG,
+): PlateLoad[] | null {
+  if (!isFiniteNumber(totalWeightKg) || !isFiniteNumber(barWeightKg)) return null;
+  if (totalWeightKg < barWeightKg || barWeightKg <= 0) return null;
+  let remaining = (totalWeightKg - barWeightKg) / 2;
+  const result: PlateLoad[] = [];
+  for (const plate of [...plates].sort((a, b) => b - a)) {
+    if (!isFiniteNumber(plate) || plate <= 0) continue;
+    const count = Math.floor((remaining + 1e-9) / plate);
+    if (count > 0) {
+      result.push({ plateKg: plate, perSide: count });
+      remaining -= plate * count;
+    }
+  }
+  return remaining < 0.01 ? result : null;
+}
+
 /**
  * 自重種目で、実際に扱っている重量を求める。
  *

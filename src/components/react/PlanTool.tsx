@@ -38,6 +38,7 @@ import {
   type PlanResult,
 } from '../../lib/plan';
 import { url } from '../../lib/url';
+import { saveDietPlan } from '../../lib/storage';
 import { DateField, NumberField, SelectField, Segmented, Slip } from './ui';
 
 /**
@@ -115,6 +116,8 @@ export default function PlanTool() {
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [activity, setActivity] = useState(ACTIVITY_LEVELS[2].key);
+  const [trainingDays, setTrainingDays] = useState('3');
+  const [saveMessage, setSaveMessage] = useState('');
 
   const weightKg = parseNumber(weight);
   const targetWeightKg = parseNumber(target);
@@ -193,6 +196,41 @@ export default function PlanTool() {
     setDetailed(false);
     setAge('');
     setHeight('');
+    setTrainingDays('3');
+    setSaveMessage('');
+  }
+
+  function savePlanToDevice() {
+    if (plan == null || macros == null || weightKg == null || targetWeightKg == null) return;
+    const ageValue = parseNumber(age);
+    const heightValue = parseNumber(height);
+    const trainingDaysValue = parseNumber(trainingDays);
+    if (ageValue == null || heightValue == null || trainingDaysValue == null) return;
+
+    const saved = saveDietPlan(
+      {
+        createdAt: new Date().toISOString(),
+        startingWeightKg: weightKg,
+        targetWeightKg,
+        targetDate,
+        tdee: macros.tdee,
+        targetCalories: macros.targetCalories,
+        proteinGrams: macros.protein.grams,
+        fatGrams: macros.fat.grams,
+        carbsGrams: macros.carbs.grams,
+        dailyKcalGap: macros.targetCalories - macros.tdee,
+        mode: plan.mode,
+      },
+      {
+        sex,
+        age: ageValue,
+        heightCm: heightValue,
+        weightKg,
+        activity,
+        trainingDaysPerWeek: trainingDaysValue,
+      },
+    );
+    setSaveMessage(saved ? '計画をこの端末に保存しました。ホームと「今日の記録」に反映されます。' : '保存できませんでした。ブラウザの保存設定を確認してください。');
   }
 
   const verdict = plan ? VERDICT_TEXT[plan.verdict] : null;
@@ -256,7 +294,8 @@ export default function PlanTool() {
           )}
 
           <p className="tool__note">
-            入力した内容は送信も保存もされません。この端末の中だけで計算しています。
+            入力中の内容は送信されません。詳しい計算後に保存ボタンを押した場合だけ、
+            このブラウザ内へ保存します。
           </p>
         </Slip>
       </div>
@@ -435,6 +474,16 @@ export default function PlanTool() {
                     label: `${a.label}（${a.detail}）`,
                   }))}
                 />
+                <SelectField
+                  label="トレーニング頻度"
+                  value={trainingDays}
+                  onChange={setTrainingDays}
+                  options={[0, 1, 2, 3, 4, 5, 6, 7].map((days) => ({
+                    value: String(days),
+                    label: days === 0 ? '週0回' : `週${days}回`,
+                  }))}
+                  hint="消費カロリーには活動量を使い、頻度は記録とプログラム提案に保存します。二重には加算しません。"
+                />
 
                 {macros ? (
                   <>
@@ -496,6 +545,28 @@ export default function PlanTool() {
                         </tbody>
                       </table>
                     </div>
+
+                    {weightKg != null && targetWeightKg != null && (
+                      <div className="plan__milestones" aria-label="体重マイルストーン">
+                        {[25, 50, 75, 100].map((percentValue) => {
+                          const milestone = weightKg + (targetWeightKg - weightKg) * (percentValue / 100);
+                          return (
+                            <div className="plan__milestone" key={percentValue}>
+                              <span>{percentValue}%</span>
+                              <strong className="num">{fmt(milestone, 1)}kg</strong>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <button type="button" className="button button--block" onClick={savePlanToDevice}>
+                      この計画を端末に保存して記録を始める
+                    </button>
+                    {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
+                    <p className="tool__note">
+                      保存先はこのブラウザだけです。サーバーには送信されず、ホームからいつでも削除できます。
+                    </p>
 
                     {macros.warnings.map((warning) => (
                       <p className="note note--warn" key={warning} style={{ marginTop: 'var(--s3)' }}>

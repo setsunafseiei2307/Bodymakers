@@ -12,9 +12,11 @@ import { fmt } from '../../lib/format';
 import { calcDish, dishesByCategory } from '../../lib/dishes';
 import { FOOD_SOURCE } from '../../lib/foods';
 import { Slip } from './ui';
+import { addMealsToToday } from '../../lib/storage';
 
 export default function DishPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   // カテゴリごとにまとめて計算しておく。品数が増えたので、
   // 一列に並べると目当ての料理を探しにくい。
@@ -84,6 +86,17 @@ export default function DishPanel() {
                   <p className="dish__salt">
                     食物繊維 {fmt(totals.fiber, 1)}g ／ 食塩相当量 {fmt(totals.salt, 1)}g
                   </p>
+
+                  <button
+                    type="button"
+                    className="button button--block"
+                    onClick={() => {
+                      if (addMealsToToday(dish.ingredients)) setSavedId(dish.id);
+                    }}
+                  >
+                    今日の食事に追加
+                  </button>
+                  {savedId === dish.id && <p className="tool__status" role="status">{dish.name}を今日の記録に追加しました。</p>}
 
                   {dish.composite && dish.compositeNote && (
                     <p className="dish__composite">

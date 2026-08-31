@@ -25,6 +25,7 @@ import {
 } from '../../lib/foods';
 import { NumberField, Slip } from './ui';
 import { url } from '../../lib/url';
+import { addMealsToToday } from '../../lib/storage';
 
 /** 表示する成分と、その見出し・単位。 */
 const NUTRIENTS: { key: NutrientKey; label: string; unit: string; digits: number }[] = [
@@ -54,6 +55,7 @@ export default function FoodTool() {
    * それ以外を調べたい人が自分で広げる形にしている。
    */
   const [showAll, setShowAll] = useState(false);
+  const [addMessage, setAddMessage] = useState('');
 
   // 記事から /tools/foods?q=鶏むね のように送られてくる。
   // 検索語はそのまま検索欄に入れる（絞り込みに使うだけで、表示には出さない）。
@@ -121,6 +123,12 @@ export default function FoodTool() {
     setCategory(null);
     setSelected(null);
     setShowAll(false);
+  }
+
+  function addSelectedToToday() {
+    if (selected == null || gramsValue == null || gramsError) return;
+    const saved = addMealsToToday([{ foodId: selected.id, grams: gramsValue }]);
+    setAddMessage(saved ? `${selected.name} ${fmt(gramsValue, 0)}gを今日の食事に追加しました。` : '追加できませんでした。ブラウザの保存設定を確認してください。');
   }
 
   return (
@@ -192,6 +200,7 @@ export default function FoodTool() {
           />
 
           {scaled && (
+            <>
             <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
               <table className="rows">
                 <caption className="visually-hidden">
@@ -241,6 +250,11 @@ export default function FoodTool() {
                 </tbody>
               </table>
             </div>
+            <button type="button" className="button button--block" style={{ marginTop: 'var(--s4)' }} onClick={addSelectedToToday}>
+              今日の食事に追加
+            </button>
+            {addMessage && <p className="tool__status" role="status">{addMessage}</p>}
+            </>
           )}
 
           <p className="source-note" style={{ marginTop: 'var(--s4)' }}>

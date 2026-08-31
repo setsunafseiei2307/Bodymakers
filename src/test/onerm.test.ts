@@ -6,6 +6,9 @@ import {
   percentOfOneRM,
   REP_PERCENT_TABLE,
   MAX_REPS,
+  buildWarmupSets,
+  platesPerSide,
+  roundToIncrement,
 } from '../lib/onerm';
 
 describe('estimateOneRM — 正常系', () => {
@@ -82,6 +85,29 @@ describe('estimateOneRM — 境界値・異常系', () => {
     expect(estimateOneRM(0.5, 10)!.average).toBeGreaterThan(0);
     const big = estimateOneRM(1_000_000, 10)!;
     expect(Number.isFinite(big.average)).toBe(true);
+  });
+});
+
+describe('ウォームアップとプレート計算', () => {
+  it('2.5kg刻みに丸める', () => {
+    expect(roundToIncrement(97.1)).toBe(97.5);
+    expect(roundToIncrement(0)).toBeNull();
+  });
+
+  it('ワーキング重量未満で重複のないセットを作る', () => {
+    const sets = buildWarmupSets(100);
+    expect(sets.length).toBeGreaterThanOrEqual(4);
+    expect(sets.every((set) => set.weightKg < 100)).toBe(true);
+    expect(new Set(sets.map((set) => set.weightKg)).size).toBe(sets.length);
+    expect(sets[0]).toMatchObject({ weightKg: 20, reps: 10 });
+  });
+
+  it('100kgを20kgバーと片側40kgに分解する', () => {
+    expect(platesPerSide(100)).toEqual([
+      { plateKg: 25, perSide: 1 },
+      { plateKg: 15, perSide: 1 },
+    ]);
+    expect(platesPerSide(101)).toBeNull();
   });
 });
 

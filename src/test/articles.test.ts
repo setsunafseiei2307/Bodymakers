@@ -41,7 +41,8 @@ interface Frontmatter {
  * YAML ライブラリを足すほどの用途ではないので、必要な項目だけ拾う。
  */
 function parse(file: string): Frontmatter {
-  const source = fs.readFileSync(path.join(DIR, file), 'utf8');
+  // Windows の core.autocrlf=true でも、以降の簡易YAMLパーサはLFだけを扱えばよい。
+  const source = fs.readFileSync(path.join(DIR, file), 'utf8').replace(/\r\n/g, '\n');
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) throw new Error(`${file}: frontmatter を読めません`);
   const [, raw, body] = match;

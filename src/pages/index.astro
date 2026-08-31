@@ -11,6 +11,7 @@ import StrengthForm from '../components/react/StrengthForm';
 import '../styles/tools.css';
 import '../styles/strength.css';
 import { url } from '../lib/url';
+import Dashboard from '../components/react/Dashboard';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -42,6 +43,10 @@ const articles = await getFeaturedArticles(4);
       </div>
     </div>
   </section>
+
+  <div class="container dashboard-wrap">
+    <Dashboard client:load />
+  </div>
 
   <div class="container">
     {/* --- 診断の中身の説明 --- */}
@@ -119,11 +124,11 @@ const articles = await getFeaturedArticles(4);
         <a href={url('/tools')}>ツール一覧へ</a>
       </div>
       <p class="section__lead">
-        すべてブラウザの中だけで計算します。登録不要・データ保存なし。
+        すべてブラウザの中だけで計算します。登録不要。保存した計画と記録はこの端末だけに残ります。
       </p>
       <ul class="home-tools">
         {
-          TOOLS.filter((tool) => !tool.primary).map((tool) => (
+          TOOLS.filter((tool) => tool.key !== 'rpe').map((tool) => (
             <li>
               <a class="home-tool" href={url(tool.href)}>
                 <span class="home-tool__code">{tool.code}</span>
@@ -220,6 +225,10 @@ const articles = await getFeaturedArticles(4);
   /* 診断フォームはヒーローの中に置く。遷移を挟まない */
   .hero__tool {
     margin-top: var(--s5);
+  }
+
+  .dashboard-wrap {
+    padding-top: var(--s6);
   }
 
   /* --- セクション共通 --- */

@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProgramTool from '../../components/react/ProgramTool';
+import ToolArticles from '../../components/ToolArticles.astro';
+import '../../styles/tools.css';
+
+const title = 'トレーニングプログラム生成';
+const description = '現在の1RM・トレーニング歴・週の頻度・目的から、4週間の重量とセットを生成します。初心者の線形進歩、中級者の週単位進行、経験者の強度・ボリューム分割に対応。';
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container tool-page">
+    <header class="tool-page__header">
+      <p class="tool-page__code">PROGRAM</p>
+      <h1>{title}</h1>
+      <p class="tool-page__lead">1RMと通える日数から、次の4週間に「何kgを何回やるか」を作ります。特定の有料プログラムはコピーせず、一般的な負荷管理の原則で組み立てます。</p>
+      <p class="tool-page__privacy">計算はブラウザ内だけで行います。</p>
+    </header>
+    <div class="tool-page__body">
+      <div class="tool-page__main"><ProgramTool client:load /></div>
+      <aside class="tool-page__aside"><ToolArticles toolKey="programs" /></aside>
+    </div>
+  </div>
+</BaseLayout>

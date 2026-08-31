@@ -20,6 +20,8 @@ export type ToolKey =
   | 'burn'
   | 'nutrition'
   | 'foods'
+  | 'fitness'
+  | 'programs'
   | 'smolov';
 
 export interface ToolEntry {
@@ -48,13 +50,23 @@ export interface ToolEntry {
 
 export const TOOLS: readonly ToolEntry[] = [
   {
+    key: 'fitness',
+    href: '/tools/fitness',
+    label: '総合身体能力スコア',
+    code: 'FITNESS',
+    summary:
+      '懸垂・5km・体重比BIG3・プランクを、明示したマイルストーンで評価します。人口順位ではなく、前回の自分と比べるためのBodymakers独自スコアです。',
+    primary: true,
+    cta: '総合的な現在地を記録する',
+    ctaText: '測った種目だけで、筋力・自重・心肺・体幹の進捗を一枚にまとめます。',
+  },
+  {
     key: 'strength',
     href: '/strength-standards',
     label: '筋力レベル診断',
     code: 'STRENGTH',
     summary:
       'ベンチ・スクワット・デッドリフトの記録から、同じ性別・体重の人と比べた5段階レベルとパーセンタイルを判定します。公式競技会の実データ387,265人分が基準。',
-    primary: true,
     cta: 'あなたの記録は上位何%か調べる',
     ctaText:
       '挙上重量とレップ数を入れるだけで、同じ性別・体重帯の競技者387,265人の中での位置が出ます。',
@@ -135,6 +147,17 @@ export const TOOLS: readonly ToolEntry[] = [
     cta: '食べたものの栄養を調べる',
     ctaText:
       '食品成分表の収載値から、カロリーとPFCを調べられます。丼ものや定食は材料の内訳つきで出します。',
+  },
+  {
+    key: 'programs',
+    href: '/tools/programs',
+    label: 'トレーニングプログラム生成',
+    code: 'PROGRAM',
+    summary:
+      '1RM・トレーニング歴・週の頻度・目的から、4週間の重量とセットを生成します。初心者の線形進歩、中級者の週単位進行、経験者の強度・ボリューム分割に対応。',
+    cta: '次の4週間を組み立てる',
+    ctaText:
+      '今の1RMと通える回数から、無理なく進めるための4週間の重量・回数・セットを作ります。',
   },
   {
     key: 'smolov',

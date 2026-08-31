@@ -7,7 +7,16 @@ import NextSteps from '../../components/NextSteps.astro';
 
 const title = 'ツール一覧';
 const description =
-  '筋力レベル診断・1RM換算・RPE換算・PFC計算・食品の栄養価検索など、登録不要でその場で使える計算ツールです。入力内容は送信も保存もされません。';
+  '目的から選べる筋力・トレーニング・ダイエット・食事・日々の記録ツール。登録不要、保存する記録はこの端末だけに残ります。';
+
+const purposes = [
+  { code: 'ASSESS', title: '総合的な体力を知る', text: '懸垂・5km・BIG3・プランクを一枚にまとめ、次の目標を確認する。', href: '/tools/fitness' },
+  { code: 'LIFT', title: 'トレーニング重量を決める', text: '1RM・RPE・%1RM・ウォームアップ・プレートを1画面で計算する。', href: '/tools/one-rep-max' },
+  { code: 'DIET', title: '痩せる計画を作る', text: '目標日、摂取カロリー、PFC、マイルストーンをまとめて作る。', href: '/tools/plan' },
+  { code: 'LOG', title: '今日の記録をつける', text: '体重・カロリー・タンパク質を10秒で保存し、食事や運動も追加する。', href: '/tools/today' },
+  { code: 'FOOD', title: '食事を管理する', text: '料理や食品を調べ、そのまま今日の食事とPFCへ追加する。', href: '/tools/foods' },
+  { code: 'PROGRAM', title: 'プログラムを作る', text: '1RM・経験・週の頻度から、次の4週間の重量とセットを作る。', href: '/tools/programs' },
+] as const;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -16,14 +25,31 @@ const description =
       <p class="list-page__code">TOOLS</p>
       <h1>ツール一覧</h1>
       <p class="list-page__lead">
-        すべてブラウザの中だけで計算します。会員登録もログインも不要で、
-        入力した内容が送信されることも保存されることもありません。
+        やりたいことから選んでください。計算はすべてブラウザ内で行い、会員登録もログインも不要です。
+        保存した計画と記録はこの端末だけに残り、サーバーには送信されません。
       </p>
     </header>
 
+    <section class="purpose" aria-labelledby="purpose-title">
+      <h2 id="purpose-title">目的から選ぶ</h2>
+      <ul class="purpose__grid">
+        {purposes.map((item) => (
+          <li>
+            <a href={url(item.href)} class="purpose__card">
+              <span>{item.code}</span>
+              <strong>{item.title}</strong>
+              <p>{item.text}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <h2 class="all-tools-title">すべてのツール</h2>
+
     <ul class="tool-list">
       {
-        TOOLS.map((tool) => (
+        TOOLS.filter((tool) => tool.key !== 'rpe').map((tool) => (
           <li>
             <a class:list={['tool-card', tool.primary && 'tool-card--primary']} href={url(tool.href)}>
               <span class="tool-card__code">{tool.code}</span>
@@ -75,6 +101,20 @@ const description =
     list-style: none;
     background: var(--hair);
     border: 1px solid var(--hair);
+  }
+
+  .purpose { margin-bottom: var(--s7); }
+  .purpose > h2,
+  .all-tools-title { margin-bottom: var(--s4); font-size: 1.25rem; }
+  .purpose__grid { display: grid; gap: var(--s3); margin: 0; padding: 0; list-style: none; }
+  .purpose__card { display: block; height: 100%; padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-md); background: var(--surface); color: var(--ink); text-decoration: none; }
+  .purpose__card:hover { border-color: var(--signal); background: var(--signal-soft); color: var(--ink); }
+  .purpose__card > span { display: block; color: var(--signal); font-family: var(--f-mono); font-size: 0.625rem; font-weight: 800; letter-spacing: 0.12em; }
+  .purpose__card > strong { display: block; margin-top: var(--s1); font-size: 1rem; }
+  .purpose__card > p { margin-top: var(--s2); color: var(--muted); font-size: 0.78rem; line-height: 1.65; }
+
+  @media (min-width: 40rem) {
+    .purpose__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (min-width: 40rem) {

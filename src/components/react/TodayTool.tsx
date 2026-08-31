@@ -9,16 +9,17 @@
  * 「1か月で何kg」は基礎代謝が要るので、身長・年齢を入れた人にだけ出す。
  * 全部入力しないと何も出ない作りにはしない。
  *
- * 【保存しない】
- * 入力はこのページの state にしか無い。リロードすれば消える。
+ * 【端末内に保存】
+ * 明示的に保存した日の記録だけ localStorage に残す。サーバーには送らない。
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import { DISHES, calcDish } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
+import { parseMealText, type MealTextResult } from '../../lib/mealText';
 import { exercisesByEquipment, findExercise, musclesWorked } from '../../lib/exercises';
 import { type BodyInput, type Sex } from '../../lib/nutrition';
 import {
@@ -33,6 +34,7 @@ import {
 import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
+import { localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
 import ShareCard from './ShareCard';
 import { NumberField, Segmented, SelectField, Slip } from './ui';
 
@@ -43,9 +45,17 @@ const DEFAULT_GRAMS = 100;
 
 export default function TodayTool() {
   const [weight, setWeight] = useState('');
+  const [manualCalories, setManualCalories] = useState('');
+  const [manualProtein, setManualProtein] = useState('');
+  const [steps, setSteps] = useState('');
+  const [sleepHours, setSleepHours] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+  const [dietPlan, setDietPlan] = useState<SavedDietPlan | null>(null);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
+  const [mealText, setMealText] = useState('');
+  const [mealTextResult, setMealTextResult] = useState<MealTextResult | null>(null);
 
   const [exercises, setExercises] = useState<ExerciseEntry[]>([]);
   const [activityId, setActivityId] = useState(ACTIVITIES[0].id);
@@ -64,6 +74,35 @@ export default function TodayTool() {
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
 
+  useEffect(() => {
+    const data = readData();
+    const saved = todayLog(data);
+    const latest = [...data.dailyLogs]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .find((item) => item.weightKg != null);
+    const profile = data.profile;
+    setDietPlan(data.dietPlan);
+
+    const savedWeight = saved?.weightKg ?? latest?.weightKg ?? profile?.weightKg;
+    if (savedWeight != null) setWeight(String(savedWeight));
+    if (saved) {
+      setMeals(saved.meals);
+      setExercises(saved.exercises);
+      setMuscles(saved.muscles);
+      setDoneExercises(saved.doneExercises);
+      setManualCalories(saved.manualIntake.kcal == null ? '' : String(saved.manualIntake.kcal));
+      setManualProtein(saved.manualIntake.protein == null ? '' : String(saved.manualIntake.protein));
+      setSteps(saved.steps == null ? '' : String(saved.steps));
+      setSleepHours(saved.sleepHours == null ? '' : String(saved.sleepHours));
+    }
+    if (profile) {
+      setDetailed(true);
+      setSex(profile.sex);
+      setAge(String(profile.age));
+      setHeight(String(profile.heightCm));
+    }
+  }, []);
+
   const weightKg = parseNumber(weight);
   const weightError =
     weight !== '' && (weightKg == null || weightKg < 30 || weightKg > 300)
@@ -77,6 +116,30 @@ export default function TodayTool() {
   }, [query]);
 
   const intake = useMemo(() => summarizeIntake(meals), [meals]);
+  const manualKcalValue = parseNumber(manualCalories);
+  const manualProteinValue = parseNumber(manualProtein);
+  const stepsValue = parseNumber(steps);
+  const sleepValue = parseNumber(sleepHours);
+  const caloriesError = manualCalories !== '' && (manualKcalValue == null || manualKcalValue < 0 || manualKcalValue > 20_000)
+    ? '0〜20,000kcalの範囲で入力してください。'
+    : undefined;
+  const proteinError = manualProtein !== '' && (manualProteinValue == null || manualProteinValue < 0 || manualProteinValue > 1_000)
+    ? '0〜1,000gの範囲で入力してください。'
+    : undefined;
+  const stepsError = steps !== '' && (stepsValue == null || stepsValue < 0 || stepsValue > 200_000 || !Number.isInteger(stepsValue))
+    ? '0〜200,000の整数で入力してください。'
+    : undefined;
+  const sleepError = sleepHours !== '' && (sleepValue == null || sleepValue < 0 || sleepValue > 24)
+    ? '0〜24時間の範囲で入力してください。'
+    : undefined;
+  const intakeTotals = useMemo(
+    () => ({
+      ...intake.totals,
+      kcal: manualKcalValue ?? intake.totals.kcal,
+      protein: manualProteinValue ?? intake.totals.protein,
+    }),
+    [intake.totals, manualKcalValue, manualProteinValue],
+  );
   const exercise = useMemo(
     () => (weightKg == null ? null : summarizeExercise(exercises, weightKg)),
     [exercises, weightKg],
@@ -94,12 +157,21 @@ export default function TodayTool() {
       weightKg,
       bodyFatPercent: null,
     };
-    return dayBalance(body, intake.totals.kcal, exercise.kcal);
-  }, [detailed, weightKg, exercise, intake.totals.kcal, sex, age, height]);
+    return dayBalance(body, intakeTotals.kcal, exercise.kcal);
+  }, [detailed, weightKg, exercise, intakeTotals.kcal, sex, age, height]);
 
   function addMeal(food: Food) {
     setMeals((list) => [...list, { foodId: food.id, grams: DEFAULT_GRAMS }]);
     setQuery('');
+  }
+
+  function addMealText() {
+    const parsed = parseMealText(mealText);
+    setMealTextResult(parsed);
+    if (parsed.meals.length > 0) {
+      setMeals((list) => [...list, ...parsed.meals]);
+      setMealText('');
+    }
   }
 
   /**
@@ -158,24 +230,119 @@ export default function TodayTool() {
     meals.length > 0 ||
     exercises.length > 0 ||
     doneExercises.length > 0 ||
-    muscles.length > 0;
+    muscles.length > 0 ||
+    manualCalories !== '' ||
+    manualProtein !== '' ||
+    weight !== '' ||
+    steps !== '' ||
+    sleepHours !== '';
+
+  function saveTodayRecord() {
+    if (weightError || caloriesError || proteinError || stepsError || sleepError) {
+      setSaveMessage('赤く表示された入力を確認してください。');
+      return;
+    }
+    const saved = saveDailyLog({
+      date: localDateKey(),
+      savedAt: new Date().toISOString(),
+      weightKg: weightKg ?? null,
+      meals,
+      exercises,
+      muscles,
+      doneExercises,
+      manualIntake: {
+        kcal: manualKcalValue != null && manualKcalValue >= 0 ? manualKcalValue : null,
+        protein: manualProteinValue != null && manualProteinValue >= 0 ? manualProteinValue : null,
+      },
+      steps: stepsValue != null && stepsValue >= 0 ? stepsValue : null,
+      sleepHours: sleepValue != null && sleepValue >= 0 && sleepValue <= 24 ? sleepValue : null,
+    });
+    setSaveMessage(saved ? '今日の記録を保存しました。' : '保存できませんでした。ブラウザの保存設定を確認してください。');
+  }
 
   return (
     <div className="tool">
-      <Slip code="BODY" title="はじめに">
+      <Slip code="QUICK" title="10秒で今日を記録">
         <NumberField
-          label="今の体重"
+          label="今日の体重"
           unit="kg"
           value={weight}
           onChange={setWeight}
           placeholder="70"
           error={weightError}
-          hint="消費カロリーの計算に使います。これだけ入れれば合計は出ます。"
+          hint="前回の記録があれば自動で入ります。"
         />
+        <div className="row">
+          <NumberField
+            label="摂取カロリー"
+            unit="kcal"
+            value={manualCalories}
+            onChange={setManualCalories}
+            placeholder="2050"
+            inputMode="numeric"
+            hint="食品を細かく追加しない日は合計だけでOK"
+            error={caloriesError}
+          />
+          <NumberField
+            label="たんぱく質"
+            unit="g"
+            value={manualProtein}
+            onChange={setManualProtein}
+            placeholder="142"
+            inputMode="decimal"
+            error={proteinError}
+          />
+        </div>
+        {dietPlan && (
+          <div className="today__targets" aria-label="今日の計画達成状況">
+            <div>
+              <span>今日</span>
+              <strong className="num">{fmt(intakeTotals.kcal, 0)} / {fmt(dietPlan.targetCalories, 0)} kcal</strong>
+              <progress value={Math.min(intakeTotals.kcal, dietPlan.targetCalories)} max={dietPlan.targetCalories} />
+            </div>
+            <div>
+              <span>Protein</span>
+              <strong className="num">{fmt(intakeTotals.protein, 0)} / {fmt(dietPlan.proteinGrams, 0)}g</strong>
+              <progress value={Math.min(intakeTotals.protein, dietPlan.proteinGrams)} max={dietPlan.proteinGrams} />
+            </div>
+          </div>
+        )}
+        <details className="today__quickDetails">
+          <summary>歩数・睡眠も記録する</summary>
+          <div className="row">
+            <NumberField label="歩数" unit="歩" value={steps} onChange={setSteps} placeholder="8000" inputMode="numeric" error={stepsError} />
+            <NumberField label="睡眠" unit="時間" value={sleepHours} onChange={setSleepHours} placeholder="7.5" error={sleepError} />
+          </div>
+        </details>
+        <button type="button" className="button button--block button--lg" onClick={saveTodayRecord}>
+          今日の記録を保存
+        </button>
+        {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
+        <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
       </Slip>
 
       {/* --- 食べたもの --- */}
       <Slip code="EAT" title="食べたもの">
+        <div className="today__natural">
+          <NumberField
+            label="まとめて入力"
+            value={mealText}
+            onChange={setMealText}
+            placeholder="卵2個、ご飯200g、納豆"
+            hint="料理辞書・部分一致・数量だけで解析します。AIへの送信はありません。"
+          />
+          <button type="button" className="button button--block" onClick={addMealText} disabled={mealText.trim() === ''}>
+            食事リストに追加
+          </button>
+          {mealTextResult && (
+            <div className="today__parseResult" role="status">
+              {mealTextResult.matched.length > 0 && <p><strong>追加:</strong> {mealTextResult.matched.join('、')}</p>}
+              {mealTextResult.assumptions.length > 0 && <p><strong>分量の仮定:</strong> {mealTextResult.assumptions.join('／')}</p>}
+              {mealTextResult.unmatched.length > 0 && <p><strong>判断できなかったもの:</strong> {mealTextResult.unmatched.join('、')}（推測では追加していません）</p>}
+            </div>
+          )}
+        </div>
+
         <NumberField
           label="食品を追加"
           value={query}
@@ -363,7 +530,7 @@ export default function TodayTool() {
             <div className="stats">
               <div className="stat">
                 <span className="stat__label">食べた</span>
-                <span className="stat__value num">{fmt(intake.totals.kcal, 0)}</span>
+                <span className="stat__value num">{fmt(intakeTotals.kcal, 0)}</span>
                 <span className="stat__unit">kcal</span>
               </div>
               <div className="stat">
@@ -373,7 +540,7 @@ export default function TodayTool() {
               </div>
               <div className="stat stat--primary">
                 <span className="stat__label">たんぱく質</span>
-                <span className="stat__value num">{fmt(intake.totals.protein, 0)}</span>
+                <span className="stat__value num">{fmt(intakeTotals.protein, 0)}</span>
                 <span className="stat__unit">g</span>
               </div>
             </div>
@@ -384,15 +551,15 @@ export default function TodayTool() {
                 <tbody>
                   <tr>
                     <th scope="row">脂質</th>
-                    <td>{fmt(intake.totals.fat, 1)} g</td>
+                    <td>{fmt(intakeTotals.fat, 1)} g</td>
                     <th scope="row">炭水化物</th>
-                    <td>{fmt(intake.totals.carbs, 1)} g</td>
+                    <td>{fmt(intakeTotals.carbs, 1)} g</td>
                   </tr>
                   <tr>
                     <th scope="row">食物繊維</th>
-                    <td>{fmt(intake.totals.fiber, 1)} g</td>
+                    <td>{fmt(intakeTotals.fiber, 1)} g</td>
                     <th scope="row">食塩</th>
-                    <td>{fmt(intake.totals.salt, 1)} g</td>
+                    <td>{fmt(intakeTotals.salt, 1)} g</td>
                   </tr>
                 </tbody>
               </table>
@@ -429,7 +596,7 @@ export default function TodayTool() {
       )}
 
       {/* --- 共有カード。記録の要点だけを1枚にする --- */}
-      {hasAnything && intake.totals.kcal > 0 && (
+      {hasAnything && intakeTotals.kcal > 0 && (
         <Slip code="SHARE" title="今日の記録を保存・共有する">
           <ShareCard
             draw={(ctx) =>
@@ -441,7 +608,7 @@ export default function TodayTool() {
                     month: 'long',
                     day: 'numeric',
                   }),
-                  intake: intake.totals,
+                  intake: intakeTotals,
                   exerciseKcal: exercise?.kcal ?? 0,
                   muscles: worked.primary,
                   balance,
@@ -451,7 +618,7 @@ export default function TodayTool() {
             }
             filename="bodymakers-today.png"
             title="今日の記録"
-            revision={`${Math.round(intake.totals.kcal)}-${Math.round(exercise?.kcal ?? 0)}-${worked.primary.join()}-${balance ? Math.round(balance.balanceKcal) : 'x'}`}
+            revision={`${Math.round(intakeTotals.kcal)}-${Math.round(exercise?.kcal ?? 0)}-${worked.primary.join()}-${balance ? Math.round(balance.balanceKcal) : 'x'}`}
           />
         </Slip>
       )}
@@ -552,9 +719,9 @@ export default function TodayTool() {
       )}
 
       <p className="note">
-        <span className="note__title">入力は保存されません</span>
-        食べたものも運動も、この画面の中だけで計算しています。送信も保存もしていないので、
-        ページを閉じると消えます。残したい場合はスクリーンショットを撮ってください。
+        <span className="note__title">保存先はこの端末だけです</span>
+        「今日の記録を保存」を押した内容はブラウザのlocalStorageに保存されます。
+        Bodymakersのサーバーには送信されません。ホームの「端末内データを削除」から全履歴を消せます。
       </p>
 
       <p className="next">

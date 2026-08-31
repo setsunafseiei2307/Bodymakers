@@ -9,7 +9,7 @@ import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = '今日の記録';
 const description =
-  '今日食べたものと動いたものを入れるだけで、摂取カロリー・PFC・消費カロリー・その差し引きが出ます。身長と年齢を足せば「この調子なら1か月で何kg」まで分かります。登録不要、保存もしません。';
+  '体重・摂取カロリー・タンパク質をすばやく記録。食事の自然文入力、歩数・睡眠・運動の詳細も追加でき、ダイエット計画の目標と同じ画面で確認できます。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -25,7 +25,7 @@ const description =
       <p class="tool-page__code">TODAY</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
+      <p class="tool-page__privacy">保存ボタンを押した記録だけ、このブラウザに保存します。サーバーには送信しません。</p>
     </header>
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、

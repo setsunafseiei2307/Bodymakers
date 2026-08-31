@@ -5,8 +5,8 @@
  * 入力欄・選択肢・結果票の3つだけを共通化してある。
  * スタイルは src/styles/tools.css にまとめてあり、ここでは構造だけを持つ。
  *
- * 入力値はすべて呼び出し側の state にしか存在しない。
- * 送信先が無く localStorage にも書かないため、リロードすれば消える。
+ * 入力値はすべて呼び出し側が管理する。通常は state のみで、
+ * 計画・日次記録は利用者が保存ボタンを押した場合だけ localStorage に書く。
  */
 
 import { useId, type ReactNode } from 'react';

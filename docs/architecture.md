@@ -80,18 +80,17 @@ pages/  →  layouts/  →  components/  →  lib/
 - `strength/standards.ts` → `format.ts`
 - `strength/diagnose.ts` → `standards.ts` + `standardsData.ts` + `onerm.ts` + `format.ts`
 
-## データを保存しない設計
+## データを運営側で保存しない設計
 
 会員登録・ログイン・データベースを持たない。
-診断の入力値は React の state にしか存在せず、
-サーバーへ送信されず、localStorage にも書かない。ページを閉じれば消える。
+計算中の入力値は React の state にあり、サーバーへ送信されない。
+ダイエット計画と日々の記録は、利用者が明示的に保存したときだけ
+`bodymakers:data:v1` として同じブラウザのlocalStorageに書く。
 
-**例外は配色（ライト/ダーク）の設定のみ。**
-これは個人を識別する情報ではなく、
-保存しないとページ遷移のたびに画面が切り替わって読みにくい。
-キーは `bodymakers:theme`。
+配色（ライト/ダーク）のキーは `bodymakers:theme`。
+端末内データはホームの削除操作でまとめて消せる。別端末との同期・バックアップは行わない。
 
-この設計により、個人情報の保管責任を負わずに診断機能を提供できる。
+この設計により、継続記録の利便性を持たせつつ、運営側は身体データを預からない。
 
 ## 記事の運用
 

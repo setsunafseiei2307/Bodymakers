@@ -21,9 +21,12 @@ import { useMemo, useState } from 'react';
 import { fmt, parseNumber } from '../../lib/format';
 import {
   MAX_REPS,
+  buildWarmupSets,
   bodyweightLoad,
   estimateOneRM,
+  platesPerSide,
   repTableFromOneRM,
+  roundToIncrement,
 } from '../../lib/onerm';
 import {
   RPE_MAX_REPS,
@@ -89,6 +92,8 @@ export default function MaxTool({ defaultMode = 'reps' }: Props) {
   const [rpe, setRpe] = useState('8');
   const [bodyweight, setBodyweight] = useState('');
   const [added, setAdded] = useState('0');
+  const [workPercent, setWorkPercent] = useState('80');
+  const [barWeight, setBarWeight] = useState('20');
 
   // 記事から ?reps=5&rpe=8 のように送られてくる。
   // 範囲外・未定義の値は無視して既定値のままにする。
@@ -205,6 +210,18 @@ export default function MaxTool({ defaultMode = 'reps' }: Props) {
     [mode, oneRm],
   );
   const repList = Array.from({ length: TABLE_MAX_REPS }, (_, i) => i + 1);
+  const workingWeight = useMemo(() => {
+    if (oneRm == null) return null;
+    return roundToIncrement(oneRm * (Number(workPercent) / 100), 2.5);
+  }, [oneRm, workPercent]);
+  const warmupSets = useMemo(
+    () => workingWeight == null ? [] : buildWarmupSets(workingWeight, Number(barWeight), 2.5),
+    [workingWeight, barWeight],
+  );
+  const plates = useMemo(
+    () => workingWeight == null ? null : platesPerSide(workingWeight, Number(barWeight)),
+    [workingWeight, barWeight],
+  );
 
   return (
     <div className="tool">
@@ -362,6 +379,69 @@ export default function MaxTool({ defaultMode = 'reps' }: Props) {
               </div>
             )}
           </Slip>
+
+          {liftType === 'weight' && workingWeight != null && (
+            <Slip code="WORK SET" title="今日の重量・ウォームアップ">
+              <div className="row">
+                <SelectField
+                  label="ワーキング強度"
+                  value={workPercent}
+                  onChange={setWorkPercent}
+                  options={[60, 65, 70, 75, 80, 85, 90, 95].map((value) => ({ value: String(value), label: `${value}% 1RM` }))}
+                />
+                <SelectField
+                  label="バー重量"
+                  value={barWeight}
+                  onChange={setBarWeight}
+                  options={[
+                    { value: '20', label: '20kg（標準）' },
+                    { value: '15', label: '15kg' },
+                    { value: '10', label: '10kg' },
+                  ]}
+                />
+              </div>
+
+              <BigNumber
+                label={`${workPercent}%・2.5kg刻み`}
+                value={fmt(workingWeight, 1)}
+                unit="kg"
+                note="その日の調子とフォームを優先し、痛みがある場合は中止してください。"
+              />
+
+              {plates && (
+                <p className="plate-load">
+                  <strong>片側:</strong>{' '}
+                  {plates.length === 0 ? 'プレートなし' : plates.map((item) => `${item.plateKg}kg × ${item.perSide}`).join(' ＋ ')}
+                </p>
+              )}
+
+              {warmupSets.length > 0 && (
+                <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
+                  <table className="rows">
+                    <caption className="visually-hidden">ワーキングセットまでのウォームアップ例</caption>
+                    <thead><tr><th scope="col">段階</th><th scope="col">重量</th><th scope="col">回数</th></tr></thead>
+                    <tbody>
+                      {warmupSets.map((set) => (
+                        <tr key={`${set.weightKg}-${set.reps}`}>
+                          <th scope="row">{set.label}</th>
+                          <td className="num">{fmt(set.weightKg, 1)}kg</td>
+                          <td className="num">{set.reps}回</td>
+                        </tr>
+                      ))}
+                      <tr className="is-row">
+                        <th scope="row">ワーキングセット</th>
+                        <td className="num">{fmt(workingWeight, 1)}kg</td>
+                        <td>目的に合わせる</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="source-note" style={{ marginTop: 'var(--s3)' }}>
+                ウォームアップは一般的な段階例です。固定の処方ではありません。高重量ほど少ない回数で近づき、疲労を残さない構成にしています。
+              </p>
+            </Slip>
+          )}
 
           {mode === 'reps' ? (
             <Slip code="TABLE" title="レップ数ごとの目安重量">

@@ -11,19 +11,19 @@
 
 | 見たいもの | URL |
 |---|---|
-| **公開サイト**（実物を触る） | https://setsunafseiei2307.github.io/Bodymakers/ |
+| **公開サイト**（実物を触る） | https://bodymakers.shushushu1990.workers.dev/ |
 | **コード全体** | https://github.com/setsunafseiei2307/Bodymakers |
 | **何をどう変えたか**（作業ブランチと main の差分） | `https://github.com/setsunafseiei2307/Bodymakers/compare/main...<ブランチ名>` |
 | **テストが通っているか** | https://github.com/setsunafseiei2307/Bodymakers/actions |
 
 ### 公開の流れ
 
-作業は `claude/*` のブランチで進み、まとまった段階で main への Pull Request になる。
+`main` へ反映するとCIとCloudflareの自動デプロイが走る。
 
 1. ブランチへ push → CI（型チェック・テスト・ビルド・リンク検査）が走る
 2. Pull request の「Files changed」で差分を確認する
 3. 緑の **Merge pull request** を押す
-4. main への反映を合図に公開ワークフローが走り、数分で公開サイトに反映される
+4. main への反映を合図にCloudflareへ公開される
 
 Actions タブの緑チェックは「型エラーなし・テスト全件通過・全ページのビルド成功・
 サイト内リンク切れなし」を意味する。赤いバツが出ていたら、そのページを開けば
@@ -35,7 +35,7 @@ Actions タブの緑チェックは「型エラーなし・テスト全件通過
 スクリーンショットやzipを別途用意する必要はない。
 
 ```
-サイト: https://setsunafseiei2307.github.io/Bodymakers/
+サイト: https://bodymakers.shushushu1990.workers.dev/
 コード: https://github.com/setsunafseiei2307/Bodymakers
 設計の背景: docs/architecture.md
 データの出典と集計方法: docs/strength-standards.md / docs/food-data.md
@@ -43,9 +43,8 @@ Actions タブの緑チェックは「型エラーなし・テスト全件通過
 
 ### 検索エンジンへの掲載
 
-現在は載せない設定（`src/config/site.ts` の `SEARCH_INDEXING` が `false`）。
-URLを知っていれば誰でも見られるが、検索結果には出ない。
-記事と機能が揃った段階で `true` にする。
+`src/config/site.ts` の `SEARCH_INDEXING` は `true`。
+canonical・sitemap・OGPは公開URLへ合わせる。
 
 ## 中核機能: 筋力レベル診断
 
@@ -63,18 +62,20 @@ URLを知っていれば誰でも見られるが、検索結果には出ない�
 推測値による補完は一切していない。
 詳細は [docs/strength-standards.md](docs/strength-standards.md)。
 
-## データを保存しない
+## データを運営側で保存しない
 
 会員登録・ログイン・データベースを持たない。
-診断の入力値はブラウザの state にしか存在せず、送信も保存もされない。
-結果はスクリーンショットで残してもらう前提。
+計算はブラウザ内で行い、身体データをサーバーへ送信しない。
+ダイエット計画と「今日の記録」は、利用者が保存ボタンを押した場合だけ
+`bodymakers:data:v1` としてそのブラウザのlocalStorageに保存する。
+別端末との同期はなく、ホーム画面から全履歴を削除できる。
 
-例外は配色（ライト/ダーク）の設定のみで、これは個人を識別する情報ではない。
+配色（ライト/ダーク）は `bodymakers:theme` に保存する。
 
 ## 技術構成
 
 - **Astro 7** — SSG。記事は静的HTML、ツールだけReactアイランドとして水和
-- **React 19** — 診断ツールのみ
+- **React 19** — 入力を伴うツールと端末内ダッシュボードのみ
 - **TypeScript**（strict）
 - **Vitest 4** — `src/lib` の純関数を対象にユニットテスト
 - **素のCSS** — カスタムプロパティによるデザイントークン。ライト/ダーク対応
@@ -210,11 +211,10 @@ SITE_URL=https://example.com BASE_PATH=/Bodymakers npm run build
 
 ### 公開状態
 
-`.github/workflows/deploy.yml` が GitHub Pages へ公開する。
-リポジトリの Settings → Pages で Source を「GitHub Actions」にしておく必要がある。
+CloudflareのGit連携が `main` の更新を検知し、`npm run build` 後にWorkersへ公開する。
 
 検索エンジンへの掲載は `src/config/site.ts` の `SEARCH_INDEXING` で切り替える。
-中身が揃うまでは `false`（`robots.txt` と各ページの `meta robots` が同時に効く）。
+現在は `true`（canonical・sitemap・robotsを公開向けに生成する）。
 
 ### CI
 

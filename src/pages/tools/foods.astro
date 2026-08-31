@@ -8,7 +8,7 @@ import { url } from '../../lib/url';
 import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = '食品の栄養価を調べる';
-const description = '日本食品標準成分表の全2,538食品から、カロリーとPFCを調べます。分量を変えると成分値も変わります。';
+const description = '日本食品標準成分表の全2,538食品と材料内訳つき料理31品からカロリーとPFCを検索し、そのまま今日の食事へ追加できます。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -24,7 +24,7 @@ const description = '日本食品標準成分表の全2,538食品から、カロ
       <p class="tool-page__code">FOOD</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
+      <p class="tool-page__privacy">検索は端末内だけ。「今日の食事に追加」を押した内容だけ、このブラウザへ保存します。</p>
     </header>
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、

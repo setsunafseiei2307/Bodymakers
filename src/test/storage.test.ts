@@ -6,6 +6,7 @@ import {
   parseStoredData,
   readData,
   saveStrengthDiagnosis,
+  addMealsToToday,
 } from '../lib/storage';
 import { diagnose } from '../lib/strength/diagnose';
 import { snapshotDiagnosis } from '../lib/strength/history';
@@ -57,6 +58,20 @@ describe('端末内データ', () => {
     expect(data.dailyLogs).toHaveLength(1);
     expect(data.strengthProfile).toBeNull();
     expect(data.strengthHistory).toEqual([]);
+  });
+
+  it('既存の食事記録を保ち、食事区分を追加できる', () => {
+    const storage = memoryStorage();
+    storage.setItem('bodymakers:data:v1', JSON.stringify({
+      version: 1,
+      dailyLogs: [{ date: localDateKey(), meals: [{ foodId: '01088', grams: 100 }] }],
+    }));
+    expect(addMealsToToday([{ foodId: '12004', grams: 60 }], 'breakfast', storage)).toBe(true);
+    const meals = readData(storage).dailyLogs[0]!.meals;
+    expect(meals).toEqual([
+      { foodId: '01088', grams: 100 },
+      { foodId: '12004', grams: 60, mealType: 'breakfast' },
+    ]);
   });
 
   it('筋力診断を履歴と次回入力プロフィールへ保存する', () => {

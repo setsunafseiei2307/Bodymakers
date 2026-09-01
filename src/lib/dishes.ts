@@ -43,6 +43,8 @@ export interface Dish {
   id: string;
   name: string;
   emoji: string;
+  /** Bodymakersが権利を持つ料理画像を将来設定する任意URL。未設定時はemoji表示。 */
+  imageUrl?: string;
   category: DishCategory;
   /** 1食ぶんの想定（画面に出す） */
   serving: string;

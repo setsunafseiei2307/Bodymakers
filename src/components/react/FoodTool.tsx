@@ -20,13 +20,15 @@ import {
   searchFoods,
   commonFoods,
   commonFoodCount,
+  findFood,
   type Food,
   type NutrientKey,
 } from '../../lib/foods';
-import { NumberField, Slip } from './ui';
+import { NumberField, Segmented, Slip } from './ui';
 import { url } from '../../lib/url';
 import { addMealsToToday } from '../../lib/storage';
 import { OPEN_FOOD_FACTS_SOURCE, searchExternalFoods, type ExternalFood } from '../../lib/externalFoods';
+import type { MealType } from '../../lib/today';
 
 type NutrientDisplay = { key: NutrientKey; label: string; unit: string; digits: number };
 
@@ -81,6 +83,10 @@ const MAX_GRAMS = 5000;
 const RESULT_LIMIT = 60;
 const kcalText = (value: number | null) => (value == null ? '—' : fmt(value, 0));
 const gramText = (value: number | null) => (value == null ? '—' : `${fmt(value, 1)}g`);
+const MEAL_OPTIONS: { value: MealType; label: string }[] = [
+  { value: 'breakfast', label: '朝食' }, { value: 'lunch', label: '昼食' },
+  { value: 'dinner', label: '夕食' }, { value: 'snack', label: '間食' },
+];
 
 export default function FoodTool() {
   const [query, setQuery] = useState('');
@@ -97,6 +103,7 @@ export default function FoodTool() {
    */
   const [showAll, setShowAll] = useState(false);
   const [addMessage, setAddMessage] = useState('');
+  const [mealType, setMealType] = useState<MealType>('snack');
   const [externalFoods, setExternalFoods] = useState<ExternalFood[]>([]);
   const [externalStatus, setExternalStatus] = useState<'idle' | 'loading' | 'error' | 'done'>('idle');
 
@@ -105,6 +112,11 @@ export default function FoodTool() {
   useQueryDefaults((params) => {
     const q = params.get('q');
     if (q && q.length <= 40) setQuery(q);
+    const foodId = params.get('food');
+    if (foodId) {
+      const food = findFood(foodId);
+      if (food) setSelected(food);
+    }
     if (params.get('all') === '1') setShowAll(true);
   });
 
@@ -170,8 +182,8 @@ export default function FoodTool() {
 
   function addSelectedToToday() {
     if (selected == null || gramsValue == null || gramsError) return;
-    const saved = addMealsToToday([{ foodId: selected.id, grams: gramsValue }]);
-    setAddMessage(saved ? `${selected.name} ${fmt(gramsValue, 0)}gを今日の食事に追加しました。` : '追加できませんでした。ブラウザの保存設定を確認してください。');
+    const saved = addMealsToToday([{ foodId: selected.id, grams: gramsValue, mealType }], mealType);
+    setAddMessage(saved ? '今日の食事に追加しました' : '追加できませんでした。ブラウザの保存設定を確認してください。');
   }
 
   async function searchProducts() {
@@ -259,29 +271,20 @@ export default function FoodTool() {
           {scaled && (
             <>
             <div className="food__nutrient-groups" style={{ marginTop: 'var(--s4)' }}>
-              {NUTRIENT_GROUPS.map((group) => (
-                <section key={group.title} className={`food__nutrient-group${group.macro ? ' food__nutrient-group--macro' : ''}`}>
-                  <h3>{group.title}</h3>
-                  <div className="food__nutrient-grid">
-                    {group.nutrients.map((nutrient) => {
-                      const value = scaled[nutrient.key];
-                      const estimated = isEstimated(selected, nutrient.key);
-                      return (
-                        <div key={nutrient.key} className="food__nutrient-card">
-                          <span className="food__nutrient-label">{nutrient.label}{estimated && <span className="food__est" title="成分表で推定値だった項目">推定</span>}</span>
-                          <strong className="food__nutrient-value num">{value == null ? <span className="food__na">データなし</span> : fmt(value, nutrient.digits)}</strong>
-                          <span className="food__nutrient-unit">{value == null ? '' : nutrient.unit}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
+              {NUTRIENT_GROUPS.map((group) => {
+                const cards = <div className="food__nutrient-grid">{group.nutrients.map((nutrient) => {
+                  const value = scaled[nutrient.key];
+                  const estimated = isEstimated(selected, nutrient.key);
+                  return <div key={nutrient.key} className="food__nutrient-card"><span className="food__nutrient-label">{nutrient.label}{estimated && <span className="food__est" title="成分表で推定値だった項目">推定</span>}</span><strong className="food__nutrient-value num">{value == null ? <span className="food__na">データなし</span> : fmt(value, nutrient.digits)}</strong><span className="food__nutrient-unit">{value == null ? '' : nutrient.unit}</span></div>;
+                })}</div>;
+                return group.macro
+                  ? <section key={group.title} className="food__nutrient-group food__nutrient-group--macro"><h3>{group.title}</h3>{cards}</section>
+                  : <details key={group.title} className="food__nutrient-group"><summary>{group.title}を見る</summary><div style={{ marginTop: 'var(--s2)' }}>{cards}</div></details>;
+              })}
             </div>
-            <button type="button" className="button button--block" style={{ marginTop: 'var(--s4)' }} onClick={addSelectedToToday}>
-              今日の食事に追加
-            </button>
-            {addMessage && <p className="tool__status" role="status">{addMessage}</p>}
+            <Segmented label="食事区分" options={MEAL_OPTIONS} value={mealType} onChange={setMealType} />
+            <button type="button" className="button button--block" style={{ marginTop: 'var(--s4)' }} onClick={addSelectedToToday}>今日の食事に追加</button>
+            {addMessage && <div className="app-toast" role="status"><strong>{addMessage}</strong><a href={url('/tools/today#meals')}>今日の記録を見る →</a></div>}
             </>
           )}
 
@@ -406,7 +409,8 @@ export default function FoodTool() {
           <button type="button" className="button" style={{ marginTop: 'var(--s3)' }} onClick={searchProducts} disabled={externalStatus === 'loading'}>
             {externalStatus === 'loading' ? '市販品を検索中…' : '市販品も検索'}
           </button>
-          {externalStatus === 'error' && <p className="tool__status" role="status">市販品データを取得できませんでした。時間をおいてもう一度お試しください。</p>}
+          {externalStatus === 'loading' && <div className="external-food__skeletons" aria-live="polite"><span /><span /><span /></div>}
+          {externalStatus === 'error' && <p className="tool__status" role="status">通信エラーのため市販品データを取得できませんでした。時間をおいてもう一度お試しください。</p>}
           {externalStatus === 'done' && externalFoods.length === 0 && <p className="tool__note" style={{ marginTop: 'var(--s3)' }}>該当する市販品データは見つかりませんでした。</p>}
           {externalFoods.length > 0 && (
             <ul className="external-food__list">
@@ -416,8 +420,8 @@ export default function FoodTool() {
                   <div className="external-food__body">
                     <strong>{food.name}</strong>
                     {food.brand && <span className="external-food__brand">{food.brand}</span>}
-                    {food.barcode && <span className="external-food__barcode">バーコード: {food.barcode}</span>}
                     <span className="external-food__pfc num">100gあたり　{kcalText(food.kcal)} kcal　P {gramText(food.protein)} / F {gramText(food.fat)} / C {gramText(food.carbs)}</span>
+                    {food.barcode && <span className="external-food__barcode">バーコード: {food.barcode}</span>}
                   </div>
                 </li>
               ))}

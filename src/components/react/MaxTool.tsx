@@ -171,6 +171,10 @@ export default function MaxTool({ defaultMode = 'reps' }: Props) {
     [mode, repsValue, rpeValue],
   );
   const repTable = useMemo(() => (oneRm == null ? [] : repTableFromOneRM(oneRm)), [oneRm]);
+  const rmMatrix = useMemo(() => repTable.map((row) => ({
+    weight: row.weight,
+    estimates: repTable.map((target) => estimateOneRM(row.weight, target.reps)?.average ?? null),
+  })), [repTable]);
   const matrix = useMemo(() => (mode === 'rpe' ? buildRpeMatrix(oneRm, TABLE_MAX_REPS) : []), [mode, oneRm]);
   const repList = Array.from({ length: TABLE_MAX_REPS }, (_, index) => index + 1);
   const workingWeight = useMemo(() => {
@@ -248,6 +252,18 @@ export default function MaxTool({ defaultMode = 'reps' }: Props) {
               </table>
             </div>
             <p className="source-note" style={{ marginTop: 'var(--s3)' }}>推定値の換算表なので、ここでは2.5kg刻みに丸めません。実際に組む重量は次のワーキング重量で2.5kg刻みにします。</p>
+          </Slip>
+
+          <Slip code="RM MAP" title="重量 × 回数 RM換算表">
+            <p className="tool__note">縦の重量と横の回数を交差させると、そのセットからの推定1RMが分かります。横に動かして確認できます。</p>
+            <div className="table-scroll rm-table" style={{ marginTop: 'var(--s3)' }}>
+              <table className="rows">
+                <caption className="visually-hidden">重量と回数ごとの推定1RM換算表</caption>
+                <thead><tr><th scope="col">重量</th>{repTable.map((row) => <th scope="col" key={row.reps}>{row.reps}回</th>)}</tr></thead>
+                <tbody>{rmMatrix.map((row) => <tr key={row.weight}><th scope="row" className="num">{fmt(row.weight, 1)}kg</th>{row.estimates.map((estimate, index) => <td key={repTable[index]?.reps} className={row.weight === load && repTable[index]?.reps === repsValue ? 'is-now' : undefined}>{estimate == null ? '—' : `${fmt(estimate, 1)}kg`}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+            <p className="source-note" style={{ marginTop: 'var(--s3)' }}>各セルはBodymakers既存の1RM推定式から動的に計算した参考値です。実際にプレートを組む重量ではありません。</p>
           </Slip>
 
           {!isBodyweight && workingWeight != null && (

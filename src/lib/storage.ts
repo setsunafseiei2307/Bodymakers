@@ -6,7 +6,7 @@
  */
 
 import type { Sex } from './nutrition';
-import type { ExerciseEntry, MealEntry, MuscleGroup } from './today';
+import { MEAL_TYPES, type ExerciseEntry, type MealEntry, type MealType, type MuscleGroup } from './today';
 import {
   STRENGTH_HISTORY_LIMIT,
   normalizeStrengthDiagnosis,
@@ -98,9 +98,15 @@ function normalizeDailyLog(value: unknown): DailyLog | null {
   if (!isRecord(value) || typeof value.date !== 'string') return null;
   const manual = isRecord(value.manualIntake) ? value.manualIntake : {};
   const meals = Array.isArray(value.meals)
-    ? value.meals.filter((item): item is MealEntry =>
-      isRecord(item) && typeof item.foodId === 'string' && finiteOrNull(item.grams) != null,
-    )
+    ? value.meals
+      .filter((item): item is Record<string, unknown> => isRecord(item) && typeof item.foodId === 'string' && finiteOrNull(item.grams) != null)
+      .map((item): MealEntry => ({
+        foodId: item.foodId as string,
+        grams: item.grams as number,
+        ...(typeof item.mealType === 'string' && MEAL_TYPES.includes(item.mealType as MealType)
+          ? { mealType: item.mealType as MealType }
+          : {}),
+      }))
     : [];
   const exercises = Array.isArray(value.exercises)
     ? value.exercises.filter((item): item is ExerciseEntry =>
@@ -242,6 +248,7 @@ export function saveDailyLog(
 /** 食品ページから今日の記録へ、食品成分表のIDと分量だけを渡す。 */
 export function addMealsToToday(
   meals: readonly MealEntry[],
+  mealType: MealType = 'snack',
   storage: Storage | null = browserStorage(),
 ): boolean {
   if (meals.length === 0) return false;
@@ -261,7 +268,7 @@ export function addMealsToToday(
     sleepHours: null,
   };
   return saveDailyLog(
-    { ...log, meals: [...log.meals, ...meals], savedAt: new Date().toISOString() },
+    { ...log, meals: [...log.meals, ...meals.map((meal) => ({ ...meal, mealType: meal.mealType ?? mealType }))], savedAt: new Date().toISOString() },
     storage,
   );
 }

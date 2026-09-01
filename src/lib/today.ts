@@ -23,10 +23,15 @@ import { KCAL_PER_KG_FAT, calcBMR, type BodyInput } from './nutrition';
 /** 運動をしない日の消費を基礎代謝の何倍と見るか。運動ぶんはここに含めない。 */
 export const SEDENTARY_FACTOR = 1.2;
 
+export const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export type MealType = (typeof MEAL_TYPES)[number];
+
 export interface MealEntry {
   /** 成分表の食品番号 */
   foodId: string;
   grams: number;
+  /** 未指定の旧記録はUIで間食として扱う */
+  mealType?: MealType;
 }
 
 export interface ExerciseEntry {

@@ -11,8 +11,15 @@ import { useMemo, useState } from 'react';
 import { fmt } from '../../lib/format';
 import { calcDish, dishesByCategory } from '../../lib/dishes';
 import { FOOD_SOURCE, type NutrientKey } from '../../lib/foods';
-import { Slip } from './ui';
+import { Segmented, Slip } from './ui';
 import { addMealsToToday } from '../../lib/storage';
+import { url } from '../../lib/url';
+import type { MealType } from '../../lib/today';
+
+const MEAL_OPTIONS: { value: MealType; label: string }[] = [
+  { value: 'breakfast', label: '朝食' }, { value: 'lunch', label: '昼食' },
+  { value: 'dinner', label: '夕食' }, { value: 'snack', label: '間食' },
+];
 
 const DISH_MICRONUTRIENT_GROUPS: { title: string; nutrients: { key: NutrientKey; label: string; unit: string; digits: number }[] }[] = [
   { title: 'ビタミン', nutrients: [
@@ -35,6 +42,7 @@ const DISH_MICRONUTRIENT_GROUPS: { title: string; nutrients: { key: NutrientKey;
 export default function DishPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [mealType, setMealType] = useState<MealType>('snack');
 
   // カテゴリごとにまとめて計算しておく。品数が増えたので、
   // 一列に並べると目当ての料理を探しにくい。
@@ -69,10 +77,10 @@ export default function DishPanel() {
                 aria-expanded={open}
                 onClick={() => setOpenId(open ? null : dish.id)}
               >
-                <span className="dish__name">
-                  <span aria-hidden="true">{dish.emoji} </span>
-                  {dish.name}
+                <span className="dish__media" aria-hidden="true">
+                  {dish.imageUrl ? <img src={dish.imageUrl} alt="" className="dish__image" /> : <span className="dish__image dish__image--placeholder">{dish.emoji}</span>}
                 </span>
+                <span className="dish__name">{dish.name}</span>
                 <span className="dish__kcal num">
                   {fmt(totals.kcal, 0)}
                   <small> kcal</small>
@@ -105,16 +113,13 @@ export default function DishPanel() {
                     食物繊維 {fmt(totals.fiber, 1)}g ／ 食塩相当量 {fmt(totals.salt, 1)}g
                   </p>
 
-                  <button
-                    type="button"
-                    className="button button--block"
-                    onClick={() => {
-                      if (addMealsToToday(dish.ingredients)) setSavedId(dish.id);
-                    }}
-                  >
+                  <Segmented label="食事区分" options={MEAL_OPTIONS} value={mealType} onChange={setMealType} />
+                  <button type="button" className="button button--block" onClick={() => {
+                    if (addMealsToToday(dish.ingredients, mealType)) setSavedId(dish.id);
+                  }}>
                     今日の食事に追加
                   </button>
-                  {savedId === dish.id && <p className="tool__status" role="status">{dish.name}を今日の記録に追加しました。</p>}
+                  {savedId === dish.id && <div className="app-toast" role="status"><strong>今日の食事に追加しました</strong><a href={url('/tools/today#meals')}>今日の記録を見る →</a></div>}
 
                   {dish.composite && dish.compositeNote && (
                     <p className="dish__composite">
@@ -140,7 +145,7 @@ export default function DishPanel() {
                         {rows.map((row) => (
                           <tr key={row.food.id}>
                             <th scope="row">
-                              {row.food.name}
+                              <a className="dish__food-link" href={url(`/tools/foods?food=${row.food.id}`)}>{row.food.name}</a>
                               <span className="dish__official">
                                 収載名「{row.food.officialName}」／食品番号 {row.food.id}
                               </span>

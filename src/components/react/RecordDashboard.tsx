@@ -20,7 +20,7 @@ export default function RecordDashboard() {
   const weightDelta = summary.latestWeightKg != null && summary.previousWeightKg != null ? summary.latestWeightKg - summary.previousWeightKg : null;
   return <section className="record-dashboard" aria-labelledby="record-title">
     <header><p className="app-kicker">YOUR PROGRESS</p><h1 id="record-title">続いていることが、見える。</h1><p>{summary.weekStart.replaceAll('-', '/')}〜{summary.weekEnd.replaceAll('-', '/')} の記録です。</p></header>
-    {!hasRecords ? <div className="record-dashboard__empty"><span aria-hidden="true">◌</span><h2>最初の記録を残そう</h2><p>食事・睡眠・トレーニングを少しずつ入れると、今週の進み方がここにまとまります。</p><a className="button" href={url('/tools/today')}>今日を記録する</a></div> : <>
+    {!hasRecords ? <div className="record-dashboard__empty"><span aria-hidden="true">◌</span><h2>まだ記録がありません</h2><p>今日の食事やトレーニングを記録すると、ここに進捗がたまります。</p><div><a className="button" href={url('/tools/today')}>今日を記録する</a><a href={url('/plan')}>Planを作る →</a></div></div> : <>
       <div className="record-dashboard__metrics">
         <article><span>トレーニング</span><strong>{summary.workoutDays}</strong><small>今週の記録日</small></article>
         <article><span>食事</span><strong>{summary.mealRecordDays}</strong><small>今週の記録日</small></article>

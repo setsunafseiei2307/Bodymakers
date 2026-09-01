@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches-ignore: [main]
   pull_request:
 
 # 同じブランチで新しいpushがあったら古い実行は打ち切る
@@ -32,7 +32,7 @@ jobs:
         run: npm test
 
       - name: 本番ビルド
-        run: npm run build:fast
+        run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL || 'https://bodymakers.example.com' }}
 

@@ -9,13 +9,13 @@ const paths = [
   { icon: '◒', title: '筋肉を増やしたい', text: 'Planから、食事とトレーニングの方向を決める。', href: '/plan', cta: '12週間Planを見る' },
   { icon: '◌', title: '痩せたい', text: '目標体重とペースを先に整理する。', href: '/tools/plan', cta: 'ダイエット計画を作る' },
   { icon: '◎', title: '今日の食事を決めたい', text: '食品を記録し、今日の目安までを確認する。', href: '/tools/today', cta: '今日の食事を見る' },
-  { icon: '▰', title: '自分の強さを知りたい', text: 'BIG3の推定1RMと基準を確認する。', href: '/tools/one-rep-max', cta: '1RMを計算する' },
+  { icon: '▰', title: '自分の強さを知りたい', text: 'BIG3の推定1RMと、同じ体格の競技リフター基準を確認する。', href: '/strength-standards', cta: '筋力レベルを診断する' },
 ] as const;
 ---
 <BaseLayout title={title} description="目的からBodymakersのプログラム、筋力、食品、栄養、記事へ進めるライブラリです。">
   <main class="container app-page library-page">
     <header class="app-page__head"><p class="app-kicker">EXPLORE</p><h1>何から始める？</h1><p>詳しく調べるための道具も、今日の行動に進む入口も、目的から選べます。</p></header>
     <section class="library-goals" aria-label="目的から探す">{paths.map((item) => <a href={url(item.href)}><span aria-hidden="true">{item.icon}</span><div><h2>{item.title}</h2><p>{item.text}</p><small>{item.cta} →</small></div></a>)}</section>
-    <section class="library-shelves"><article><span>PROGRAMS</span><h2>Program Library</h2><p>おすすめ、週回数、目的から選び、保存済みの1RMを実際の重量へ変換します。</p><a href={url('/tools/programs')}>プログラムを見る →</a></article><article><span>STRENGTH & RM</span><h2>筋力・RM</h2><p>1RM、RM MAP、Strength Level、プレートとウォームアップ。</p><a href={url('/tools/one-rep-max')}>BIG3を測る →</a></article><article><span>FOOD & NUTRITION</span><h2>食品・栄養</h2><p>文科省食品データ、料理、市販品検索、今日あと何を食べるか。</p><a href={url('/tools/foods')}>食品を探す →</a></article><article><span>ARTICLES</span><h2>読む・理解する</h2><p>筋力、トレーニング、栄養、ダイエットの根拠を、使うツールへつなげます。</p><a href={url('/articles')}>記事を読む →</a></article></section>
+    <section class="library-shelves"><article><span>PROGRAMS</span><h2>Program Library</h2><p>おすすめ、週回数、目的から選び、保存済みの1RMを実際の重量へ変換します。</p><a href={url('/tools/programs')}>プログラムを見る →</a></article><article><span>STRENGTH & RM</span><h2>筋力・RM</h2><p>1RM、RM MAP、Strength Level、プレートとウォームアップ。</p><a href={url('/strength-standards')}>同じ体格の中でどのくらい強い？ →</a><a href={url('/tools/one-rep-max')}>1RM・RM表を開く →</a></article><article><span>FOOD & NUTRITION</span><h2>食品・栄養</h2><p>文科省食品データ、料理、市販品検索、今日あと何を食べるか。</p><a href={url('/tools/foods')}>食品を探す →</a></article><article><span>ARTICLES</span><h2>読む・理解する</h2><p>筋力、トレーニング、栄養、ダイエットの根拠を、使うツールへつなげます。</p><a href={url('/articles')}>記事を読む →</a></article></section>
   </main>
 </BaseLayout>

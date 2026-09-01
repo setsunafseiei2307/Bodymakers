@@ -35,6 +35,7 @@ describe('PROGRAM LIBRARY', () => {
     expect(recommendations).toHaveLength(3);
     expect(recommendations.map((item) => item.definition.id)).toContain('bodymakers-linear');
     expect(recommendations.every((item) => item.reasons.length > 0)).toBe(true);
+    expect(new Set(recommendations.map((item) => item.reasons[0])).size).toBe(recommendations.length);
   });
 
   it('痛みがある診断ではSmolov Jr.をおすすめから外す', () => {

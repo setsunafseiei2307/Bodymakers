@@ -343,6 +343,7 @@ export default function TodayTool() {
 
   return (
     <div className="tool">
+      {!activeProgram && !generatedPersonalPlan && <Slip code="NEXT" title="まず今日の方向を決めよう"><div className="today__first-action"><span aria-hidden="true">◎</span><div><strong>Planを作ると、トレーニング・食事・回復の次の一手がまとまります。</strong><p>食事だけを先に記録したい場合も、下からすぐ始められます。</p></div><a className="button button--block button--lg" href={url('/start')}>診断からPlanを作る</a><a className="button button--ghost button--block" href={url('/tools/programs')}>Programから選ぶ</a><a href="#quick-record">食事だけ記録する →</a></div></Slip>}
       {activeProgram && activeProgramDefinition && (
         <Slip code="ACTIVE" title="今日のトレーニング">
           <div id="active-program" className="today__active-program">

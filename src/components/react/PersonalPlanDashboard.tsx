@@ -31,9 +31,9 @@ export default function PersonalPlanDashboard() {
   if (result == null || data.personalPlan == null) return (
     <section className="personal-plan personal-plan--empty">
       <p className="journey-kicker">YOUR PLAN</p>
-      <h1>まず、なりたい身体を決めましょう。</h1>
-      <p>身体・筋力・食事・生活習慣を順に選ぶと、今の条件に合う12週間の最初の一歩を作れます。</p>
-      <a className="button button--lg" href={url('/start')}>診断をはじめる</a>
+      <h1>まだPlanがありません</h1>
+      <p>身体・筋力・生活をもとに、あなた用の12週間Planを作れます。</p>
+      <div className="personal-plan__empty-actions"><a className="button button--lg" href={url('/start')}>診断をはじめる</a><a href={url('/tools/today')}>Todayを見る →</a></div>
       <p className="journey-privacy">約2〜3分・登録不要・保存先はこの端末だけです。</p>
     </section>
   );

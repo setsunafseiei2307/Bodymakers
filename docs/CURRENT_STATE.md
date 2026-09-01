@@ -3,7 +3,7 @@
 - Repository: `setsunafseiei2307/Bodymakers`
 - Production: <https://bodymakers.shushushu1990.workers.dev/>
 - Production Worker: `bodymakers`
-- Deploy method: build static `dist/`, then deploy with the existing `wrangler.jsonc` configuration.
+- Deploy method: `main` push → GitHub Actions → existing `bodymakers` Worker → production SHA and route smoke test. Codex/local direct deploy is disabled.
 
 ## Main capabilities
 - Goal diagnosis and local 12-week Personal Plan

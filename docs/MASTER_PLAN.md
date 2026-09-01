@@ -26,7 +26,9 @@ Bodymakers is a **daily guide for strength and body building**. It turns a user'
 The MEXT food dataset, official nutrition references, food recommendations, strength standards, 1RM/RM tools, Program Library, daily logs, Personal Plan, articles, and `bodymakers:data:v1` are continuing product assets.
 
 ## Next priorities
-Improve repeat recording speed through recent-food shortcuts and weekly progress, validate retention of the Today flow, add contextual article recommendations, and only then consider deeper workout logging or account sync.
+The first screen of Today must always show the next meaningful action: an active workout, a saved Plan, or an explicit Plan/Program entry point. Keep empty states action-led, improve repeat recording through recent-food shortcuts and weekly progress, validate retention, then add contextual article recommendations before considering deeper workout logging or account sync.
+
+Production is deployed only by the GitHub Actions path documented in `docs/DECISIONS.md`.
 
 ## Deliberately not in scope
 No AI coach, login, cloud database, social feed, marketplace, payments, camera recognition, or native app before the daily journey has proven repeat value.

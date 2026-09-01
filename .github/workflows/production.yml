@@ -1,0 +1,81 @@
+name: Production deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-bodymakers
+  cancel-in-progress: false
+
+env:
+  PRODUCTION_URL: https://bodymakers.shushushu1990.workers.dev
+
+jobs:
+  deploy:
+    name: Verify and deploy Worker bodymakers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build production assets
+        run: npm run build
+        env:
+          SITE_URL: ${{ env.PRODUCTION_URL }}
+
+      - name: Check internal links
+        run: npm run check:links
+
+      - name: Verify existing Worker configuration
+        run: |
+          grep -q '"name": "bodymakers"' wrangler.jsonc
+          grep -q '"directory": "./dist"' wrangler.jsonc
+
+      - name: Deploy existing Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Verify deployed commit
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8; do
+            body="$(curl --fail --silent --show-error "$PRODUCTION_URL/build-info.json" || true)"
+            commit="$(printf '%s' "$body" | node -e 'let input=""; process.stdin.on("data", chunk => input += chunk).on("end", () => { try { process.stdout.write(JSON.parse(input).commit ?? "") } catch {} })')"
+            if [ "$commit" = "$EXPECTED_COMMIT" ]; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Production build-info.json did not match $EXPECTED_COMMIT" >&2
+          exit 1
+
+      - name: Production smoke test
+        run: |
+          for path in / /start/ /plan/ /record/ /library/ /tools/ /tools/today/ /tools/programs/ /tools/one-rep-max/ /tools/foods/ /articles/ /strength-standards/ /build-info.json; do
+            status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$PRODUCTION_URL$path")"
+            test "$status" = "200" || { echo "$path returned HTTP $status" >&2; exit 1; }
+          done
+          curl --fail --silent "$PRODUCTION_URL/tools/today/" | grep -q '今日の栄養バランス'
+          curl --fail --silent "$PRODUCTION_URL/tools/programs/" | grep -q 'PROGRAM LIBRARY'

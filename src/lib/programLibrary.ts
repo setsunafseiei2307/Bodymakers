@@ -164,6 +164,19 @@ export interface ProgramRecommendation {
 const DIFFICULTY_ORDER: Record<ProgramDifficulty, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 const EXPERIENCE_ORDER: Record<TrainingExperience, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 
+/** 同じ入力条件でも、Programごとの選択理由が重複しないようにする。 */
+const PROGRAM_SPECIFIC_REASONS: Record<ProgramId, string> = {
+  'bodymakers-linear': '主種目を毎回少しずつ進め、フォームを安定させやすい',
+  'bodymakers-upper-lower': '上半身・下半身を分けて、週4回のボリュームを回復と両立しやすい',
+  'bodymakers-ppl': 'Push / Pull / Legsで部位ごとの頻度を高めやすい',
+  'bodymakers-gzcl-style': '重い主種目と補助種目を役割別に進められる',
+  'bodymakers-texas-style': '重い日・軽い日を分け、週3回でも強度を保ちやすい',
+  'bodymakers-five-by-five': 'BIG3をシンプルな5×5で反復し、基礎の練習量を確保しやすい',
+  'smolov-jr': '1種目に集中して、高頻度サイクルを短期間で回せる',
+  'bodymakers-full-body': '週2〜3回でも全身の基本動作を無理なく確保しやすい',
+  'wendler-531-reference': '原典を確認しながら長期の筋力計画を組みやすい',
+};
+
 export function programById(id: string): ProgramDefinition | null {
   return PROGRAM_LIBRARY.find((program) => program.id === id) ?? null;
 }
@@ -202,7 +215,7 @@ export function recommendPrograms(input: PersonalPlanInput | null): ProgramRecom
     .filter((program) => !(hasPain && program.id === 'smolov-jr'))
     .map((definition) => {
       let score = 0;
-      const reasons: string[] = [];
+      const reasons: string[] = [PROGRAM_SPECIFIC_REASONS[definition.id]];
       if (definition.goals.includes(goal)) { score += 5; reasons.push(goal === 'hypertrophy' ? '筋肥大が目的' : goal === 'strength' ? '筋力向上が目的' : '健康・習慣づくりが目的'); }
       if (days >= definition.daysPerWeek.min && days <= definition.daysPerWeek.max) { score += 4; reasons.push(`週${days}回のトレーニング頻度に合う`); }
       else score -= Math.min(3, Math.abs(days - Math.max(definition.daysPerWeek.min, Math.min(days, definition.daysPerWeek.max))));

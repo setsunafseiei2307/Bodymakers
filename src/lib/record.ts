@@ -1,3 +1,5 @@
+import { buildPersonalPlan } from './diagnosis/plan';
+import { summarizeIntake } from './today';
 import type { BodymakersData, DailyLog } from './storage';
 
 export interface WeeklyRecordSummary {
@@ -6,6 +8,10 @@ export interface WeeklyRecordSummary {
   workoutDays: number;
   mealRecordDays: number;
   sleepRecordDays: number;
+  proteinTargetDays: number | null;
+  proteinTargetGrams: number | null;
+  activeProgramCompletedSessions: number | null;
+  activeProgramTotalSessions: number | null;
   latestWeightKg: number | null;
   previousWeightKg: number | null;
 }
@@ -28,16 +34,27 @@ function hasWorkout(log: DailyLog): boolean {
   return log.exercises.length > 0 || log.doneExercises.length > 0 || log.muscles.length > 0;
 }
 
+function proteinTarget(data: BodymakersData): number | null {
+  if (data.dietPlan) return data.dietPlan.proteinGrams;
+  return data.personalPlan ? buildPersonalPlan(data.personalPlan.input).nutrition?.protein ?? null : null;
+}
+
 export function buildWeeklyRecordSummary(data: BodymakersData, today = new Date()): WeeklyRecordSummary {
   const { start, end } = weekWindow(today);
   const logs = data.dailyLogs.filter((log) => log.date >= start && log.date <= end);
+  const target = proteinTarget(data);
   const weights = [...data.dailyLogs].filter((log) => log.weightKg != null).sort((a, b) => b.date.localeCompare(a.date));
+  const program = data.activeProgram;
   return {
     weekStart: start,
     weekEnd: end,
     workoutDays: logs.filter(hasWorkout).length,
     mealRecordDays: logs.filter((log) => log.meals.length > 0 || log.manualIntake.kcal != null || log.manualIntake.protein != null).length,
     sleepRecordDays: logs.filter((log) => log.sleepHours != null).length,
+    proteinTargetDays: target == null ? null : logs.filter((log) => (log.manualIntake.protein ?? summarizeIntake(log.meals).totals.protein) >= target).length,
+    proteinTargetGrams: target,
+    activeProgramCompletedSessions: program?.completedSessions ?? null,
+    activeProgramTotalSessions: program ? program.daysPerWeek * program.durationWeeks : null,
     latestWeightKg: weights[0]?.weightKg ?? null,
     previousWeightKg: weights[1]?.weightKg ?? null,
   };

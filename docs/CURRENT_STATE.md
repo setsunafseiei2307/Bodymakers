@@ -12,5 +12,6 @@
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
 - Articles connected to tools
+- Recent-food shortcuts and weekly Protein / active-program progress
 
 All user data remains in `bodymakers:data:v1` in the browser unless a future product explicitly adds consented sync.

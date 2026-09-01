@@ -26,7 +26,7 @@ import {
 } from '../../lib/foods';
 import { NumberField, Segmented, Slip } from './ui';
 import { url } from '../../lib/url';
-import { addMealsToToday } from '../../lib/storage';
+import { addMealsToToday, readData } from '../../lib/storage';
 import { OPEN_FOOD_FACTS_SOURCE, searchExternalFoods, type ExternalFood } from '../../lib/externalFoods';
 import type { MealType } from '../../lib/today';
 
@@ -106,6 +106,7 @@ export default function FoodTool() {
   const [mealType, setMealType] = useState<MealType>('snack');
   const [externalFoods, setExternalFoods] = useState<ExternalFood[]>([]);
   const [externalStatus, setExternalStatus] = useState<'idle' | 'loading' | 'error' | 'done'>('idle');
+  const [recentFoodIds, setRecentFoodIds] = useState<string[]>([]);
 
   // 記事から /tools/foods?q=鶏むね のように送られてくる。
   // 検索語はそのまま検索欄に入れる（絞り込みに使うだけで、表示には出さない）。
@@ -122,6 +123,9 @@ export default function FoodTool() {
 
   const categories = useMemo(() => categorySummaries(), []);
   const commonTotal = useMemo(() => commonFoodCount(), []);
+  const recentFoods = useMemo(() => recentFoodIds.map((id) => findFood(id)).filter((food): food is Food => food != null), [recentFoodIds]);
+
+  useEffect(() => { setRecentFoodIds(readData().recentFoodIds); }, []);
 
   /**
    * 食品を選んだら成分表まで画面を送る。
@@ -184,6 +188,7 @@ export default function FoodTool() {
     if (selected == null || gramsValue == null || gramsError) return;
     const saved = addMealsToToday([{ foodId: selected.id, grams: gramsValue, mealType }], mealType);
     setAddMessage(saved ? '今日の食事に追加しました' : '追加できませんでした。ブラウザの保存設定を確認してください。');
+    if (saved) setRecentFoodIds(readData().recentFoodIds);
   }
 
   async function searchProducts() {
@@ -228,6 +233,8 @@ export default function FoodTool() {
             </p>
           ) : (
             query.trim() === '' && (
+              <>
+              {recentFoods.length > 0 && <section className="food__recent" aria-labelledby="recent-foods-title"><div><h3 id="recent-foods-title">最近使った食品</h3><span>すぐ追加できます</span></div><ul>{recentFoods.map((food) => <li key={food.id}><button type="button" onClick={() => setSelected(food)}><span aria-hidden="true">{food.emoji ?? '🍽️'}</span><strong>{food.name}</strong><small>{fmt(food.kcal, 0)} kcal</small></button></li>)}</ul></section>}
               <div className="food__cats">
                 {categories.map((item) => (
                   <button
@@ -248,6 +255,7 @@ export default function FoodTool() {
                   </button>
                 ))}
               </div>
+              </>
             )
           )}
         </div>

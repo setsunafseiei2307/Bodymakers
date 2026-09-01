@@ -64,6 +64,7 @@ describe('端末内データ', () => {
     expect(data.strengthHistory).toEqual([]);
     expect(data.activeProgram).toBeNull();
     expect(data.programHistory).toEqual([]);
+    expect(data.recentFoodIds).toEqual([]);
   });
 
   it('既存の食事記録を保ち、食事区分を追加できる', () => {
@@ -78,6 +79,7 @@ describe('端末内データ', () => {
       { foodId: '01088', grams: 100 },
       { foodId: '12004', grams: 60, mealType: 'breakfast' },
     ]);
+    expect(readData(storage).recentFoodIds).toEqual(['12004']);
   });
 
   it('料理グループの任意メタデータを保存・再読込できる', () => {

@@ -75,6 +75,8 @@ export interface BodymakersData {
   activeProgram: ActiveProgram | null;
   /** 完了したProgram Library。日々の食事・筋力履歴とは別に端末内へ残す。 */
   programHistory: CompletedProgram[];
+  /** 最近Todayへ追加した食品。既存v1データでは空配列として復元する。 */
+  recentFoodIds: string[];
 }
 
 export interface CompletedProgram extends ActiveProgram {
@@ -92,6 +94,7 @@ export function emptyData(): BodymakersData {
     personalPlan: null,
     activeProgram: null,
     programHistory: [],
+    recentFoodIds: [],
   };
 }
 
@@ -208,6 +211,9 @@ export function parseStoredData(raw: string | null): BodymakersData {
       activeProgram: normalizeActiveProgram(parsed.activeProgram),
       programHistory: Array.isArray(parsed.programHistory)
         ? parsed.programHistory.map(normalizeCompletedProgram).filter((item): item is CompletedProgram => item != null).slice(-24)
+        : [],
+      recentFoodIds: Array.isArray(parsed.recentFoodIds)
+        ? [...new Set(parsed.recentFoodIds.filter((item): item is string => typeof item === 'string' && item.length > 0))].slice(0, 12)
         : [],
     };
   } catch {
@@ -345,10 +351,12 @@ export function addMealsToToday(
     steps: null,
     sleepHours: null,
   };
-  return saveDailyLog(
-    { ...log, meals: [...log.meals, ...meals.map((meal) => ({ ...meal, mealType: meal.mealType ?? mealType }))], savedAt: new Date().toISOString() },
-    storage,
-  );
+  const nextMeals = [...log.meals, ...meals.map((meal) => ({ ...meal, mealType: meal.mealType ?? mealType }))];
+  const recentFoodIds = [...new Set([...meals.map((meal) => meal.foodId), ...data.recentFoodIds])].slice(0, 12);
+  const dailyLogs = [...data.dailyLogs.filter((item) => item.date !== date), { ...log, meals: nextMeals, savedAt: new Date().toISOString() }]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-366);
+  return writeData({ ...data, dailyLogs, recentFoodIds }, storage);
 }
 
 export function todayLog(data: BodymakersData, date = localDateKey()): DailyLog | null {

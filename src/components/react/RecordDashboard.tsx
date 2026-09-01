@@ -26,6 +26,8 @@ export default function RecordDashboard() {
         <article><span>食事</span><strong>{summary.mealRecordDays}</strong><small>今週の記録日</small></article>
         <article><span>睡眠</span><strong>{summary.sleepRecordDays}</strong><small>今週の記録日</small></article>
         <article><span>体重</span><strong>{summary.latestWeightKg == null ? '—' : `${fmt(summary.latestWeightKg, 1)}kg`}</strong><small>{weightDelta == null ? '次の記録を待っています' : `前回比 ${weightDelta > 0 ? '+' : ''}${fmt(weightDelta, 1)}kg`}</small></article>
+        {summary.proteinTargetDays != null && <article><span>Protein</span><strong>{summary.proteinTargetDays}</strong><small>目標 {fmt(summary.proteinTargetGrams, 0)}g を達成した日</small></article>}
+        {summary.activeProgramCompletedSessions != null && <article><span>Program</span><strong>{summary.activeProgramCompletedSessions} / {summary.activeProgramTotalSessions}</strong><small>完了セッション</small></article>}
       </div>
       <section className="record-dashboard__timeline"><div><h2>最近の記録</h2><a href={url('/tools/today')}>今日を更新 →</a></div><ol>{[...data.dailyLogs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7).map((log) => <li key={log.date}><time>{log.date.replaceAll('-', '/')}</time><span>{log.weightKg == null ? '体重未記録' : `${fmt(log.weightKg, 1)}kg`}</span><span>{log.meals.length > 0 ? `食事 ${log.meals.length}件` : '食事未記録'}</span><span>{log.doneExercises.length > 0 || log.exercises.length > 0 ? '運動を記録' : '運動未記録'}</span></li>)}</ol></section>
     </>}

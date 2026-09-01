@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FitnessTool from '../../components/react/FitnessTool';
+import { url } from '../../lib/url';
 import '../../styles/tools.css';
 
 const title = '総合身体能力スコア｜懸垂・5km・BIG3・プランク';
@@ -10,7 +11,7 @@ const description = '懸垂、5kmランニング、体重比BIG3、プランク�
 <BaseLayout title={title} description={description}>
   <div class="container tool-page">
     <header class="tool-page__header">
-      <nav class="breadcrumb" aria-label="パンくず"><a href="/">ホーム</a><span>/</span><a href="/tools/">ツール</a><span>/</span><span>総合身体能力</span></nav>
+      <nav class="breadcrumb" aria-label="パンくず"><a href={url('/')}>ホーム</a><span>/</span><a href={url('/tools/')}>ツール</a><span>/</span><span>総合身体能力</span></nav>
       <p class="tool-page__code">FITNESS ASSESSMENT</p>
       <h1>総合身体能力スコア</h1>
       <p class="tool-page__lead">BIG3だけでは見えない、自重筋力・心肺持久力・体幹を一枚にまとめます。競技者順位とは分け、前回の自分と比べるための指標です。</p>

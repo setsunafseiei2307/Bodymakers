@@ -124,6 +124,13 @@ export function roundToIncrement(weight: number, increment = 2.5): number | null
   return Math.round(weight / increment) * increment;
 }
 
+/** 目標重量を、実際に組めるプレート刻みまで切り上げる。 */
+export function roundUpToIncrement(weight: number, increment = 2.5): number | null {
+  if (!isFiniteNumber(weight) || weight <= 0) return null;
+  if (!isFiniteNumber(increment) || increment <= 0) return null;
+  return Math.ceil((weight - 1e-9) / increment) * increment;
+}
+
 export interface WarmupSet {
   percent: number;
   weightKg: number;

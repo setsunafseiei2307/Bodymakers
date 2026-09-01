@@ -5,7 +5,7 @@
  * 判定ルールがUIに散らばらないようにしている。
  */
 
-import { estimateOneRM, MAX_REPS } from '../onerm';
+import { estimateOneRM, MAX_REPS, roundToIncrement, roundUpToIncrement } from '../onerm';
 import { isFiniteNumber } from '../format';
 import { STRENGTH_STANDARDS } from './standardsData';
 import {
@@ -65,7 +65,17 @@ export interface LiftDiagnosis {
   /** 5段階それぞれの下限重量 */
   thresholds: LevelThreshold[];
   /** 次のレベルと、そこまでの不足分。最上位なら null */
-  nextLevel: { level: LevelDefinition; weightKg: number; deltaKg: number } | null;
+  nextLevel: {
+    level: LevelDefinition;
+    /** 統計上の境界値。詳細・再計算用に保持する */
+    weightKg: number;
+    /** 標準プレートで組める2.5kg刻みの到達重量 */
+    actionableWeightKg: number;
+    /** 現在の推定1RMを2.5kgへ丸めた値からの差 */
+    deltaKg: number;
+  } | null;
+  /** 次に狙う、現在値より1段上の現実的な2.5kg刻みの重量 */
+  nextTargetKg: number;
 }
 
 /** 弱点として指摘する種目。 */
@@ -229,16 +239,24 @@ function findNextLevel(
   current: LevelDefinition,
   thresholds: LevelThreshold[],
   oneRmKg: number,
-): { level: LevelDefinition; weightKg: number; deltaKg: number } | null {
+): LiftDiagnosis['nextLevel'] {
   const currentIndex = LEVELS.findIndex((level) => level.id === current.id);
   if (currentIndex < 0 || currentIndex >= LEVELS.length - 1) return null;
   const next = thresholds[currentIndex + 1];
   if (next == null) return null;
+  const actionableWeightKg = roundUpToIncrement(next.weightKg, 2.5) ?? next.weightKg;
+  const currentBarbellKg = roundToIncrement(oneRmKg, 2.5) ?? oneRmKg;
   return {
     level: next.level,
     weightKg: next.weightKg,
-    deltaKg: Math.max(0, next.weightKg - oneRmKg),
+    actionableWeightKg,
+    deltaKg: Math.max(0, actionableWeightKg - currentBarbellKg),
   };
+}
+
+/** 推定1RMから、まず狙う1段上の実重量を作る。 */
+export function nextBarbellTarget(oneRmKg: number): number {
+  return roundUpToIncrement(oneRmKg + 0.001, 2.5) ?? oneRmKg + 2.5;
 }
 
 /** 1種目分を診断する。基準データが無い場合は null。 */
@@ -272,6 +290,7 @@ function diagnoseLift(
     level,
     thresholds,
     nextLevel: findNextLevel(level, thresholds, estimate.average),
+    nextTargetKg: nextBarbellTarget(estimate.average),
   };
 }
 

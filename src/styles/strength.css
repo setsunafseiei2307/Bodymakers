@@ -75,6 +75,69 @@
   text-align: center;
 }
 
+/* --- BIG3選択 --- */
+
+.lift-picker {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s2);
+}
+
+.lift-picker__option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--s3);
+  align-items: center;
+  min-height: 4.75rem;
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lift-picker__option strong {
+  font-family: var(--f-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.lift-picker__option span {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.lift-picker__option small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.lift-picker__option--active,
+.lift-picker__option[aria-pressed='true'] {
+  border-color: var(--signal);
+  box-shadow: inset 4px 0 0 var(--signal);
+}
+
+.lift-picker__option--active small { color: var(--signal); font-weight: 800; }
+
+@media (min-width: 42rem) {
+  .lift-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lift-picker__option {
+    grid-template-columns: 1fr;
+    align-content: start;
+    min-height: 7rem;
+  }
+  .lift-picker__option span {
+    grid-row: auto;
+    grid-column: auto;
+  }
+}
+
 /* --- 種目ごとの入力ブロック --- */
 
 .lift-input {
@@ -115,6 +178,113 @@
   display: flex;
   flex-direction: column;
   gap: var(--s5);
+}
+
+/* --- 結果の要点。詳細票より先に、行動へ必要な数字だけを見せる --- */
+
+.result-summary {
+  border: 2px solid var(--rule);
+  background: var(--surface);
+}
+
+.result-summary__head {
+  padding: var(--s4);
+  border-bottom: 1px solid var(--hair);
+}
+
+.result-summary__head p {
+  color: var(--signal);
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.result-summary__head h2 { margin-top: var(--s1); font-size: 1.25rem; }
+
+.result-summary__grid { display: grid; }
+
+.result-summary__card {
+  padding: var(--s4);
+  border-bottom: 1px solid var(--hair);
+}
+
+.result-summary__lift {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.result-summary__numbers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+
+.result-summary__numbers p { display: flex; flex-direction: column; }
+.result-summary__numbers span { color: var(--muted); font-size: 0.68rem; }
+.result-summary__numbers strong { color: var(--ink); font-size: 1.8rem; }
+.result-summary__numbers small { margin-left: var(--s1); color: var(--muted); font-size: 0.7rem; }
+
+.result-summary__rank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s3);
+  color: var(--body);
+  font-size: 0.8rem;
+}
+
+.result-summary__rank span {
+  padding: 0 var(--s2);
+  background: var(--ink);
+  color: var(--surface);
+  font-weight: 800;
+}
+
+.result-summary__level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s1);
+  margin-top: var(--s3);
+  color: var(--body);
+  font-size: 0.8rem;
+}
+
+.result-summary__level strong { color: var(--signal); }
+.result-summary__level small { width: 100%; color: var(--muted); }
+
+.result-summary__target {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--s1) var(--s3);
+  margin-top: var(--s4);
+  padding: var(--s3);
+  background: var(--signal-soft);
+}
+
+.result-summary__target span { color: var(--ink); font-size: 0.78rem; font-weight: 900; }
+.result-summary__target strong { color: var(--signal); font-size: 1.55rem; }
+.result-summary__target small { grid-column: 1 / -1; color: var(--muted); font-size: 0.68rem; }
+.result-summary__previous { margin-top: var(--s2); color: var(--muted); font-size: 0.75rem; }
+.result-summary__previous--up strong,
+.lift__comparison--up strong { color: var(--ok); }
+
+.result-summary__scope {
+  padding: var(--s3) var(--s4);
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 48rem) {
+  .result-summary__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .result-summary__card { border-right: 1px solid var(--hair); }
+  .result-summary__card:last-child { border-right: 0; }
 }
 
 .record__body { padding: var(--s4); }
@@ -333,6 +503,7 @@
 }
 
 .lift__delta { color: var(--signal); font-family: var(--f-mono); }
+.lift__comparison { margin-bottom: var(--s3); color: var(--muted); font-size: 0.75rem; }
 
 /* --- 台帳テーブル --- */
 
@@ -446,6 +617,11 @@
   font-size: 0.75rem;
   text-align: center;
 }
+
+.result-save h3 { color: var(--ink); font-size: 1rem; }
+.result-save p { margin: var(--s2) 0 var(--s4); color: var(--body); font-size: 0.82rem; line-height: 1.7; }
+.result-save .button + .button { margin-top: var(--s2); }
+.result-save .result-save__message { margin: var(--s3) 0; color: var(--ok); font-weight: 700; }
 
 /* 判定後の結果が入る領域。中身が無いときは高さを持たせない */
 .strength__result:empty { display: none; }

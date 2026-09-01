@@ -35,7 +35,9 @@ import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
 import { localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
+import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
 import ShareCard from './ShareCard';
+import SavedStrengthSummary from './SavedStrengthSummary';
 import { NumberField, Segmented, SelectField, Slip } from './ui';
 
 /** 検索していないときに出す候補の数 */
@@ -51,6 +53,7 @@ export default function TodayTool() {
   const [sleepHours, setSleepHours] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [dietPlan, setDietPlan] = useState<SavedDietPlan | null>(null);
+  const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -82,8 +85,13 @@ export default function TodayTool() {
       .find((item) => item.weightKg != null);
     const profile = data.profile;
     setDietPlan(data.dietPlan);
+    setStrengthHistory(data.strengthHistory);
 
-    const savedWeight = saved?.weightKg ?? latest?.weightKg ?? profile?.weightKg;
+    const savedWeight =
+      saved?.weightKg ??
+      latest?.weightKg ??
+      profile?.weightKg ??
+      data.strengthProfile?.bodyweightKg;
     if (savedWeight != null) setWeight(String(savedWeight));
     if (saved) {
       setMeals(saved.meals);
@@ -320,6 +328,8 @@ export default function TodayTool() {
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
       </Slip>
+
+      <SavedStrengthSummary history={strengthHistory} title="今日の筋力目標" />
 
       {/* --- 食べたもの --- */}
       <Slip code="EAT" title="食べたもの">

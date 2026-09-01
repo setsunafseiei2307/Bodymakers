@@ -21,6 +21,8 @@ import {
   type LevelThreshold,
   type LiftDiagnosis,
 } from '../../lib/strength/diagnose';
+import type { SavedStrengthDiagnosis, SavedStrengthLift } from '../../lib/strength/history';
+import { roundUpToIncrement } from '../../lib/onerm';
 import ShareCard from './ShareCard';
 import { SITE_NAME } from '../../config/site';
 import { buildShareCard, drawShareCard } from '../../lib/strength/shareCard';
@@ -180,7 +182,10 @@ function ThresholdTable({
         <tbody>
           {thresholds.map((threshold) => {
             const isCurrent = threshold.level.id === currentLevelId;
-            const delta = threshold.weightKg - oneRmKg;
+            const actionableWeight = threshold.weightKg > 0
+              ? roundUpToIncrement(threshold.weightKg, 2.5) ?? threshold.weightKg
+              : 0;
+            const delta = actionableWeight - oneRmKg;
             return (
               <tr key={threshold.level.id} className={isCurrent ? 'ledger__row--now' : undefined}>
                 <th scope="row">
@@ -189,11 +194,11 @@ function ThresholdTable({
                   {isCurrent && <span className="ledger__now">現在</span>}
                 </th>
                 <td className="num">
-                  {threshold.weightKg > 0 ? `${fmt(threshold.weightKg, 1)} kg` : '—'}
+                  {actionableWeight > 0 ? `${fmt(actionableWeight, 1)} kg` : '—'}
                 </td>
                 <td className="num">
-                  {threshold.weightKg > 0 && bodyweightKg > 0
-                    ? `${fmt(threshold.weightKg / bodyweightKg, 2)} 倍`
+                  {actionableWeight > 0 && bodyweightKg > 0
+                    ? `${fmt(actionableWeight / bodyweightKg, 2)} 倍`
                     : '—'}
                 </td>
                 <td className="num">
@@ -215,7 +220,16 @@ function ThresholdTable({
 }
 
 /** 種目1行ぶんの台帳表示。 */
-function LiftRow({ lift, bodyweightKg }: { lift: LiftDiagnosis; bodyweightKg: number }) {
+function LiftRow({
+  lift,
+  bodyweightKg,
+  previous,
+}: {
+  lift: LiftDiagnosis;
+  bodyweightKg: number;
+  previous?: SavedStrengthLift;
+}) {
+  const previousDelta = previous ? lift.oneRmKg - previous.oneRmKg : null;
   return (
     <details className={`lift ${LEVEL_CLASS[lift.level.id]}`}>
       <summary className="lift__row">
@@ -237,12 +251,21 @@ function LiftRow({ lift, bodyweightKg }: { lift: LiftDiagnosis; bodyweightKg: nu
             <>
               <strong>{lift.nextLevel.level.label}</strong>まであと
               <strong className="lift__delta"> {fmt(lift.nextLevel.deltaKg, 1)}kg</strong>
-              （{fmt(lift.nextLevel.weightKg, 1)}kg で到達）
+              （{fmt(lift.nextLevel.actionableWeightKg, 1)}kg で到達）
             </>
           ) : lift.nextLevel == null ? (
             <>最上位レベルに到達しています。</>
           ) : null}
         </p>
+
+        {previousDelta != null && (
+          <p className={previousDelta >= 0 ? 'lift__comparison lift__comparison--up' : 'lift__comparison'}>
+            前回保存 {fmt(previous!.oneRmKg, 1)}kg から
+            <strong className="num">
+              {' '}{previousDelta >= 0 ? '+' : '−'}{fmt(Math.abs(previousDelta), 1)}kg
+            </strong>
+          </p>
+        )}
 
         <ThresholdTable
           thresholds={lift.thresholds}
@@ -261,7 +284,21 @@ function LiftRow({ lift, bodyweightKg }: { lift: LiftDiagnosis; bodyweightKg: nu
   );
 }
 
-export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) {
+interface Props {
+  diagnosis: Diagnosis;
+  previous?: SavedStrengthDiagnosis | null;
+  saved?: boolean;
+  saveMessage?: string;
+  onSave?: () => void;
+}
+
+export default function StrengthResult({
+  diagnosis,
+  previous = null,
+  saved = false,
+  saveMessage = '',
+  onSave,
+}: Props) {
   const { total, lifts, weaknesses, sampleSize, bodyweightKg, sex, generatedAt } = diagnosis;
   const headline = total ?? lifts[0];
   const headlineLabel = total ? '3種目合計' : LIFT_LABELS[lifts[0].lift];
@@ -273,9 +310,64 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
     headlineIndex >= 0 && headlineIndex < LEVELS.length - 1
       ? headline.thresholds[headlineIndex + 1]
       : null;
+  const previousByLift = new Map(previous?.lifts.map((lift) => [lift.lift, lift]) ?? []);
 
   return (
     <section className="result" aria-label="診断結果">
+      <div className="result-summary" aria-label="筋力診断の要点">
+        <div className="result-summary__head">
+          <p>YOUR CURRENT STRENGTH</p>
+          <h2>現在地と、次に狙う重量</h2>
+        </div>
+        <div className="result-summary__grid">
+          {lifts.map((lift) => {
+            const prior = previousByLift.get(lift.lift);
+            const delta = prior ? lift.oneRmKg - prior.oneRmKg : null;
+            return (
+              <article className="result-summary__card" key={lift.lift}>
+                <p className="result-summary__lift">{LIFT_LABELS[lift.lift]}</p>
+                <div className="result-summary__numbers">
+                  <p>
+                    <span>推定1RM</span>
+                    <strong className="num">{fmt(lift.oneRmKg, 1)}<small>kg</small></strong>
+                  </p>
+                  <p>
+                    <span>体重比</span>
+                    <strong className="num">{fmt(lift.bodyweightRatio, 2)}<small>倍</small></strong>
+                  </p>
+                </div>
+                <p className="result-summary__rank">
+                  <span>{lift.level.label}</span>
+                  {rankText(lift.percentile, lift.bound)}
+                </p>
+                {lift.nextLevel ? (
+                  <p className="result-summary__level">
+                    次の{lift.nextLevel.level.label}まで
+                    <strong className="num">あと {fmt(lift.nextLevel.deltaKg, 1)}kg</strong>
+                    <small>到達重量 {fmt(lift.nextLevel.actionableWeightKg, 1)}kg</small>
+                  </p>
+                ) : (
+                  <p className="result-summary__level"><strong>最上位レベル</strong></p>
+                )}
+                <p className="result-summary__target">
+                  <span>まず狙う重量</span>
+                  <strong className="num">{fmt(lift.nextTargetKg, 1)}kg</strong>
+                  <small>2.5kg刻みの推定1RM目標</small>
+                </p>
+                {delta != null && (
+                  <p className={delta >= 0 ? 'result-summary__previous result-summary__previous--up' : 'result-summary__previous'}>
+                    前回比 <strong className="num">{delta >= 0 ? '+' : '−'}{fmt(Math.abs(delta), 1)}kg</strong>
+                  </p>
+                )}
+              </article>
+            );
+          })}
+        </div>
+        <p className="result-summary__scope">
+          順位は一般人口ではなく、公式競技会に出場した競技リフター基準です。
+        </p>
+      </div>
+
       {/* --- リザルト票。スクリーンショットで一番読まれる部分 --- */}
       <div className={`slip record ${LEVEL_CLASS[headline.level.id]}`}>
         <div className="slip__band">
@@ -325,13 +417,48 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
             {lifts.length >= 2 && <Radar lifts={lifts} />}
             <div className="record__lifts">
               {lifts.map((lift) => (
-                <LiftRow key={lift.lift} lift={lift} bodyweightKg={bodyweightKg} />
+                <LiftRow
+                  key={lift.lift}
+                  lift={lift}
+                  bodyweightKg={bodyweightKg}
+                  previous={previousByLift.get(lift.lift)}
+                />
               ))}
               <p className="record__hint">種目名を押すと内訳が開きます</p>
             </div>
           </div>
         </div>
       </div>
+
+      {onSave && (
+        <div className="slip result-save">
+          <div className="slip__band">
+            <span>SAVE</span>
+            <span>次回とTodayへつなぐ</span>
+          </div>
+          <div className="slip__body">
+            <h3>この結果を端末に保存</h3>
+            <p>
+              体重・入力したBIG3・推定1RMをこのブラウザに保存します。
+              サーバーには送信しません。
+            </p>
+            <button
+              type="button"
+              className="button button--lg button--block"
+              onClick={onSave}
+              disabled={saved}
+            >
+              {saved ? '保存済み' : '診断結果を保存する'}
+            </button>
+            {saveMessage && <p className="result-save__message" role="status">{saveMessage}</p>}
+            {saved && (
+              <a className="button button--ghost button--block" href={url('/tools/today')}>
+                Todayで今日の記録を見る
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* この物差しが何なのかを、結果のすぐ下で必ず説明する。
           競技会の記録との比較なので、一般の人の中での順位ではない。
@@ -489,8 +616,7 @@ export default function StrengthResult({ diagnosis }: { diagnosis: Diagnosis }) 
       </div>
 
       <p className="result__save">
-        入力した内容も結果も、この端末の外には送られません。
-        残したい場合は上の共有カードを保存するか、スクリーンショットを撮ってください。
+        入力した内容と保存した結果は、この端末の外には送られません。
       </p>
     </section>
   );

@@ -11,6 +11,7 @@ import {
 } from '../../lib/storage';
 import { summarizeIntake } from '../../lib/today';
 import { url } from '../../lib/url';
+import SavedStrengthSummary from './SavedStrengthSummary';
 
 const STATUS_TEXT = {
   ahead: '予定より少し先行',
@@ -38,7 +39,8 @@ export default function Dashboard() {
   const protein = today?.manualIntake.protein ?? intake?.totals.protein ?? 0;
   const progress = data?.dietPlan ? planProgress(data.dietPlan, data.dailyLogs) : null;
   const trend = data ? weightTrend(data.dailyLogs, 14) : [];
-  const hasData = Boolean(data?.dietPlan || today || (data?.dailyLogs.length ?? 0) > 0);
+  const hasDailyData = Boolean(data?.dietPlan || today || (data?.dailyLogs.length ?? 0) > 0);
+  const hasData = Boolean(hasDailyData || (data?.strengthHistory.length ?? 0) > 0);
 
   if (data == null) {
     return <div className="dashboard dashboard--loading" aria-hidden="true" />;
@@ -77,7 +79,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="dashboard__grid">
+          {hasDailyData && <div className="dashboard__grid">
             <a className="dashboard__metric" href={url('/tools/today')}>
               <span>体重</span>
               <strong className="num">{progress ? fmt(progress.currentWeightKg, 1) : today?.weightKg ? fmt(today.weightKg, 1) : '—'}</strong>
@@ -100,7 +102,7 @@ export default function Dashboard() {
               </strong>
               <small>kg</small>
             </a>
-          </div>
+          </div>}
 
           {data.dietPlan && progress && (
             <div className="dashboard__plan">
@@ -122,6 +124,8 @@ export default function Dashboard() {
               直近{trend.length}回: <strong className="num">{fmt(trend[0]?.weightKg ?? 0, 1)} → {fmt(trend.at(-1)?.weightKg ?? 0, 1)}kg</strong>
             </p>
           )}
+
+          <SavedStrengthSummary history={data.strengthHistory} />
 
           <div className="dashboard__actions">
             <a className="button" href={url('/tools/today')}>今日を記録する</a>

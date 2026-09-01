@@ -100,6 +100,59 @@
 .dashboard__actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
 .dashboard__actions .button { flex: 1 1 10rem; }
 
+/* 保存済みの筋力。Todayとトップで同じ構造を使う。 */
+.saved-strength {
+  margin-top: var(--s4);
+  padding: var(--s4);
+  border: 1px solid var(--hair);
+  border-top: 4px solid var(--data);
+  background: var(--surface);
+}
+
+.saved-strength__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.saved-strength__head p {
+  color: var(--data);
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.saved-strength__head h3 { margin-top: var(--s1); font-size: 1rem; }
+.saved-strength__head a { color: var(--signal); font-size: 0.75rem; font-weight: 800; }
+
+.saved-strength__grid {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s4);
+}
+
+.saved-strength__grid article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s1) var(--s3);
+  padding: var(--s3);
+  background: var(--inset);
+}
+
+.saved-strength__grid article > span { color: var(--muted); font-size: 0.7rem; font-weight: 800; }
+.saved-strength__grid article > strong { grid-row: 1 / 3; grid-column: 2; color: var(--ink); font-size: 1.35rem; }
+.saved-strength__grid article > strong small { margin-left: var(--s1); color: var(--muted); font-size: 0.65rem; }
+.saved-strength__grid article p { color: var(--muted); font-size: 0.7rem; }
+.saved-strength__grid .saved-strength__target { grid-column: 1 / -1; color: var(--body); }
+.saved-strength__target b { color: var(--signal); }
+.saved-strength__note { margin-top: var(--s3); color: var(--muted); font-size: 0.7rem; line-height: 1.6; }
+
+@media (min-width: 42rem) {
+  .saved-strength__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (min-width: 40rem) {
   .dashboard__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

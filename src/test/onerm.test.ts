@@ -9,6 +9,7 @@ import {
   buildWarmupSets,
   platesPerSide,
   roundToIncrement,
+  roundUpToIncrement,
 } from '../lib/onerm';
 
 describe('estimateOneRM — 正常系', () => {
@@ -92,6 +93,12 @@ describe('ウォームアップとプレート計算', () => {
   it('2.5kg刻みに丸める', () => {
     expect(roundToIncrement(97.1)).toBe(97.5);
     expect(roundToIncrement(0)).toBeNull();
+  });
+
+  it('目標重量は2.5kg刻みへ切り上げる', () => {
+    expect(roundUpToIncrement(103.7)).toBe(105);
+    expect(roundUpToIncrement(102.5)).toBe(102.5);
+    expect(roundUpToIncrement(0)).toBeNull();
   });
 
   it('ワーキング重量未満で重複のないセットを作る', () => {

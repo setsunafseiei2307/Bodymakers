@@ -1,17 +1,14 @@
 /**
  * 筋力レベル診断の入力フォーム。
  *
- * 入力値はコンポーネントの state にしか持たない。
- * 送信先が無く、localStorage にも書かないため、リロードすれば完全に消える。
- * （個人情報を保管しない設計方針。診断結果はスクリーンショットで残してもらう前提。）
+ * 診断自体はその場で行い、利用者が保存ボタンを押した場合だけ端末内へ残す。
  */
 
-import { useId, useMemo, useState, type SyntheticEvent } from 'react';
+import { useEffect, useId, useMemo, useState, type SyntheticEvent } from 'react';
 
 import { parseNumber } from '../../lib/format';
 import {
   LIFT_LABELS,
-  LIFT_ORDER,
   MAX_BODYWEIGHT_KG,
   MAX_LIFT_KG,
   MIN_BODYWEIGHT_KG,
@@ -28,6 +25,12 @@ import {
   type LiftInput,
   type ValidationError,
 } from '../../lib/strength/diagnose';
+import {
+  latestStrengthDiagnosis,
+  snapshotDiagnosis,
+  type SavedStrengthDiagnosis,
+} from '../../lib/strength/history';
+import { readData, saveStrengthDiagnosis } from '../../lib/storage';
 import StrengthResult from './StrengthResult';
 
 /** 1種目分のフォーム入力（文字列のまま保持し、送信時に数値へ変換する）。 */
@@ -37,6 +40,12 @@ interface LiftFields {
 }
 
 const EMPTY_LIFT: LiftFields = { weight: '', reps: '' };
+const PICKER_ORDER: readonly LiftId[] = ['bench', 'squat', 'deadlift'];
+const LIFT_ENGLISH: Record<LiftId, string> = {
+  bench: 'BENCH PRESS',
+  squat: 'SQUAT',
+  deadlift: 'DEADLIFT',
+};
 
 /** 種目ごとの補足。何を入力すればよいかを具体的に示す。 */
 const LIFT_HINTS: Record<LiftId, string> = {
@@ -55,9 +64,9 @@ interface Props {
 }
 
 export default function StrengthForm({ quickStart = false }: Props = {}) {
-  // 簡易モードで始めたときだけ、最初は1種目だけを見せる
-  const [expanded, setExpanded] = useState(!quickStart);
   const formId = useId();
+  const [activeLift, setActiveLift] = useState<LiftId>('bench');
+  const [includedLifts, setIncludedLifts] = useState<LiftId[]>(['bench']);
   const [sex, setSex] = useState<Sex>('M');
   const [bodyweight, setBodyweight] = useState('');
   const [lifts, setLifts] = useState<Record<LiftId, LiftFields>>({
@@ -66,14 +75,42 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
     deadlift: { ...EMPTY_LIFT },
   });
   const [result, setResult] = useState<Diagnosis | null>(null);
+  const [previous, setPrevious] = useState<SavedStrengthDiagnosis | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
   const [errors, setErrors] = useState<ValidationError[]>([]);
   /** 一度でも送信を試みたか。初回表示でエラーを出さないための制御 */
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    const data = readData();
+    const strengthProfile = data.strengthProfile;
+    if (strengthProfile) {
+      setSex(strengthProfile.sex);
+      setBodyweight(String(strengthProfile.bodyweightKg));
+      setLifts((current) => {
+        const next = { ...current };
+        for (const lift of PICKER_ORDER) {
+          const savedLift = strengthProfile.lifts[lift];
+          if (savedLift) {
+            next[lift] = {
+              weight: String(savedLift.weightKg),
+              reps: String(savedLift.reps),
+            };
+          }
+        }
+        return next;
+      });
+    } else if (data.profile) {
+      setSex(data.profile.sex === 'female' ? 'F' : 'M');
+      setBodyweight(String(data.profile.weightKg));
+    }
+  }, []);
+
   /** 文字列のフォーム値から診断入力を組み立てる。 */
   const draft = useMemo<DiagnosisInput>(() => {
     const parsedLifts: Partial<Record<LiftId, LiftInput>> = {};
-    for (const lift of LIFT_ORDER) {
+    for (const lift of includedLifts) {
       const field = lifts[lift];
       const weightKg = parseNumber(field.weight);
       const reps = parseNumber(field.reps);
@@ -90,17 +127,23 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
       bodyweightKg: parseNumber(bodyweight) ?? Number.NaN,
       lifts: parsedLifts,
     };
-  }, [sex, bodyweight, lifts]);
+  }, [sex, bodyweight, lifts, includedLifts]);
 
   /** 送信ボタンを押せる状態か（体重と1種目以上が埋まっているか）。 */
   const canSubmit = useMemo(() => {
     const hasBodyweight = parseNumber(bodyweight) != null;
-    const hasAnyLift = LIFT_ORDER.some(
+    const hasAnyLift = includedLifts.some(
       (lift) =>
         parseNumber(lifts[lift].weight) != null && parseNumber(lifts[lift].reps) != null,
     );
     return hasBodyweight && hasAnyLift;
-  }, [bodyweight, lifts]);
+  }, [bodyweight, lifts, includedLifts]);
+
+  function selectLift(lift: LiftId): void {
+    setActiveLift(lift);
+    setIncludedLifts((current) => (current.includes(lift) ? current : [...current, lift]));
+    if (submitted) setErrors([]);
+  }
 
   function updateLift(lift: LiftId, key: keyof LiftFields, value: string): void {
     setLifts((previous) => ({
@@ -122,31 +165,41 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
       return;
     }
 
+    const data = readData();
+    setPrevious(latestStrengthDiagnosis(data.strengthHistory));
+    setSaved(false);
+    setSaveMessage('');
     setResult(diagnose(draft));
+  }
+
+  function handleSave(): void {
+    if (result == null) return;
+    const success = saveStrengthDiagnosis(snapshotDiagnosis(result));
+    setSaved(success);
+    setSaveMessage(
+      success
+        ? 'この端末に保存しました。次回の診断とTodayで再利用できます。'
+        : '保存できませんでした。ブラウザの保存設定を確認してください。',
+    );
   }
 
   function handleReset(): void {
     setSex('M');
     setBodyweight('');
+    setActiveLift('bench');
+    setIncludedLifts(['bench']);
     setLifts({
       squat: { ...EMPTY_LIFT },
       bench: { ...EMPTY_LIFT },
       deadlift: { ...EMPTY_LIFT },
     });
     setResult(null);
+    setPrevious(null);
+    setSaved(false);
+    setSaveMessage('');
     setErrors([]);
     setSubmitted(false);
   }
-
-  /**
-   * 入力欄に出す種目。
-   * 簡易モードではベンチプレスを先頭に置く。最初に測るなら一番馴染みがあるため。
-   */
-  const visibleLifts: LiftId[] = quickStart
-    ? expanded
-      ? ['bench', 'squat', 'deadlift']
-      : ['bench']
-    : [...LIFT_ORDER];
 
   /** 全体エラー（種目に紐づかないもの）。 */
   const globalErrors = errors.filter((error) => error.lift === null);
@@ -238,16 +291,32 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
         </fieldset>
 
         <fieldset className="strength__fieldset">
-          <legend className="strength__legend">
-            {quickStart && !expanded ? 'ベンチプレスの記録' : '挙上重量とレップ数'}
-          </legend>
+          <legend className="strength__legend">診断する種目</legend>
           <p className="strength__lead">
-            {quickStart && !expanded
-              ? '直近で「あと1回は上がらない」ところまで追い込めたセットを入れてください。'
-              : '1種目だけでも診断できます。3種目そろうと合計評価と弱点の指摘が出ます。'}
+            まず1種目を選んでください。ほかの種目を押すとBIG3をまとめて診断できます。
           </p>
 
-          {visibleLifts.map((lift) => {
+          <div className="lift-picker" aria-label="診断するBIG3種目">
+            {PICKER_ORDER.map((lift) => {
+              const included = includedLifts.includes(lift);
+              const hasSavedValue = lifts[lift].weight !== '' && lifts[lift].reps !== '';
+              return (
+                <button
+                  key={lift}
+                  type="button"
+                  className={activeLift === lift ? 'lift-picker__option lift-picker__option--active' : 'lift-picker__option'}
+                  aria-pressed={included}
+                  onClick={() => selectLift(lift)}
+                >
+                  <strong>{LIFT_ENGLISH[lift]}</strong>
+                  <span>{LIFT_LABELS[lift]}</span>
+                  <small>{included ? '診断に含む' : hasSavedValue ? '保存値あり' : '選択する'}</small>
+                </button>
+              );
+            })}
+          </div>
+
+          {[activeLift].map((lift) => {
             const error = errorFor(lift);
             const weightId = `${formId}-${lift}-weight`;
             const repsId = `${formId}-${lift}-reps`;
@@ -259,9 +328,7 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
               <div className="lift-input" key={lift} role="group" aria-label={LIFT_LABELS[lift]}>
                 <div className="lift-input__header">
                   <span className="lift-input__name">{LIFT_LABELS[lift]}</span>
-                  {!(quickStart && !expanded) && (
-                    <p className="lift-input__hint">{LIFT_HINTS[lift]}</p>
-                  )}
+                  <p className="lift-input__hint">{LIFT_HINTS[lift]}</p>
                 </div>
 
                 <div className="lift-input__fields">
@@ -313,9 +380,10 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
             );
           })}
 
-          <p className="strength__note" hidden={quickStart && !expanded}>
+          <p className="strength__note">
             レップ数は1〜{MAX_REPS}回まで対応しています。それ以上の回数からの1RM推定は
             誤差が大きいため計算しません。重量は{MIN_LIFT_KG}〜{MAX_LIFT_KG}kgの範囲です。
+            保存値がある場合は自動入力されますが、診断に含むのは上で選んだ種目だけです。
           </p>
 
           {liftRequiredError ? (
@@ -331,7 +399,7 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
             className="button button--lg button--block"
             disabled={!canSubmit}
           >
-            {quickStart && !expanded ? '筋力レベルを測る' : 'レベルを判定する'}
+            {quickStart ? '筋力レベルを測る' : 'レベルを判定する'}
           </button>
           {(result || submitted) && (
             <button type="button" className="button button--ghost" onClick={handleReset}>
@@ -351,25 +419,13 @@ export default function StrengthForm({ quickStart = false }: Props = {}) {
           （画面が勝手に動くと、入力ミスに気づいたときに戻りにくいため）。 */}
       <div className="strength__result" aria-live="polite">
         {result ? (
-          <>
-            <StrengthResult diagnosis={result} />
-            {quickStart && !expanded && (
-              <div className="upgrade">
-                <p className="upgrade__title">3種目そろえると、もっと分かります</p>
-                <p className="upgrade__text">
-                  スクワットとデッドリフトを足すと、3種目合計のレベル・種目間のバランス・
-                  弱点の指摘が出ます。入力済みの内容はそのまま残ります。
-                </p>
-                <button
-                  type="button"
-                  className="button button--lg button--block"
-                  onClick={() => setExpanded(true)}
-                >
-                  スクワット・デッドリフトも測る
-                </button>
-              </div>
-            )}
-          </>
+          <StrengthResult
+            diagnosis={result}
+            previous={previous}
+            saved={saved}
+            saveMessage={saveMessage}
+            onSave={handleSave}
+          />
         ) : submitted && errors.length > 0 ? (
           <div className="empty">
             <strong className="empty__title">入力を確認してください</strong>

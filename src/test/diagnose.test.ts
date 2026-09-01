@@ -227,6 +227,18 @@ describe('パーセンタイルとレベル判定', () => {
 });
 
 describe('レベル境界の重量表', () => {
+  it('次に狙う重量と次レベル到達重量は2.5kg刻み', () => {
+    const result = diagnose(baseInput())!;
+    for (const lift of result.lifts) {
+      expect(lift.nextTargetKg % 2.5).toBeCloseTo(0, 10);
+      expect(lift.nextTargetKg).toBeGreaterThan(lift.oneRmKg);
+      if (lift.nextLevel) {
+        expect(lift.nextLevel.actionableWeightKg % 2.5).toBeCloseTo(0, 10);
+        expect(lift.nextLevel.actionableWeightKg).toBeGreaterThanOrEqual(lift.nextLevel.weightKg);
+      }
+    }
+  });
+
   it('5段階すべての下限重量が並ぶ', () => {
     const result = diagnose(baseInput())!;
     const thresholds = result.lifts[0].thresholds;

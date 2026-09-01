@@ -7,6 +7,13 @@
 
 import type { Sex } from './nutrition';
 import type { ExerciseEntry, MealEntry, MuscleGroup } from './today';
+import {
+  STRENGTH_HISTORY_LIMIT,
+  normalizeStrengthDiagnosis,
+  normalizeStrengthProfile,
+  type SavedStrengthDiagnosis,
+  type SavedStrengthProfile,
+} from './strength/history';
 
 export const STORAGE_KEY = 'bodymakers:data:v1';
 export const DATA_CHANGED_EVENT = 'bodymakers:data-changed';
@@ -57,10 +64,20 @@ export interface BodymakersData {
   profile: SavedProfile | null;
   dietPlan: SavedDietPlan | null;
   dailyLogs: DailyLog[];
+  /** ユーザー個人の筋力入力。参照用の筋力基準データとは分離して端末内だけに保存する。 */
+  strengthProfile: SavedStrengthProfile | null;
+  strengthHistory: SavedStrengthDiagnosis[];
 }
 
 export function emptyData(): BodymakersData {
-  return { version: 1, profile: null, dietPlan: null, dailyLogs: [] };
+  return {
+    version: 1,
+    profile: null,
+    dietPlan: null,
+    dailyLogs: [],
+    strengthProfile: null,
+    strengthHistory: [],
+  };
 }
 
 /** 端末のローカル日付を YYYY-MM-DD で返す。UTC日付にしない。 */
@@ -120,6 +137,13 @@ export function parseStoredData(raw: string | null): BodymakersData {
       dailyLogs: Array.isArray(parsed.dailyLogs)
         ? parsed.dailyLogs.map(normalizeDailyLog).filter((log): log is DailyLog => log != null).slice(-366)
         : [],
+      strengthProfile: normalizeStrengthProfile(parsed.strengthProfile),
+      strengthHistory: Array.isArray(parsed.strengthHistory)
+        ? parsed.strengthHistory
+            .map(normalizeStrengthDiagnosis)
+            .filter((item): item is SavedStrengthDiagnosis => item != null)
+            .slice(-STRENGTH_HISTORY_LIMIT)
+        : [],
     };
   } catch {
     return emptyData();
@@ -165,6 +189,42 @@ export function saveDietPlan(
 ): boolean {
   const data = readData(storage);
   return writeData({ ...data, dietPlan: plan, profile }, storage);
+}
+
+/** 診断履歴と、次回入力に使う最新の体重・BIG3を同時に保存する。 */
+export function saveStrengthDiagnosis(
+  snapshot: SavedStrengthDiagnosis,
+  storage: Storage | null = browserStorage(),
+): boolean {
+  const data = readData(storage);
+  const savedAt = snapshot.savedAt;
+  const lifts: SavedStrengthProfile['lifts'] = { ...(data.strengthProfile?.lifts ?? {}) };
+  for (const lift of snapshot.lifts) {
+    lifts[lift.lift] = {
+      weightKg: lift.inputWeightKg,
+      reps: lift.reps,
+      oneRmKg: lift.oneRmKg,
+      savedAt,
+    };
+  }
+  const strengthHistory = [
+    ...data.strengthHistory.filter((item) => item.id !== snapshot.id),
+    snapshot,
+  ]
+    .sort((a, b) => a.savedAt.localeCompare(b.savedAt))
+    .slice(-STRENGTH_HISTORY_LIMIT);
+  return writeData(
+    {
+      ...data,
+      strengthProfile: {
+        sex: snapshot.sex,
+        bodyweightKg: snapshot.bodyweightKg,
+        lifts,
+      },
+      strengthHistory,
+    },
+    storage,
+  );
 }
 
 /** 同じ日付の記録は上書きし、最大1年分だけ保持する。 */

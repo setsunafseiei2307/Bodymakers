@@ -78,7 +78,7 @@ export default function PersonalPlanDashboard() {
       </section>
 
       <section className="personal-plan__section">
-        <div className="personal-plan__section-head"><div><p>TRAINING</p><h2>今週の基本メニュー</h2></div><a href={url('/tools/programs')}>4週間プログラムを詳しく作る →</a></div>
+        <div className="personal-plan__section-head"><div><p>TRAINING</p><h2>今週の基本メニュー</h2></div><a href={url('/tools/programs')}>PROGRAM LIBRARYを見る →</a></div>
         <div className="personal-plan__workouts">{result.workouts.map((day) => <article key={day.id}><span>{day.label}</span><h3>{day.focus}</h3><ul>{day.exerciseIds.map((id) => <li key={id}>{findExercise(id)?.name ?? id}</li>)}</ul></article>)}</div>
         <p className="tool__note">これは目的・頻度・場所から選ぶ説明可能な基本テンプレートです。重量・セット数は、既存の1RM・プログラムツールで調整してください。</p>
       </section>

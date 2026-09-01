@@ -6,6 +6,7 @@
  */
 
 import type { Sex } from './nutrition';
+import type { ActiveProgram } from './programLibrary';
 import { normalizePersonalPlan, type SavedPersonalPlan } from './diagnosis/types';
 import { MEAL_TYPES, type ExerciseEntry, type MealEntry, type MealType, type MuscleGroup } from './today';
 import {
@@ -70,6 +71,14 @@ export interface BodymakersData {
   strengthHistory: SavedStrengthDiagnosis[];
   /** なりたい身体から作った端末内専用の診断・12週間Plan。 */
   personalPlan: SavedPersonalPlan | null;
+  /** 実行中のProgram Library。旧v1データには存在しないため安全にnullへ復元する。 */
+  activeProgram: ActiveProgram | null;
+  /** 完了したProgram Library。日々の食事・筋力履歴とは別に端末内へ残す。 */
+  programHistory: CompletedProgram[];
+}
+
+export interface CompletedProgram extends ActiveProgram {
+  completedAt: string;
 }
 
 export function emptyData(): BodymakersData {
@@ -81,6 +90,8 @@ export function emptyData(): BodymakersData {
     strengthProfile: null,
     strengthHistory: [],
     personalPlan: null,
+    activeProgram: null,
+    programHistory: [],
   };
 }
 
@@ -96,6 +107,36 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function finiteOrNull(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function normalizeActiveProgram(value: unknown): ActiveProgram | null {
+  if (!isRecord(value) || typeof value.programId !== 'string' || typeof value.startedAt !== 'string') return null;
+  if (!Number.isInteger(value.currentWeek) || !Number.isInteger(value.currentDay) || !Number.isInteger(value.daysPerWeek) || !Number.isInteger(value.durationWeeks) || !Number.isInteger(value.completedSessions)) return null;
+  if (value.currentWeek < 1 || value.currentDay < 1 || value.daysPerWeek < 1 || value.daysPerWeek > 6 || value.durationWeeks < 1 || value.durationWeeks > 52 || value.completedSessions < 0) return null;
+  if (value.primaryLift !== 'bench' && value.primaryLift !== 'squat' && value.primaryLift !== 'deadlift') return null;
+  const rawMaxes = isRecord(value.trainingMaxes) ? value.trainingMaxes : {};
+  const trainingMaxes: ActiveProgram['trainingMaxes'] = {};
+  for (const lift of ['bench', 'squat', 'deadlift'] as const) {
+    const max = finiteOrNull(rawMaxes[lift]);
+    if (max != null && max > 0 && max <= 600) trainingMaxes[lift] = max;
+  }
+  return {
+    programId: value.programId as ActiveProgram['programId'],
+    startedAt: value.startedAt,
+    currentWeek: value.currentWeek,
+    currentDay: value.currentDay,
+    trainingMaxes,
+    daysPerWeek: value.daysPerWeek,
+    durationWeeks: value.durationWeeks,
+    primaryLift: value.primaryLift,
+    completedSessions: value.completedSessions,
+  };
+}
+
+function normalizeCompletedProgram(value: unknown): CompletedProgram | null {
+  if (!isRecord(value) || typeof value.completedAt !== 'string') return null;
+  const active = normalizeActiveProgram(value);
+  return active == null ? null : { ...active, completedAt: value.completedAt };
 }
 
 function normalizeDailyLog(value: unknown): DailyLog | null {
@@ -158,6 +199,10 @@ export function parseStoredData(raw: string | null): BodymakersData {
             .slice(-STRENGTH_HISTORY_LIMIT)
         : [],
       personalPlan: normalizePersonalPlan(parsed.personalPlan),
+      activeProgram: normalizeActiveProgram(parsed.activeProgram),
+      programHistory: Array.isArray(parsed.programHistory)
+        ? parsed.programHistory.map(normalizeCompletedProgram).filter((item): item is CompletedProgram => item != null).slice(-24)
+        : [],
     };
   } catch {
     return emptyData();
@@ -313,4 +358,39 @@ export function clearBodymakersData(storage: Storage | null = browserStorage()):
   } catch {
     return false;
   }
+}
+
+
+/** Program Libraryを開始する。既存のプロフィール・食事・筋力履歴は変更しない。 */
+export function startActiveProgram(
+  program: ActiveProgram,
+  storage: Storage | null = browserStorage(),
+): boolean {
+  const normalized = normalizeActiveProgram(program);
+  if (normalized == null) return false;
+  const data = readData(storage);
+  return writeData({ ...data, activeProgram: normalized }, storage);
+}
+
+/** 現在の1日を進め、最終日を終えたProgramは履歴へ残す。 */
+export function advanceActiveProgram(
+  action: 'complete' | 'skip',
+  storage: Storage | null = browserStorage(),
+): { activeProgram: ActiveProgram | null; completed: boolean } | null {
+  const data = readData(storage);
+  const current = data.activeProgram;
+  if (current == null) return null;
+  const completedSessions = current.completedSessions + (action === 'complete' ? 1 : 0);
+  const advanced: ActiveProgram = current.currentDay < current.daysPerWeek
+    ? { ...current, currentDay: current.currentDay + 1, completedSessions }
+    : current.currentWeek < current.durationWeeks
+      ? { ...current, currentWeek: current.currentWeek + 1, currentDay: 1, completedSessions }
+      : { ...current, completedSessions };
+  if (current.currentWeek === current.durationWeeks && current.currentDay === current.daysPerWeek) {
+    const completed: CompletedProgram = { ...advanced, completedAt: new Date().toISOString() };
+    const saved = writeData({ ...data, activeProgram: null, programHistory: [...data.programHistory, completed].slice(-24) }, storage);
+    return saved ? { activeProgram: null, completed: true } : null;
+  }
+  const saved = writeData({ ...data, activeProgram: advanced }, storage);
+  return saved ? { activeProgram: advanced, completed: false } : null;
 }

@@ -8,9 +8,12 @@ import {
   saveStrengthDiagnosis,
   addMealsToToday,
   savePersonalPlan,
+  advanceActiveProgram,
+  startActiveProgram,
 } from '../lib/storage';
 import { diagnose } from '../lib/strength/diagnose';
 import { snapshotDiagnosis } from '../lib/strength/history';
+import type { ActiveProgram } from '../lib/programLibrary';
 
 function memoryStorage(): Storage {
   const values = new Map<string, string>();
@@ -59,6 +62,8 @@ describe('端末内データ', () => {
     expect(data.dailyLogs).toHaveLength(1);
     expect(data.strengthProfile).toBeNull();
     expect(data.strengthHistory).toEqual([]);
+    expect(data.activeProgram).toBeNull();
+    expect(data.programHistory).toEqual([]);
   });
 
   it('既存の食事記録を保ち、食事区分を追加できる', () => {
@@ -123,6 +128,18 @@ describe('端末内データ', () => {
       lifts: { bench: { weightKg: 80, reps: 5 } },
     });
     expect(saved.strengthHistory[0]?.lifts[0]?.nextTargetKg % 2.5).toBe(0);
+  });
+
+  it('activeProgramを保存し、完了・スキップでDayを進め、終了時に履歴へ残す', () => {
+    const storage = memoryStorage();
+    const active: ActiveProgram = { programId: 'bodymakers-linear', startedAt: '2026-09-02T00:00:00.000Z', currentWeek: 1, currentDay: 1, trainingMaxes: { bench: 100 }, daysPerWeek: 1, durationWeeks: 2, primaryLift: 'bench', completedSessions: 0 };
+    expect(startActiveProgram(active, storage)).toBe(true);
+    expect(advanceActiveProgram('complete', storage)).toMatchObject({ completed: false, activeProgram: { currentWeek: 2, currentDay: 1, completedSessions: 1 } });
+    expect(advanceActiveProgram('skip', storage)).toMatchObject({ completed: true, activeProgram: null });
+    const data = readData(storage);
+    expect(data.activeProgram).toBeNull();
+    expect(data.programHistory).toHaveLength(1);
+    expect(data.programHistory[0]?.completedSessions).toBe(1);
   });
 
   it('UTCではなく端末のローカル日付を使う', () => {

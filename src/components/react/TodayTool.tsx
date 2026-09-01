@@ -37,8 +37,9 @@ import {
 import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
-import { localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
+import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
+import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
 import ShareCard from './ShareCard';
 import SavedStrengthSummary from './SavedStrengthSummary';
@@ -72,6 +73,8 @@ export default function TodayTool() {
   const [saveMessage, setSaveMessage] = useState('');
   const [dietPlan, setDietPlan] = useState<SavedDietPlan | null>(null);
   const [personalPlan, setPersonalPlan] = useState<SavedPersonalPlan | null>(null);
+  const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
+  const [activeProgramMessage, setActiveProgramMessage] = useState('');
   const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
@@ -106,6 +109,7 @@ export default function TodayTool() {
     const profile = data.profile;
     setDietPlan(data.dietPlan);
     setPersonalPlan(data.personalPlan);
+    setActiveProgram(data.activeProgram);
     setStrengthHistory(data.strengthHistory);
 
     const savedWeight =
@@ -174,6 +178,8 @@ export default function TodayTool() {
     () => (personalPlan ? buildPersonalPlan(personalPlan.input) : null),
     [personalPlan],
   );
+  const activeProgramDefinition = useMemo(() => activeProgram ? programById(activeProgram.programId) : null, [activeProgram]);
+  const activeProgramSession = useMemo(() => activeProgram ? sessionForActiveProgram(activeProgram) : null, [activeProgram]);
   const nutritionTarget = useMemo(() => {
     if (dietPlan) return {
       calories: dietPlan.targetCalories,
@@ -208,6 +214,16 @@ export default function TodayTool() {
     };
     return dayBalance(body, intakeTotals.kcal, exercise.kcal);
   }, [detailed, weightKg, exercise, intakeTotals.kcal, sex, age, height]);
+
+  function advanceProgram(action: 'complete' | 'skip') {
+    const result = advanceActiveProgram(action);
+    if (result == null) {
+      setActiveProgramMessage('進行を保存できませんでした。ブラウザの保存設定を確認してください。');
+      return;
+    }
+    setActiveProgram(result.activeProgram);
+    setActiveProgramMessage(result.completed ? 'プログラムを完了しました。履歴に保存しました。' : action === 'complete' ? '完了を記録して、次のDayへ進みました。' : 'このDayをスキップして、次へ進みました。');
+  }
 
   function addMeal(food: Food) {
     setMeals((list) => [...list, { foodId: food.id, grams: DEFAULT_GRAMS, mealType }]);
@@ -367,6 +383,19 @@ export default function TodayTool() {
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
       </Slip>
+
+      {activeProgram && activeProgramDefinition && (
+        <Slip code="ACTIVE" title="今日のトレーニング">
+          <div id="active-program" className="today__active-program">
+            <span>{activeProgramDefinition.name}</span>
+            <strong>Week {activeProgram.currentWeek} / Day {activeProgram.currentDay}</strong>
+            {activeProgramSession ? <><p>{activeProgramSession.label}／{activeProgramSession.focus}</p><ul>{activeProgramSession.exercises.map((item) => <li key={item.exerciseId}><span>{item.label}</span><strong>{item.weightKg == null ? item.note ?? 'フォームを保てる負荷で' : `${fmt(item.weightKg, 1)}kg`}</strong><small>{item.sets}セット × {item.reps}回</small></li>)}</ul></> : <p>現在のDayを読み込めませんでした。Program Libraryで条件を確認してください。</p>}
+            <a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a>
+            <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
+            {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
+          </div>
+        </Slip>
+      )}
 
       {generatedPersonalPlan && (
         <Slip code="TODAY" title="今日やること">

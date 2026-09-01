@@ -4,8 +4,8 @@ import ProgramTool from '../../components/react/ProgramTool';
 import ToolArticles from '../../components/ToolArticles.astro';
 import '../../styles/tools.css';
 
-const title = 'トレーニングプログラム生成';
-const description = '現在の1RM・トレーニング歴・週の頻度・目的から、4週間の重量とセットを生成します。初心者の線形進歩、中級者の週単位進行、経験者の強度・ボリューム分割に対応。';
+const title = 'PROGRAM LIBRARY';
+const description = '診断の目的・頻度・トレーニング歴から、自分に合うプログラムを選び、保存済み1RMを実際に組める重量へ変換します。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -13,7 +13,7 @@ const description = '現在の1RM・トレーニング歴・週の頻度・目�
     <header class="tool-page__header">
       <p class="tool-page__code">PROGRAM</p>
       <h1>{title}</h1>
-      <p class="tool-page__lead">1RMと通える日数から、次の4週間に「何kgを何回やるか」を作ります。特定の有料プログラムはコピーせず、一般的な負荷管理の原則で組み立てます。</p>
+      <p class="tool-page__lead">診断からおすすめを選び、保存済みの1RMを実際に組める重量へ変換します。特定の有料テンプレートはコピーせず、一般的な負荷管理の原則をBodymakers独自の構成にしています。</p>
       <p class="tool-page__privacy">計算はブラウザ内だけで行います。</p>
     </header>
     <div class="tool-page__body">

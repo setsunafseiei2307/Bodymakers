@@ -96,7 +96,7 @@ export function buildSmolov(
     const workingMax = oneRM + weeklyIncrement * w;
 
     if (isTestWeek) {
-      const targetWeight = roundToIncrement(oneRM + weeklyIncrement * 3, 2.5);
+      const targetWeight = roundToIncrement(oneRM + weeklyIncrement * 3, 2.5) ?? (oneRM + weeklyIncrement * 3);
       weeks.push({
         week: w + 1,
         label: `Week ${w + 1}`,
@@ -121,7 +121,7 @@ export function buildSmolov(
     }
 
     const days: SmolovDay[] = template.map((d) => {
-      const weight = roundToIncrement((workingMax * d.percent) / 100, 2.5);
+      const weight = roundToIncrement((workingMax * d.percent) / 100, 2.5) ?? ((workingMax * d.percent) / 100);
       const totalReps = d.sets * d.reps;
       return {
         label: d.label,

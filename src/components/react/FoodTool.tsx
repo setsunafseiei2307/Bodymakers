@@ -26,6 +26,7 @@ import {
 import { NumberField, Slip } from './ui';
 import { url } from '../../lib/url';
 import { addMealsToToday } from '../../lib/storage';
+import { OPEN_FOOD_FACTS_SOURCE, searchExternalFoods, type ExternalFood } from '../../lib/externalFoods';
 
 type NutrientDisplay = { key: NutrientKey; label: string; unit: string; digits: number };
 
@@ -78,6 +79,8 @@ import { useQueryDefaults } from './useQueryDefaults';
 
 const MAX_GRAMS = 5000;
 const RESULT_LIMIT = 60;
+const kcalText = (value: number | null) => (value == null ? '—' : fmt(value, 0));
+const gramText = (value: number | null) => (value == null ? '—' : `${fmt(value, 1)}g`);
 
 export default function FoodTool() {
   const [query, setQuery] = useState('');
@@ -94,6 +97,8 @@ export default function FoodTool() {
    */
   const [showAll, setShowAll] = useState(false);
   const [addMessage, setAddMessage] = useState('');
+  const [externalFoods, setExternalFoods] = useState<ExternalFood[]>([]);
+  const [externalStatus, setExternalStatus] = useState<'idle' | 'loading' | 'error' | 'done'>('idle');
 
   // 記事から /tools/foods?q=鶏むね のように送られてくる。
   // 検索語はそのまま検索欄に入れる（絞り込みに使うだけで、表示には出さない）。
@@ -169,6 +174,18 @@ export default function FoodTool() {
     setAddMessage(saved ? `${selected.name} ${fmt(gramsValue, 0)}gを今日の食事に追加しました。` : '追加できませんでした。ブラウザの保存設定を確認してください。');
   }
 
+  async function searchProducts() {
+    if (Array.from(query.trim()).length < 2) return;
+    setExternalStatus('loading');
+    setExternalFoods([]);
+    try {
+      setExternalFoods(await searchExternalFoods(query));
+      setExternalStatus('done');
+    } catch {
+      setExternalStatus('error');
+    }
+  }
+
   return (
     <div className="tool">
       <Slip code="SEARCH" title="食品を探す">
@@ -179,6 +196,8 @@ export default function FoodTool() {
             onChange={(value) => {
               setQuery(value);
               setSelected(null);
+              setExternalFoods([]);
+              setExternalStatus('idle');
             }}
             placeholder="鶏むね / まぐろ / ブロッコリー"
             inputMode="decimal"
@@ -378,6 +397,33 @@ export default function FoodTool() {
               )}
             </>
           )}
+        </Slip>
+      )}
+
+      {Array.from(query.trim()).length >= 2 && (
+        <Slip code="PRODUCT" title="市販品データ">
+          <p className="tool__note">文科省の食品データとは別に、{OPEN_FOOD_FACTS_SOURCE.name}の市販品を検索できます。商品は今日の記録へ保存されません。</p>
+          <button type="button" className="button" style={{ marginTop: 'var(--s3)' }} onClick={searchProducts} disabled={externalStatus === 'loading'}>
+            {externalStatus === 'loading' ? '市販品を検索中…' : '市販品も検索'}
+          </button>
+          {externalStatus === 'error' && <p className="tool__status" role="status">市販品データを取得できませんでした。時間をおいてもう一度お試しください。</p>}
+          {externalStatus === 'done' && externalFoods.length === 0 && <p className="tool__note" style={{ marginTop: 'var(--s3)' }}>該当する市販品データは見つかりませんでした。</p>}
+          {externalFoods.length > 0 && (
+            <ul className="external-food__list">
+              {externalFoods.map((food, index) => (
+                <li key={`${food.barcode ?? food.name}-${index}`} className="external-food__item">
+                  {food.imageUrl && <img src={food.imageUrl} alt="" className="external-food__image" loading="lazy" />}
+                  <div className="external-food__body">
+                    <strong>{food.name}</strong>
+                    {food.brand && <span className="external-food__brand">{food.brand}</span>}
+                    {food.barcode && <span className="external-food__barcode">バーコード: {food.barcode}</span>}
+                    <span className="external-food__pfc num">100gあたり　{kcalText(food.kcal)} kcal　P {gramText(food.protein)} / F {gramText(food.fat)} / C {gramText(food.carbs)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="source-note" style={{ marginTop: 'var(--s3)' }}>出典: <a href={OPEN_FOOD_FACTS_SOURCE.url} target="_blank" rel="noopener noreferrer">{OPEN_FOOD_FACTS_SOURCE.name}</a>。登録内容は提供元のデータであり、項目が無い値は補完していません。</p>
         </Slip>
       )}
 

@@ -1054,3 +1054,10 @@
 .food__nutrient-unit { margin-left: .2rem; color: var(--muted); font-size: .6875rem; }
 .food__nutrient-group--macro .food__nutrient-card:first-child { grid-column: span 2; background: var(--signal-soft); }
 @media (min-width: 42rem) { .food__nutrient-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .food__nutrient-group--macro .food__nutrient-card:first-child { grid-column: auto; } }
+
+.external-food__list { display: grid; gap: var(--s2); margin: var(--s4) 0 0; padding: 0; list-style: none; }
+.external-food__item { display: flex; gap: var(--s3); padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--surface-raised); }
+.external-food__image { width: 4.5rem; height: 4.5rem; flex: 0 0 auto; object-fit: contain; border-radius: var(--r-sm); background: var(--surface); }
+.external-food__body { min-width: 0; display: grid; gap: .2rem; }
+.external-food__brand, .external-food__barcode { color: var(--muted); font-size: .75rem; }
+.external-food__pfc { margin-top: .125rem; font-size: .75rem; }

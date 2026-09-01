@@ -111,8 +111,14 @@ function finiteOrNull(value: unknown): number | null {
 
 function normalizeActiveProgram(value: unknown): ActiveProgram | null {
   if (!isRecord(value) || typeof value.programId !== 'string' || typeof value.startedAt !== 'string') return null;
-  if (!Number.isInteger(value.currentWeek) || !Number.isInteger(value.currentDay) || !Number.isInteger(value.daysPerWeek) || !Number.isInteger(value.durationWeeks) || !Number.isInteger(value.completedSessions)) return null;
-  if (value.currentWeek < 1 || value.currentDay < 1 || value.daysPerWeek < 1 || value.daysPerWeek > 6 || value.durationWeeks < 1 || value.durationWeeks > 52 || value.completedSessions < 0) return null;
+  const currentWeek = finiteOrNull(value.currentWeek);
+  const currentDay = finiteOrNull(value.currentDay);
+  const daysPerWeek = finiteOrNull(value.daysPerWeek);
+  const durationWeeks = finiteOrNull(value.durationWeeks);
+  const completedSessions = finiteOrNull(value.completedSessions);
+  if (currentWeek == null || currentDay == null || daysPerWeek == null || durationWeeks == null || completedSessions == null) return null;
+  if (!Number.isInteger(currentWeek) || !Number.isInteger(currentDay) || !Number.isInteger(daysPerWeek) || !Number.isInteger(durationWeeks) || !Number.isInteger(completedSessions)) return null;
+  if (currentWeek < 1 || currentDay < 1 || daysPerWeek < 1 || daysPerWeek > 6 || durationWeeks < 1 || durationWeeks > 52 || completedSessions < 0) return null;
   if (value.primaryLift !== 'bench' && value.primaryLift !== 'squat' && value.primaryLift !== 'deadlift') return null;
   const rawMaxes = isRecord(value.trainingMaxes) ? value.trainingMaxes : {};
   const trainingMaxes: ActiveProgram['trainingMaxes'] = {};
@@ -123,13 +129,13 @@ function normalizeActiveProgram(value: unknown): ActiveProgram | null {
   return {
     programId: value.programId as ActiveProgram['programId'],
     startedAt: value.startedAt,
-    currentWeek: value.currentWeek,
-    currentDay: value.currentDay,
+    currentWeek,
+    currentDay,
     trainingMaxes,
-    daysPerWeek: value.daysPerWeek,
-    durationWeeks: value.durationWeeks,
+    daysPerWeek,
+    durationWeeks,
     primaryLift: value.primaryLift,
-    completedSessions: value.completedSessions,
+    completedSessions,
   };
 }
 

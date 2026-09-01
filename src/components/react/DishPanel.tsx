@@ -10,9 +10,27 @@ import { useMemo, useState } from 'react';
 
 import { fmt } from '../../lib/format';
 import { calcDish, dishesByCategory } from '../../lib/dishes';
-import { FOOD_SOURCE } from '../../lib/foods';
+import { FOOD_SOURCE, type NutrientKey } from '../../lib/foods';
 import { Slip } from './ui';
 import { addMealsToToday } from '../../lib/storage';
+
+const DISH_MICRONUTRIENT_GROUPS: { title: string; nutrients: { key: NutrientKey; label: string; unit: string; digits: number }[] }[] = [
+  { title: 'ビタミン', nutrients: [
+    { key: 'vitaminA', label: 'A', unit: 'μg RAE', digits: 0 }, { key: 'vitaminD', label: 'D', unit: 'μg', digits: 1 },
+    { key: 'vitaminE', label: 'E', unit: 'mg', digits: 1 }, { key: 'vitaminK', label: 'K', unit: 'μg', digits: 0 },
+    { key: 'vitaminB1', label: 'B1', unit: 'mg', digits: 2 }, { key: 'vitaminB2', label: 'B2', unit: 'mg', digits: 2 },
+    { key: 'vitaminB6', label: 'B6', unit: 'mg', digits: 2 }, { key: 'vitaminB12', label: 'B12', unit: 'μg', digits: 1 },
+    { key: 'folate', label: '葉酸', unit: 'μg', digits: 0 }, { key: 'pantothenic', label: 'パントテン酸', unit: 'mg', digits: 2 },
+    { key: 'biotin', label: 'ビオチン', unit: 'μg', digits: 1 }, { key: 'vitaminC', label: 'C', unit: 'mg', digits: 0 },
+  ] },
+  { title: 'ミネラル', nutrients: [
+    { key: 'potassium', label: 'カリウム', unit: 'mg', digits: 0 }, { key: 'calcium', label: 'カルシウム', unit: 'mg', digits: 0 },
+    { key: 'magnesium', label: 'マグネシウム', unit: 'mg', digits: 0 }, { key: 'phosphorus', label: 'リン', unit: 'mg', digits: 0 },
+    { key: 'iron', label: '鉄', unit: 'mg', digits: 1 }, { key: 'zinc', label: '亜鉛', unit: 'mg', digits: 1 },
+    { key: 'copper', label: '銅', unit: 'mg', digits: 2 }, { key: 'manganese', label: 'マンガン', unit: 'mg', digits: 2 },
+    { key: 'sodium', label: 'ナトリウム', unit: 'mg', digits: 0 },
+  ] },
+];
 
 export default function DishPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -41,7 +59,7 @@ export default function DishPanel() {
       <section key={group.category} className="dish__group">
       <h3 className="dish__groupTitle">{group.category}</h3>
       <ul className="dish__list">
-        {group.results.map(({ dish, totals, rows }) => {
+        {group.results.map(({ dish, totals, rows, missing }) => {
           const open = openId === dish.id;
           return (
             <li key={dish.id} className="dish__item">
@@ -135,6 +153,24 @@ export default function DishPanel() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  <div className="dish__micronutrients">
+                    {DISH_MICRONUTRIENT_GROUPS.map((group) => (
+                      <details key={group.title} className="food__nutrient-group">
+                        <summary>{group.title}</summary>
+                        <div className="food__nutrient-grid" style={{ marginTop: 'var(--s2)' }}>
+                          {group.nutrients.map((nutrient) => (
+                            <div key={nutrient.key} className="food__nutrient-card">
+                              <span className="food__nutrient-label">{nutrient.label}</span>
+                              <strong className="food__nutrient-value num">{fmt(totals[nutrient.key], nutrient.digits)}</strong>
+                              <span className="food__nutrient-unit">{nutrient.unit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    ))}
+                    {Object.keys(missing).length > 0 && <p className="tool__note">未測定の材料成分は合計に含めていません。</p>}
                   </div>
 
                   <p className="source-note" style={{ marginTop: 'var(--s3)' }}>

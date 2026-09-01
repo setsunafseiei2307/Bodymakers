@@ -1043,3 +1043,14 @@
 @media (min-width: 40rem) {
   .fitness-components { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.food__nutrient-groups { display: grid; gap: var(--s4); }
+.food__nutrient-group { border-top: 1px solid var(--hair); padding-top: var(--s3); }
+.food__nutrient-group h3 { margin: 0 0 var(--s2); font-size: .875rem; }
+.food__nutrient-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
+.food__nutrient-card { min-width: 0; padding: var(--s2); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--surface-raised); }
+.food__nutrient-label { display: block; color: var(--muted); font-size: .6875rem; }
+.food__nutrient-value { display: inline-block; margin-top: .125rem; font-size: .9375rem; }
+.food__nutrient-unit { margin-left: .2rem; color: var(--muted); font-size: .6875rem; }
+.food__nutrient-group--macro .food__nutrient-card:first-child { grid-column: span 2; background: var(--signal-soft); }
+@media (min-width: 42rem) { .food__nutrient-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .food__nutrient-group--macro .food__nutrient-card:first-child { grid-column: auto; } }

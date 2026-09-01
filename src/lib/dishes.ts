@@ -22,7 +22,7 @@
  */
 
 import { isFiniteNumber } from './format';
-import { findFood, type Food, type NutrientKey } from './foods';
+import { NUTRIENT_KEYS, findFood, type Food, type NutrientKey } from './foods';
 
 export interface DishIngredient {
   /** 成分表の食品番号 */
@@ -511,7 +511,6 @@ export interface DishResult {
   missing: Partial<Record<NutrientKey, number>>;
 }
 
-const NUTRIENT_KEYS: NutrientKey[] = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt'];
 
 /**
  * 料理1食ぶんの成分を出す。

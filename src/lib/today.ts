@@ -16,7 +16,7 @@
  */
 
 import { isFiniteNumber } from './format';
-import { findFood, scaleFood, type NutrientKey } from './foods';
+import { NUTRIENT_KEYS, findFood, scaleFood, type NutrientKey } from './foods';
 import { burnedKcal, findActivity } from './mets';
 import { KCAL_PER_KG_FAT, calcBMR, type BodyInput } from './nutrition';
 
@@ -48,7 +48,6 @@ export interface ExerciseSummary {
   items: { activityId: string; label: string; minutes: number; kcal: number }[];
 }
 
-const NUTRIENT_KEYS: NutrientKey[] = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt'];
 
 /** 食べたものを合計する。 */
 export function summarizeIntake(entries: readonly MealEntry[]): IntakeSummary {

@@ -27,15 +27,53 @@ import { NumberField, Slip } from './ui';
 import { url } from '../../lib/url';
 import { addMealsToToday } from '../../lib/storage';
 
-/** 表示する成分と、その見出し・単位。 */
-const NUTRIENTS: { key: NutrientKey; label: string; unit: string; digits: number }[] = [
-  { key: 'kcal', label: 'エネルギー', unit: 'kcal', digits: 0 },
-  { key: 'protein', label: 'たんぱく質', unit: 'g', digits: 1 },
-  { key: 'fat', label: '脂質', unit: 'g', digits: 1 },
-  { key: 'carbs', label: '炭水化物', unit: 'g', digits: 1 },
-  { key: 'fiber', label: '食物繊維', unit: 'g', digits: 1 },
-  { key: 'salt', label: '食塩相当量', unit: 'g', digits: 2 },
+type NutrientDisplay = { key: NutrientKey; label: string; unit: string; digits: number };
+
+const NUTRIENT_GROUPS: { title: string; macro?: boolean; nutrients: NutrientDisplay[] }[] = [
+  {
+    title: 'カロリー・PFC', macro: true,
+    nutrients: [
+      { key: 'kcal', label: 'エネルギー', unit: 'kcal', digits: 0 },
+      { key: 'protein', label: 'たんぱく質', unit: 'g', digits: 1 },
+      { key: 'fat', label: '脂質', unit: 'g', digits: 1 },
+      { key: 'carbs', label: '炭水化物', unit: 'g', digits: 1 },
+      { key: 'fiber', label: '食物繊維', unit: 'g', digits: 1 },
+      { key: 'salt', label: '食塩相当量', unit: 'g', digits: 2 },
+    ],
+  },
+  {
+    title: 'ミネラル',
+    nutrients: [
+      { key: 'potassium', label: 'カリウム', unit: 'mg', digits: 0 },
+      { key: 'calcium', label: 'カルシウム', unit: 'mg', digits: 0 },
+      { key: 'magnesium', label: 'マグネシウム', unit: 'mg', digits: 0 },
+      { key: 'phosphorus', label: 'リン', unit: 'mg', digits: 0 },
+      { key: 'iron', label: '鉄', unit: 'mg', digits: 1 },
+      { key: 'zinc', label: '亜鉛', unit: 'mg', digits: 1 },
+      { key: 'copper', label: '銅', unit: 'mg', digits: 2 },
+      { key: 'manganese', label: 'マンガン', unit: 'mg', digits: 2 },
+      { key: 'sodium', label: 'ナトリウム', unit: 'mg', digits: 0 },
+    ],
+  },
+  {
+    title: 'ビタミン',
+    nutrients: [
+      { key: 'vitaminA', label: 'ビタミンA', unit: 'μg RAE', digits: 0 },
+      { key: 'vitaminD', label: 'ビタミンD', unit: 'μg', digits: 1 },
+      { key: 'vitaminE', label: 'ビタミンE', unit: 'mg', digits: 1 },
+      { key: 'vitaminK', label: 'ビタミンK', unit: 'μg', digits: 0 },
+      { key: 'vitaminB1', label: 'ビタミンB1', unit: 'mg', digits: 2 },
+      { key: 'vitaminB2', label: 'ビタミンB2', unit: 'mg', digits: 2 },
+      { key: 'vitaminB6', label: 'ビタミンB6', unit: 'mg', digits: 2 },
+      { key: 'vitaminB12', label: 'ビタミンB12', unit: 'μg', digits: 1 },
+      { key: 'folate', label: '葉酸', unit: 'μg', digits: 0 },
+      { key: 'pantothenic', label: 'パントテン酸', unit: 'mg', digits: 2 },
+      { key: 'biotin', label: 'ビオチン', unit: 'μg', digits: 1 },
+      { key: 'vitaminC', label: 'ビタミンC', unit: 'mg', digits: 0 },
+    ],
+  },
 ];
+
 import { useQueryDefaults } from './useQueryDefaults';
 
 const MAX_GRAMS = 5000;
@@ -201,54 +239,25 @@ export default function FoodTool() {
 
           {scaled && (
             <>
-            <div className="table-scroll" style={{ marginTop: 'var(--s4)' }}>
-              <table className="rows">
-                <caption className="visually-hidden">
-                  {selected.name} {fmt(gramsValue, 0)}g あたりの成分値
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">成分</th>
-                    <th scope="col">{fmt(gramsValue, 0)}g あたり</th>
-                    {gramsValue !== 100 && <th scope="col">100g あたり</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {NUTRIENTS.map((nutrient) => {
-                    const value = scaled[nutrient.key];
-                    const base = selected[nutrient.key];
-                    const estimated = isEstimated(selected, nutrient.key);
-                    return (
-                      <tr key={nutrient.key}>
-                        <th scope="row">
-                          {nutrient.label}
-                          {estimated && (
-                            <span className="food__est" title="成分表で推定値だった項目">
-                              推定
-                            </span>
-                          )}
-                        </th>
-                        <td>
-                          {value == null ? (
-                            <span className="food__na">データなし</span>
-                          ) : (
-                            `${fmt(value, nutrient.digits)} ${nutrient.unit}`
-                          )}
-                        </td>
-                        {gramsValue !== 100 && (
-                          <td>
-                            {base == null ? (
-                              <span className="food__na">データなし</span>
-                            ) : (
-                              `${fmt(base, nutrient.digits)} ${nutrient.unit}`
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="food__nutrient-groups" style={{ marginTop: 'var(--s4)' }}>
+              {NUTRIENT_GROUPS.map((group) => (
+                <section key={group.title} className={`food__nutrient-group${group.macro ? ' food__nutrient-group--macro' : ''}`}>
+                  <h3>{group.title}</h3>
+                  <div className="food__nutrient-grid">
+                    {group.nutrients.map((nutrient) => {
+                      const value = scaled[nutrient.key];
+                      const estimated = isEstimated(selected, nutrient.key);
+                      return (
+                        <div key={nutrient.key} className="food__nutrient-card">
+                          <span className="food__nutrient-label">{nutrient.label}{estimated && <span className="food__est" title="成分表で推定値だった項目">推定</span>}</span>
+                          <strong className="food__nutrient-value num">{value == null ? <span className="food__na">データなし</span> : fmt(value, nutrient.digits)}</strong>
+                          <span className="food__nutrient-unit">{value == null ? '' : nutrient.unit}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
             <button type="button" className="button button--block" style={{ marginTop: 'var(--s4)' }} onClick={addSelectedToToday}>
               今日の食事に追加

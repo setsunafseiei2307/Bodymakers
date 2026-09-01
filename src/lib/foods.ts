@@ -3,9 +3,17 @@
 import { isFiniteNumber } from './format';
 import { FOODS } from './foodData';
 
-export type NutrientKey = 'kcal' | 'protein' | 'fat' | 'carbs' | 'fiber' | 'salt';
+export const NUTRIENT_KEYS = [
+  'kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt',
+  'sodium', 'potassium', 'calcium', 'magnesium', 'phosphorus', 'iron', 'zinc', 'copper', 'manganese',
+  'vitaminA', 'vitaminD', 'vitaminE', 'vitaminK', 'vitaminB1', 'vitaminB2', 'vitaminB6', 'vitaminB12',
+  'folate', 'pantothenic', 'biotin', 'vitaminC',
+] as const;
 
-export interface Food {
+export type NutrientKey = (typeof NUTRIENT_KEYS)[number];
+export type NutrientValues = Record<NutrientKey, number | null>;
+
+export type Food = NutrientValues & {
   /** 日本食品標準成分表の食品番号（例: '11227'） */
   id: string;
   /** 検索・表示に使う名前 */
@@ -13,30 +21,13 @@ export interface Food {
   /** 該当する絵文字が無い食品は null。UI側は絵文字なしで表示する */
   emoji: string | null;
   category: string;
-  /** 以下すべて可食部100gあたり。成分表で未測定の項目は null */
-  kcal: number | null;
-  protein: number | null;
-  fat: number | null;
-  carbs: number | null;
-  fiber: number | null;
-  salt: number | null;
   /** 成分表の収載名。出典を追えるようにそのまま保持する */
   officialName: string;
   /** 成分表で括弧付き（推定値）だった項目 */
   estimated?: NutrientKey[];
-  /**
-   * 日常的によく食べられる食品かどうか。
-   *
-   * 成分表には「こめ [水稲穀粒] 半つき米」のように、家庭の食事では
-   * まず出てこない状態のものが多く含まれる。「米」で検索すると85件出るが、
-   * その大半は誰も食べない形の米で、探しているごはんが埋もれる。
-   * そこで一覧の初期表示と検索の並び順だけをこの印で変える。
-   *
-   * 栄養価の扱いは全食品まったく同じで、この印で値が変わることはない。
-   * 印を付ける対象は scripts/food-data/names.py の DISPLAY_NAME にある食品。
-   */
+  /** 日常的によく食べられる食品かどうか。検索・一覧の並び順だけに使う。 */
   common: boolean;
-}
+};
 
 export { FOODS };
 
@@ -234,7 +225,6 @@ export function findFood(id: string): Food | null {
 
 export type ScaledFood = Record<NutrientKey, number | null>;
 
-const NUTRIENT_KEYS: NutrientKey[] = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt'];
 
 /**
  * 指定グラム数ぶんの成分値。収載値は100gあたりなので比例させる。

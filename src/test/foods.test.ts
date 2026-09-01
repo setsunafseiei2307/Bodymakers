@@ -11,22 +11,14 @@ import {
   scaleFood,
   searchFoods,
   type Food,
+  NUTRIENT_KEYS,
   type NutrientKey,
 } from '../lib/foods';
 import source from './foods-source.json';
 
-type SourceRow = {
-  officialName: string;
-  kcal: number | null;
-  protein: number | null;
-  fat: number | null;
-  carbs: number | null;
-  fiber: number | null;
-  salt: number | null;
-};
+type SourceRow = Record<NutrientKey, number | null> & { officialName: string; };
 
 const SOURCE = source as Record<string, SourceRow>;
-const NUTRIENTS: NutrientKey[] = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'salt'];
 
 describe('食品データと成分表の一致', () => {
   it('成分表の全2,538食品を収録している', () => {
@@ -52,7 +44,7 @@ describe('食品データと成分表の一致', () => {
         mismatches.push(`${food.id} が成分表側に存在しない`);
         continue;
       }
-      for (const key of NUTRIENTS) {
+      for (const key of NUTRIENT_KEYS) {
         if (food[key] !== row[key]) {
           mismatches.push(`${food.id} ${food.name} の ${key}: ${food[key]} ≠ ${row[key]}`);
         }
@@ -81,7 +73,7 @@ describe('食品データと成分表の一致', () => {
   it('成分値が負になっていない', () => {
     const negative: string[] = [];
     for (const food of FOODS) {
-      for (const key of NUTRIENTS) {
+      for (const key of NUTRIENT_KEYS) {
         const value = food[key];
         if (value != null && value < 0) negative.push(`${food.id} ${key}`);
       }

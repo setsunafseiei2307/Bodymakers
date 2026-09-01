@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import { DISHES, calcDish } from '../../lib/dishes';
-import { commonFoods, searchFoods, type Food } from '../../lib/foods';
+import { commonFoods, searchFoods, type Food, type NutrientKey } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
 import { parseMealText, type MealTextResult } from '../../lib/mealText';
 import { exercisesByEquipment, findExercise, musclesWorked } from '../../lib/exercises';
@@ -44,6 +44,15 @@ import { NumberField, Segmented, SelectField, Slip } from './ui';
 const SUGGEST_LIMIT = 8;
 /** 追加した食品の初期グラム数 */
 const DEFAULT_GRAMS = 100;
+const TODAY_MICRONUTRIENTS: { key: NutrientKey; label: string; unit: string; digits: number }[] = [
+  { key: 'vitaminA', label: 'ビタミンA', unit: 'μg RAE', digits: 0 }, { key: 'vitaminD', label: 'ビタミンD', unit: 'μg', digits: 1 },
+  { key: 'vitaminB1', label: 'ビタミンB1', unit: 'mg', digits: 2 }, { key: 'vitaminB2', label: 'ビタミンB2', unit: 'mg', digits: 2 },
+  { key: 'vitaminB6', label: 'ビタミンB6', unit: 'mg', digits: 2 }, { key: 'vitaminB12', label: 'ビタミンB12', unit: 'μg', digits: 1 },
+  { key: 'folate', label: '葉酸', unit: 'μg', digits: 0 }, { key: 'vitaminC', label: 'ビタミンC', unit: 'mg', digits: 0 },
+  { key: 'potassium', label: 'カリウム', unit: 'mg', digits: 0 }, { key: 'calcium', label: 'カルシウム', unit: 'mg', digits: 0 },
+  { key: 'magnesium', label: 'マグネシウム', unit: 'mg', digits: 0 }, { key: 'iron', label: '鉄', unit: 'mg', digits: 1 },
+  { key: 'zinc', label: '亜鉛', unit: 'mg', digits: 1 },
+];
 
 export default function TodayTool() {
   const [weight, setWeight] = useState('');
@@ -574,6 +583,20 @@ export default function TodayTool() {
                 </tbody>
               </table>
             </div>
+
+            <details className="food__nutrient-group" style={{ marginTop: 'var(--s4)' }}>
+              <summary>今日のビタミン・ミネラル摂取量</summary>
+              <div className="food__nutrient-grid" style={{ marginTop: 'var(--s2)' }}>
+                {TODAY_MICRONUTRIENTS.map((nutrient) => (
+                  <div key={nutrient.key} className="food__nutrient-card">
+                    <span className="food__nutrient-label">{nutrient.label}</span>
+                    <strong className="food__nutrient-value num">{fmt(intakeTotals[nutrient.key], nutrient.digits)}</strong>
+                    <span className="food__nutrient-unit">{nutrient.unit}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="tool__note" style={{ marginTop: 'var(--s2)' }}>食事摂取基準との比較・不足判定は行いません。</p>
+            </details>
 
             {Object.keys(intake.missing).length > 0 && (
               <p className="tool__note" style={{ marginTop: 'var(--s3)' }}>

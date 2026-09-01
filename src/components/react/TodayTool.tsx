@@ -19,6 +19,8 @@ import { fmt, parseNumber } from '../../lib/format';
 import { buildPersonalPlan } from '../../lib/diagnosis/plan';
 import { DISHES, calcDish, dishMealEntries } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food, type NutrientKey } from '../../lib/foods';
+import { nutritionPriorities, nutritionProgress, recommendFoods } from '../../lib/foodRecommendations';
+import { NUTRITION_REFERENCE_SOURCE } from '../../lib/nutritionReference';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
 import { parseMealText, type MealTextResult } from '../../lib/mealText';
 import { exercisesByEquipment, findExercise, musclesWorked } from '../../lib/exercises';
@@ -75,6 +77,7 @@ export default function TodayTool() {
   const [personalPlan, setPersonalPlan] = useState<SavedPersonalPlan | null>(null);
   const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
   const [activeProgramMessage, setActiveProgramMessage] = useState('');
+  const [nutritionMessage, setNutritionMessage] = useState('');
   const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
@@ -180,6 +183,17 @@ export default function TodayTool() {
   );
   const activeProgramDefinition = useMemo(() => activeProgram ? programById(activeProgram.programId) : null, [activeProgram]);
   const activeProgramSession = useMemo(() => activeProgram ? sessionForActiveProgram(activeProgram) : null, [activeProgram]);
+  const referenceAge = parseNumber(age);
+  const referenceSex = sex;
+  const nutritionProgressItems = useMemo(
+    () => referenceAge != null ? nutritionProgress(intake.totals, referenceSex, referenceAge) : [],
+    [intake.totals, referenceSex, referenceAge],
+  );
+  const nutritionPriorityItems = useMemo(() => nutritionPriorities(nutritionProgressItems), [nutritionProgressItems]);
+  const foodRecommendations = useMemo(
+    () => referenceAge != null ? recommendFoods(intake.totals, referenceSex, referenceAge, 4) : [],
+    [intake.totals, referenceSex, referenceAge],
+  );
   const nutritionTarget = useMemo(() => {
     if (dietPlan) return {
       calories: dietPlan.targetCalories,
@@ -223,6 +237,11 @@ export default function TodayTool() {
     }
     setActiveProgram(result.activeProgram);
     setActiveProgramMessage(result.completed ? 'プログラムを完了しました。履歴に保存しました。' : action === 'complete' ? '完了を記録して、次のDayへ進みました。' : 'このDayをスキップして、次へ進みました。');
+  }
+
+  function addRecommendedFood(food: Food, grams: number) {
+    setMeals((list) => [...list, { foodId: food.id, grams, mealType }]);
+    setNutritionMessage(`${food.name}を${MEAL_OPTIONS.find((option) => option.value === mealType)?.label ?? '食事'}に追加しました。`);
   }
 
   function addMeal(food: Food) {
@@ -382,6 +401,26 @@ export default function TodayTool() {
         </button>
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
+      </Slip>
+
+      <Slip code="BALANCE" title="今日の栄養バランス">
+        {nutritionProgressItems.length === 0 ? <p className="tool__note">プロフィールまたは診断で年齢・性別を保存すると、厚労省の食事摂取基準（2025年版）との今日の進捗を表示します。</p> : <>
+          <div className="nutrition-progress__featured">
+            {(nutritionPriorityItems.length > 0 ? nutritionPriorityItems : nutritionProgressItems.filter((item) => item.kind !== 'dg-max').slice(0, 6)).slice(0, 6).map((item) => <section key={item.nutrient} className={`nutrition-progress nutrition-progress--${item.state}`}>
+              <div><strong>{item.label}</strong><span className="num">{fmt(item.intake, item.digits)} / {fmt(item.value, item.digits)} {item.unit}</span></div>
+              <progress value={Math.min(item.intake, item.value)} max={item.value} />
+              <small>{item.remaining != null && item.remaining > 0 ? `今日の目安まであと${fmt(item.remaining, item.digits)} ${item.unit}` : '今日の目安に到達'}</small>
+            </section>)}
+          </div>
+          <details className="tool__details nutrition-progress__details"><summary>すべての栄養素を見る</summary>
+            {[['ビタミン', ['vitaminA','vitaminD','vitaminE','vitaminK','vitaminB1','vitaminB2','vitaminB6','vitaminB12','folate','pantothenic','biotin','vitaminC']], ['ミネラル', ['potassium','calcium','magnesium','phosphorus','iron','zinc','copper','manganese']], ['その他', ['fiber','salt']]].map(([title, keys]) => <section key={String(title)} className="nutrition-progress__group"><h3>{title}</h3>{nutritionProgressItems.filter((item) => (keys as string[]).includes(item.nutrient)).map((item) => <div key={item.nutrient} className={`nutrition-progress nutrition-progress--${item.state}`}><div><strong>{item.label}</strong>{item.status === 'unresolved' ? <span>基準未確定</span> : <span className="num">{fmt(item.intake, item.digits)} / {fmt(item.value, item.digits)} {item.unit}</span>}</div>{item.status === 'unresolved' ? <small>{item.unresolvedReason}</small> : item.kind === 'dg-max' ? <small>{item.state === 'over' ? '今日は目安を超えています' : `目標上限まであと${fmt(item.remaining ?? 0, item.digits)} ${item.unit}`}</small> : <><progress value={Math.min(item.intake, item.value)} max={item.value} /><small>{item.remaining != null && item.remaining > 0 ? `今日の目安まであと${fmt(item.remaining, item.digits)} ${item.unit}` : '今日の目安に到達'}</small></>}</div>)}</section>)}
+          </details>
+          <section className="nutrition-recommendations"><div className="nutrition-recommendations__heading"><span>WHAT TO EAT</span><h3>今日あと何食べる？</h3><p>成分表の食品から、今日の目安までの距離を埋めやすい候補を出します。</p></div><Segmented label="追加する食事" options={MEAL_OPTIONS} value={mealType} onChange={setMealType} />
+            {foodRecommendations.length === 0 ? <p className="tool__note">表示できる範囲の栄養素は、今日の目安に到達しています。</p> : <div className="nutrition-recommendations__grid">{foodRecommendations.map((recommendation) => <article key={recommendation.food.id} className="nutrition-recommendation-card"><span className="nutrition-recommendation-card__emoji" aria-hidden="true">{recommendation.food.emoji ?? '🍽️'}</span><div><strong>{recommendation.food.name}</strong><small>{recommendation.serving.label}</small></div><p>{recommendation.reason}</p><ul>{recommendation.contributions.slice(0, 2).map((contribution) => <li key={contribution.nutrient.nutrient}>{contribution.nutrient.label} <strong>+{fmt(contribution.value, contribution.nutrient.digits)} {contribution.nutrient.unit}</strong></li>)}</ul><button type="button" className="button button--block" onClick={() => addRecommendedFood(recommendation.food, recommendation.serving.grams)}>今日の食事に追加</button></article>)}</div>}
+            {nutritionMessage && <p className="tool__status" role="status">{nutritionMessage}</p>}
+          </section>
+          <p className="tool__note">1日の値だけで栄養状態を診断するものではありません。栄養成分: 日本食品標準成分表（八訂）増補2023年／基準値: {NUTRITION_REFERENCE_SOURCE.title}・{NUTRITION_REFERENCE_SOURCE.publisher}</p>
+        </>}
       </Slip>
 
       {activeProgram && activeProgramDefinition && (
@@ -670,7 +709,7 @@ export default function TodayTool() {
                   </div>
                 ))}
               </div>
-              <p className="tool__note" style={{ marginTop: 'var(--s2)' }}>食事摂取基準との比較・不足判定は行いません。</p>
+              <p className="tool__note" style={{ marginTop: 'var(--s2)' }}>上部の「今日の栄養バランス」で、年齢・性別に応じた目安との進捗を確認できます。</p>
             </details>
 
             {Object.keys(intake.missing).length > 0 && (

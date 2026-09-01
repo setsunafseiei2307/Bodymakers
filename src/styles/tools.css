@@ -1269,3 +1269,30 @@
   .program-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .program-library__maxes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Official nutrition targets and local food recommendations. */
+.nutrition-progress__featured, .nutrition-recommendations__grid { display: grid; gap: var(--s3); }
+.nutrition-progress { display: grid; gap: var(--s2); padding: var(--s3); border: 1px solid var(--hair); background: var(--surface-raised); }
+.nutrition-progress > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.nutrition-progress strong { color: var(--ink); font-size: .86rem; }
+.nutrition-progress span, .nutrition-progress small { color: var(--muted); font-size: .72rem; }
+.nutrition-progress progress { inline-size: 100%; accent-color: var(--data); }
+.nutrition-progress--met { border-left: 4px solid var(--data); }
+.nutrition-progress--over { border-left: 4px solid var(--signal); background: var(--signal-soft); }
+.nutrition-progress--unresolved { background: var(--inset); }
+.nutrition-progress__details { margin-top: var(--s4); }
+.nutrition-progress__group { display: grid; gap: var(--s2); margin-top: var(--s4); }
+.nutrition-progress__group h3 { color: var(--ink); font-size: .92rem; }
+.nutrition-recommendations { display: grid; gap: var(--s3); margin-top: var(--s5); padding-top: var(--s5); border-top: 1px solid var(--hair); }
+.nutrition-recommendations__heading > span { color: var(--signal); font-family: var(--f-mono); font-size: .68rem; font-weight: 900; letter-spacing: .1em; }
+.nutrition-recommendations__heading h3 { margin-top: var(--s1); color: var(--ink); font-size: 1.15rem; }
+.nutrition-recommendations__heading p { margin-top: var(--s1); color: var(--body); font-size: .82rem; line-height: 1.65; }
+.nutrition-recommendation-card { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--s2) var(--s3); padding: var(--s4); border: 1px solid var(--hair); background: var(--inset); }
+.nutrition-recommendation-card__emoji { display: grid; place-items: center; grid-row: span 2; inline-size: 2.5rem; block-size: 2.5rem; background: var(--surface); font-size: 1.4rem; }
+.nutrition-recommendation-card strong { color: var(--ink); }
+.nutrition-recommendation-card small, .nutrition-recommendation-card p { color: var(--muted); font-size: .75rem; }
+.nutrition-recommendation-card p, .nutrition-recommendation-card ul, .nutrition-recommendation-card .button { grid-column: 1 / -1; }
+.nutrition-recommendation-card ul { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.nutrition-recommendation-card li { display: flex; justify-content: space-between; gap: var(--s2); color: var(--body); font-size: .76rem; }
+.nutrition-recommendation-card li strong { color: var(--signal); font-family: var(--f-mono); }
+@media (min-width: 42rem) { .nutrition-progress__featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nutrition-recommendations__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

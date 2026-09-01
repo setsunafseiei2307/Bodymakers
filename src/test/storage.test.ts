@@ -75,6 +75,14 @@ describe('端末内データ', () => {
     ]);
   });
 
+  it('料理グループの任意メタデータを保存・再読込できる', () => {
+    const data = parseStoredData(JSON.stringify({
+      version: 1,
+      dailyLogs: [{ date: '2026-08-31', meals: [{ foodId: '01088', grams: 100, mealType: 'dinner', dishId: 'katsudon', dishName: 'カツ丼', mealGroupId: 'k-1' }] }],
+    }));
+    expect(data.dailyLogs[0]?.meals[0]).toMatchObject({ dishId: 'katsudon', dishName: 'カツ丼', mealGroupId: 'k-1' });
+  });
+
   it('段階式診断を既存の記録を残したまま保存・再読込できる', () => {
     const storage = memoryStorage();
     expect(addMealsToToday([{ foodId: '01088', grams: 100 }], 'lunch', storage)).toBe(true);

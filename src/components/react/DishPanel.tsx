@@ -9,7 +9,7 @@
 import { useMemo, useState } from 'react';
 
 import { fmt } from '../../lib/format';
-import { calcDish, dishesByCategory } from '../../lib/dishes';
+import { calcDish, dishMealEntries, dishesByCategory } from '../../lib/dishes';
 import { FOOD_SOURCE, type NutrientKey } from '../../lib/foods';
 import { Segmented, Slip } from './ui';
 import { addMealsToToday } from '../../lib/storage';
@@ -115,7 +115,7 @@ export default function DishPanel() {
 
                   <Segmented label="食事区分" options={MEAL_OPTIONS} value={mealType} onChange={setMealType} />
                   <button type="button" className="button button--block" onClick={() => {
-                    if (addMealsToToday(dish.ingredients, mealType)) setSavedId(dish.id);
+                    if (addMealsToToday(dishMealEntries(dish, mealType, `${dish.id}-${Date.now()}`), mealType)) setSavedId(dish.id);
                   }}>
                     今日の食事に追加
                   </button>

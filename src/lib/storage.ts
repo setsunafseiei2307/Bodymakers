@@ -110,6 +110,9 @@ function normalizeDailyLog(value: unknown): DailyLog | null {
         ...(typeof item.mealType === 'string' && MEAL_TYPES.includes(item.mealType as MealType)
           ? { mealType: item.mealType as MealType }
           : {}),
+        ...(typeof item.dishId === 'string' ? { dishId: item.dishId } : {}),
+        ...(typeof item.dishName === 'string' ? { dishName: item.dishName } : {}),
+        ...(typeof item.mealGroupId === 'string' ? { mealGroupId: item.mealGroupId } : {}),
       }))
     : [];
   const exercises = Array.isArray(value.exercises)

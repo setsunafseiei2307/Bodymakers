@@ -221,3 +221,10 @@ export function weeksUntil(target: Date, today: Date = new Date()): number | nul
   if (days <= 0) return null;
   return days / 7;
 }
+
+
+/** ダイエット計算の現在体重・目標体重を、段階式Planの初期入力として渡す。 */
+export function planStartPath(weightKg: number, targetWeightKg: number): string {
+  const params = new URLSearchParams({ weight: String(weightKg), target: String(targetWeightKg) });
+  return `/start?${params.toString()}`;
+}

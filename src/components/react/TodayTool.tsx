@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
 import { buildPersonalPlan } from '../../lib/diagnosis/plan';
-import { DISHES, calcDish } from '../../lib/dishes';
+import { DISHES, calcDish, dishMealEntries } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food, type NutrientKey } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
 import { parseMealText, type MealTextResult } from '../../lib/mealText';
@@ -26,6 +26,7 @@ import { type BodyInput, type Sex } from '../../lib/nutrition';
 import {
   MUSCLE_GROUPS,
   dayBalance,
+  groupIntakeItems,
   summarizeExercise,
   summarizeIntake,
   type ExerciseEntry,
@@ -144,6 +145,7 @@ export default function TodayTool() {
   }, [query]);
 
   const intake = useMemo(() => summarizeIntake(meals), [meals]);
+  const mealCards = useMemo(() => groupIntakeItems(intake.items), [intake.items]);
   const manualKcalValue = parseNumber(manualCalories);
   const manualProteinValue = parseNumber(manualProtein);
   const stepsValue = parseNumber(steps);
@@ -229,10 +231,7 @@ export default function TodayTool() {
   function addDish(dishId: string) {
     const dish = DISHES.find((d) => d.id === dishId);
     if (dish == null) return;
-    setMeals((list) => [
-      ...list,
-      ...dish.ingredients.map((i) => ({ foodId: i.foodId, grams: i.grams, mealType })),
-    ]);
+    setMeals((list) => [...list, ...dishMealEntries(dish, mealType, `${dish.id}-${Date.now()}`)]);
   }
 
   function setGrams(index: number, value: string) {
@@ -309,24 +308,22 @@ export default function TodayTool() {
 
   return (
     <div className="tool">
-      <Slip code="QUICK" title="10秒で今日を記録">
-        {nutritionTarget && (
-          <section className="today__macro-dashboard" aria-label="今日の栄養目標達成状況">
-            <p className="today__dashboard-title">今日の栄養</p>
-            {[
-              { label: 'kcal', value: intakeTotals.kcal, target: nutritionTarget.calories, unit: 'kcal' },
-              { label: 'P', value: intakeTotals.protein, target: nutritionTarget.protein, unit: 'g' },
-              { label: 'F', value: intakeTotals.fat, target: nutritionTarget.fat, unit: 'g' },
-              { label: 'C', value: intakeTotals.carbs, target: nutritionTarget.carbs, unit: 'g' },
-            ].map((item) => (
-              <div className="today__macro-card" key={item.label}>
-                <span>{item.label}</span>
-                <strong className="num">{fmt(item.value, 0)} <small>/ {fmt(item.target, 0)}{item.unit}</small></strong>
-                <progress value={Math.min(item.value, item.target)} max={item.target} />
-              </div>
-            ))}
-          </section>
-        )}
+      <Slip code="QUICK" title="今日の食事">
+        <section className="today__macro-dashboard" aria-label="今日の食事の摂取量">
+          <p className="today__dashboard-title">今日の食事</p>
+          {[
+            { label: 'kcal', value: intakeTotals.kcal, target: nutritionTarget?.calories ?? null, unit: 'kcal' },
+            { label: 'P', value: intakeTotals.protein, target: nutritionTarget?.protein ?? null, unit: 'g' },
+            { label: 'F', value: intakeTotals.fat, target: nutritionTarget?.fat ?? null, unit: 'g' },
+            { label: 'C', value: intakeTotals.carbs, target: nutritionTarget?.carbs ?? null, unit: 'g' },
+          ].map((item) => (
+            <div className="today__macro-card" key={item.label}>
+              <span>{item.label}</span>
+              <strong className="num">{fmt(item.value, 0)} <small>{item.target == null ? item.unit : `/ ${fmt(item.target, 0)}${item.unit}`}</small></strong>
+              {item.target != null && <progress value={Math.min(item.value, item.target)} max={item.target} />}
+            </div>
+          ))}
+        </section>
         <NumberField
           label="今日の体重"
           unit="kg"
@@ -463,39 +460,26 @@ export default function TodayTool() {
           ))}
         </ul>
 
-        {meals.length > 0 && (
-          <div id="meals" className="today__meal-cards">
-            {MEAL_OPTIONS.map((group) => {
-              const entries = intake.items
-                .map((item, index) => ({ item, index, mealType: meals[index]?.mealType ?? 'snack' as MealType }))
-                .filter((entry) => entry.mealType === group.value);
-              if (entries.length === 0) return null;
-              return (
-                <section key={group.value} className="today__meal-card">
-                  <h3>{group.label}</h3>
-                  <ul className="today__list">
-                    {entries.map(({ item, index }) => (
-                      <li className="today__row" key={`${item.foodId}-${index}`}>
-                        <span className="today__row-name">{item.name}</span>
-                        <input
-                          className="today__grams"
-                          type="text"
-                          inputMode="decimal"
-                          value={String(meals[index]?.grams ?? '')}
-                          onChange={(event) => setGrams(index, event.target.value)}
-                          aria-label={`${item.name}のグラム数`}
-                        />
-                        <span className="today__row-unit">g</span>
-                        <span className="today__row-kcal num">{item.kcal == null ? 'データなし' : `${fmt(item.kcal, 0)} kcal`}</span>
-                        <button type="button" className="today__remove" onClick={() => setMeals((list) => list.filter((_, i) => i !== index))} aria-label={`${item.name}を削除`}>×</button>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
-        )}
+        <div id="meals" className="today__meal-cards">
+          {MEAL_OPTIONS.map((group) => {
+            const cards = mealCards.filter((item) => item.mealType === group.value);
+            const kcal = cards.reduce((sum, item) => sum + (item.kcal ?? 0), 0);
+            return (
+              <section key={group.value} className="today__meal-card">
+                <h3><span>{group.label}</span><strong className="num">{cards.length === 0 ? '—' : `${fmt(kcal, 0)} kcal`}</strong></h3>
+                {cards.length === 0 ? <p className="today__meal-empty">まだ追加されていません</p> : <ul className="today__list">
+                  {cards.map((card) => <li className={`today__food-card${card.dishId ? ' today__food-card--dish' : ''}`} key={card.id}>
+                    <div className="today__food-card-head">
+                      <div><strong>{card.name}</strong><span className="num">{card.kcal == null ? 'データなし' : `${fmt(card.kcal, 0)} kcal`}　P {card.protein == null ? '—' : fmt(card.protein, 0)} / F {card.fat == null ? '—' : fmt(card.fat, 0)} / C {card.carbs == null ? '—' : fmt(card.carbs, 0)}</span></div>
+                      <button type="button" className="today__remove" onClick={() => setMeals((list) => list.filter((_, index) => !card.entryIndexes.includes(index)))} aria-label={`${card.name}を削除`}>×</button>
+                    </div>
+                    {card.dishId ? <details className="today__dish-ingredients"><summary>材料を見る（{card.ingredients.length}品）</summary><ul>{card.ingredients.map((ingredient) => <li key={ingredient.entryIndex}><span>{ingredient.name}</span><input className="today__grams" type="text" inputMode="decimal" value={String(meals[ingredient.entryIndex]?.grams ?? '')} onChange={(event) => setGrams(ingredient.entryIndex, event.target.value)} aria-label={`${ingredient.name}のグラム数`} /><span>g</span></li>)}</ul></details> : <div className="today__food-card-single"><input className="today__grams" type="text" inputMode="decimal" value={String(meals[card.entryIndexes[0]]?.grams ?? '')} onChange={(event) => setGrams(card.entryIndexes[0]!, event.target.value)} aria-label={`${card.name}のグラム数`} /><span>g</span></div>}
+                  </li>)}
+                </ul>}
+              </section>
+            );
+          })}
+        </div>
       </Slip>
 
       {/* --- 動いたもの --- */}

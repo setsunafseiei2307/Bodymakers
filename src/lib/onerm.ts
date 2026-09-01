@@ -40,6 +40,17 @@ const FORMULAS: { name: FormulaName; calc: (w: number, r: number) => number }[] 
 /** 回数の上限。これを超えると推定誤差が実用に耐えないため計算しない */
 export const MAX_REPS = 12;
 
+/** RM MAPで回数帯を分けて見せるための表示用区分。推定式の上限とは別に扱う。 */
+export type RmDisplayRange = 'standard' | 'extended' | 'reference' | 'high';
+
+export function rmDisplayRange(reps: number): RmDisplayRange {
+  if (!Number.isFinite(reps) || reps < 1) return 'high';
+  if (reps <= 12) return 'standard';
+  if (reps <= 20) return 'extended';
+  if (reps <= 30) return 'reference';
+  return 'high';
+}
+
 /**
  * 挙上重量と回数から1RMを推定する。
  * 1回の場合はその重量がそのまま1RMなので、式を通さず weight を返す。
@@ -147,11 +158,11 @@ export function buildWarmupSets(
   if (!isFiniteNumber(workingWeightKg) || workingWeightKg <= 0) return [];
   if (!isFiniteNumber(barWeightKg) || barWeightKg <= 0 || barWeightKg > workingWeightKg) return [];
   const template = [
-    { percent: 0, reps: 10, label: 'バーで動作確認' },
-    { percent: 40, reps: 8, label: '軽く温める' },
-    { percent: 55, reps: 5, label: 'フォームを合わせる' },
-    { percent: 70, reps: 3, label: '強度へ近づける' },
-    { percent: 85, reps: 1, label: '最後の準備' },
+    { percent: 0, reps: 10, label: '空バー' },
+    { percent: 40, reps: 8, label: 'ウォームアップ1' },
+    { percent: 55, reps: 5, label: 'ウォームアップ2' },
+    { percent: 70, reps: 3, label: 'ウォームアップ3' },
+    { percent: 85, reps: 1, label: '最終アップ' },
   ];
   const seen = new Set<number>();
   const result: WarmupSet[] = [];

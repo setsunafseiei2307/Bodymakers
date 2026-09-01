@@ -10,6 +10,7 @@ import {
   platesPerSide,
   roundToIncrement,
   roundUpToIncrement,
+  rmDisplayRange,
 } from '../lib/onerm';
 
 describe('estimateOneRM — 正常系', () => {
@@ -166,5 +167,18 @@ describe('weightAtPercent / percentOfOneRM', () => {
     expect(weightAtPercent(200, NaN)).toBeNull();
     expect(percentOfOneRM(100, 0)).toBeNull();
     expect(percentOfOneRM(NaN, 200)).toBeNull();
+  });
+});
+
+
+describe('RM MAPの表示帯', () => {
+  it('1〜30回を標準・拡張・参考に分け、31回以上を高回数として扱う', () => {
+    expect(rmDisplayRange(1)).toBe('standard');
+    expect(rmDisplayRange(12)).toBe('standard');
+    expect(rmDisplayRange(13)).toBe('extended');
+    expect(rmDisplayRange(20)).toBe('extended');
+    expect(rmDisplayRange(21)).toBe('reference');
+    expect(rmDisplayRange(30)).toBe('reference');
+    expect(rmDisplayRange(31)).toBe('high');
   });
 });

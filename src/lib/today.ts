@@ -32,6 +32,10 @@ export interface MealEntry {
   grams: number;
   /** 未指定の旧記録はUIで間食として扱う */
   mealType?: MealType;
+  /** 料理から追加した材料だけが持つ表示用メタデータ。計算は従来どおり食品単位。 */
+  dishId?: string;
+  dishName?: string;
+  mealGroupId?: string;
 }
 
 export interface ExerciseEntry {
@@ -45,8 +49,35 @@ export interface IntakeSummary {
   totals: NutrientTotals;
   /** 成分表で未測定だったため合計に入れられなかった件数（成分ごと） */
   missing: Partial<Record<NutrientKey, number>>;
-  items: { foodId: string; name: string; grams: number; kcal: number | null }[];
+  items: {
+    entryIndex: number;
+    foodId: string;
+    name: string;
+    grams: number;
+    kcal: number | null;
+    protein: number | null;
+    fat: number | null;
+    carbs: number | null;
+    mealType: MealType;
+    dishId?: string;
+    dishName?: string;
+    mealGroupId?: string;
+  }[];
 }
+
+export interface MealDisplayItem {
+  id: string;
+  mealType: MealType;
+  name: string;
+  dishId?: string;
+  entryIndexes: number[];
+  ingredients: IntakeSummary['items'];
+  kcal: number | null;
+  protein: number | null;
+  fat: number | null;
+  carbs: number | null;
+}
+
 
 export interface ExerciseSummary {
   kcal: number;
@@ -60,7 +91,7 @@ export function summarizeIntake(entries: readonly MealEntry[]): IntakeSummary {
   const missing: Partial<Record<NutrientKey, number>> = {};
   const items: IntakeSummary['items'] = [];
 
-  for (const entry of entries) {
+  for (const [entryIndex, entry] of entries.entries()) {
     const food = findFood(entry.foodId);
     if (food == null || !isFiniteNumber(entry.grams) || entry.grams < 0) continue;
 
@@ -72,10 +103,57 @@ export function summarizeIntake(entries: readonly MealEntry[]): IntakeSummary {
       if (value == null) missing[key] = (missing[key] ?? 0) + 1;
       else totals[key] += value;
     }
-    items.push({ foodId: food.id, name: food.name, grams: entry.grams, kcal: scaled.kcal });
+    items.push({
+      entryIndex,
+      foodId: food.id,
+      name: food.name,
+      grams: entry.grams,
+      kcal: scaled.kcal,
+      protein: scaled.protein,
+      fat: scaled.fat,
+      carbs: scaled.carbs,
+      mealType: entry.mealType ?? 'snack',
+      ...(entry.dishId ? { dishId: entry.dishId } : {}),
+      ...(entry.dishName ? { dishName: entry.dishName } : {}),
+      ...(entry.mealGroupId ? { mealGroupId: entry.mealGroupId } : {}),
+    });
   }
 
   return { totals, missing, items };
+}
+
+function totalOrNull(items: IntakeSummary['items'], key: 'kcal' | 'protein' | 'fat' | 'carbs'): number | null {
+  const values = items.map((item) => item[key]).filter((value): value is number => value != null);
+  return values.length === 0 ? null : values.reduce((sum, value) => sum + value, 0);
+}
+
+/**
+ * 材料の記録を壊さず、料理から追加したぶんだけを1枚の表示カードにまとめる。
+ * 古い記録や単品食品は、これまでどおり1食品=1カードとして扱う。
+ */
+export function groupIntakeItems(items: readonly IntakeSummary['items'][number][]): MealDisplayItem[] {
+  const grouped = new Map<string, IntakeSummary['items']>();
+  for (const item of items) {
+    const key = item.mealGroupId && item.dishId ? `dish:${item.mealGroupId}` : `food:${item.entryIndex}`;
+    const current = grouped.get(key) ?? [];
+    current.push(item);
+    grouped.set(key, current);
+  }
+  return [...grouped.entries()].map(([id, ingredients]) => {
+    const first = ingredients[0]!;
+    return {
+      id,
+      mealType: first.mealType,
+      name: first.dishName ?? first.name,
+      ...(first.dishId ? { dishId: first.dishId } : {}),
+      entryIndexes: ingredients.map((item) => item.entryIndex),
+      ingredients,
+      kcal: totalOrNull(ingredients, 'kcal'),
+      protein: totalOrNull(ingredients, 'protein'),
+      fat: totalOrNull(ingredients, 'fat'),
+      carbs: totalOrNull(ingredients, 'carbs'),
+    };
+  });
 }
 
 /** 動いたものを合計する。 */
@@ -86,7 +164,7 @@ export function summarizeExercise(
   const items: ExerciseSummary['items'] = [];
   let kcal = 0;
 
-  for (const entry of entries) {
+  for (const [entryIndex, entry] of entries.entries()) {
     const activity = findActivity(entry.activityId);
     if (activity == null) continue;
     const burned = burnedKcal(activity.mets, entry.minutes, weightKg);

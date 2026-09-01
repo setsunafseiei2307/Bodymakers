@@ -13,6 +13,7 @@ import {
   LEVELS,
   LIFT_ORDER,
   STANDARDS_SOURCE,
+  buildStrengthLevelTable,
   type MetricId,
   type Sex,
 } from '../lib/strength/standards';
@@ -413,5 +414,17 @@ describe('tierProgress', () => {
   it('不正な値では 0 を返す（例外を投げない）', () => {
     expect(tierProgress(Number.NaN)).toBe(0);
     expect(tierProgress(Number.POSITIVE_INFINITY)).toBe(0);
+  });
+});
+
+
+describe('Strength Level表', () => {
+  it('既存アンカーごとに表示用のレベル境界を作り、独自の初心者重量は作らない', () => {
+    const rows = buildStrengthLevelTable(STRENGTH_STANDARDS, 'M', 'bench');
+    expect(rows).toHaveLength(STRENGTH_STANDARDS.anchors.M.length);
+    expect(rows[0]?.bodyweightKg).toBe(STRENGTH_STANDARDS.anchors.M[0]?.bodyweightKg);
+    expect(rows[0]?.levels.beginner).toBeNull();
+    expect(rows[0]?.levels.novice).toBe(STRENGTH_STANDARDS.anchors.M[0]?.percentiles.bench?.[0]);
+    expect(rows[0]?.levels.intermediate).toBe(STRENGTH_STANDARDS.anchors.M[0]?.percentiles.bench?.[2]);
   });
 });

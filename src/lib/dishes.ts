@@ -23,6 +23,7 @@
 
 import { isFiniteNumber } from './format';
 import { NUTRIENT_KEYS, findFood, type Food, type NutrientKey } from './foods';
+import type { MealEntry, MealType } from './today';
 
 export interface DishIngredient {
   /** 成分表の食品番号 */
@@ -569,4 +570,17 @@ export function dishesByCategory(): { category: DishCategory; dishes: Dish[] }[]
     category,
     dishes: DISHES.filter((dish) => dish.category === category),
   })).filter((group) => group.dishes.length > 0);
+}
+
+
+/** 料理の材料を、Todayへ保存する食品単位の記録へ変換する。 */
+export function dishMealEntries(dish: Dish, mealType: MealType, mealGroupId: string): MealEntry[] {
+  return dish.ingredients.map((ingredient) => ({
+    foodId: ingredient.foodId,
+    grams: ingredient.grams,
+    mealType,
+    dishId: dish.id,
+    dishName: dish.name,
+    mealGroupId,
+  }));
 }

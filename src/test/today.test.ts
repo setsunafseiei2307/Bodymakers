@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   SEDENTARY_FACTOR,
   dayBalance,
+  groupIntakeItems,
   summarizeExercise,
   summarizeIntake,
 } from '../lib/today';
@@ -126,5 +127,21 @@ describe('dayBalance', () => {
 
   it('基礎代謝が出せない入力では null', () => {
     expect(dayBalance({ ...body, age: 0 }, 2000, 0)).toBeNull();
+  });
+});
+
+
+describe('Todayの料理表示', () => {
+  it('料理の材料は計算用には分けたまま、表示では1カードにまとめる', () => {
+    const intake = summarizeIntake([
+      { foodId: '01088', grams: 260, mealType: 'dinner', dishId: 'katsudon', dishName: 'カツ丼', mealGroupId: 'katsudon-1' },
+      { foodId: '12004', grams: 50, mealType: 'dinner', dishId: 'katsudon', dishName: 'カツ丼', mealGroupId: 'katsudon-1' },
+      { foodId: '01088', grams: 100, mealType: 'breakfast' },
+    ]);
+    const cards = groupIntakeItems(intake.items);
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toMatchObject({ name: 'カツ丼', mealType: 'dinner', dishId: 'katsudon' });
+    expect(cards[0]?.ingredients).toHaveLength(2);
+    expect(cards[1]).toMatchObject({ mealType: 'breakfast', name: 'ごはん（精白米）' });
   });
 });

@@ -8,6 +8,7 @@ import { readData, savePersonalPlan, type SavedProfile } from '../../lib/storage
 import type { LiftId } from '../../lib/strength/standards';
 import { url } from '../../lib/url';
 import { NumberField, Segmented } from './ui';
+import { useQueryDefaults } from './useQueryDefaults';
 
 const LIFTS: { id: LiftId; label: string }[] = [
   { id: 'bench', label: 'ベンチプレス' },
@@ -99,6 +100,16 @@ export default function Onboarding() {
     }
     setReady(true);
   }, []);
+
+  useQueryDefaults((params) => {
+    const weight = parseNumber(params.get('weight') ?? '');
+    const target = parseNumber(params.get('target') ?? '');
+    setInput((current) => ({
+      ...current,
+      body: weight != null && weight >= 30 && weight <= 300 ? { ...current.body, weightKg: weight } : current.body,
+      targets: target != null && target >= 30 && target <= 300 ? { ...current.targets, weightKg: target } : current.targets,
+    }));
+  });
 
   const result = useMemo(() => buildPersonalPlan(input), [input]);
   const bodyReady = input.body.age >= 13 && input.body.age <= 120 && input.body.heightCm >= 100 && input.body.heightCm <= 250 && input.body.weightKg >= 30 && input.body.weightKg <= 300;

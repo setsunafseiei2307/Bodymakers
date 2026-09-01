@@ -6,6 +6,8 @@
 
 import { isFiniteNumber } from './format';
 import { roundToIncrement } from './onerm';
+import type { PersonalPlanInput } from './diagnosis/types';
+import type { LiftId } from './strength/standards';
 
 export type TrainingExperience = 'beginner' | 'intermediate' | 'advanced';
 export type TrainingGoal = 'strength' | 'muscle' | 'habit';
@@ -16,6 +18,36 @@ export interface ProgramInput {
   experience: TrainingExperience;
   daysPerWeek: number;
   goal: TrainingGoal;
+}
+
+
+
+export interface ProgramDefaults {
+  experience: TrainingExperience;
+  daysPerWeek: number;
+  goal: TrainingGoal;
+}
+
+/** 保存済みの12週間Planを、既存の4週間テンプレートの初期条件へ安全に写す。 */
+export function programDefaultsFromPersonalPlan(input: PersonalPlanInput): ProgramDefaults {
+  const experience: TrainingExperience =
+    input.training.experience === 'overThree' ? 'advanced'
+      : input.training.experience === 'sixToTwelve' || input.training.experience === 'oneToThree' ? 'intermediate'
+        : 'beginner';
+  const goal: TrainingGoal =
+    input.goal === 'strength' || input.training.focus === 'strength' ? 'strength'
+      : input.goal === 'muscle' || input.goal === 'recomp' || input.training.focus === 'hypertrophy' || input.training.focus === 'both' ? 'muscle'
+        : 'habit';
+  return { experience, goal, daysPerWeek: Math.min(6, Math.max(2, input.training.daysPerWeek)) };
+}
+
+/** Big3の表示名から、保存済みPlanの1RMを取り出す。補助種目には推測しない。 */
+export function programOneRmFromPersonalPlan(input: PersonalPlanInput, exercise: string): number | null {
+  const lift: LiftId | null = exercise === 'ベンチプレス' ? 'bench'
+    : exercise === 'スクワット' ? 'squat'
+      : exercise === 'デッドリフト' ? 'deadlift'
+        : null;
+  return lift == null ? null : input.strength[lift] ?? null;
 }
 
 export interface ProgramSession {

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   PACE_BANDS,
   buildPlan,
+  planStartPath,
   judgePace,
   validatePlanInput,
   weeksUntil,
@@ -137,5 +138,12 @@ describe('weeksUntil', () => {
   it('月をまたいでも日数で数える', () => {
     // 2026-01-31 → 2026-03-01 は29日
     expect(weeksUntil(new Date(2026, 2, 1), new Date(2026, 0, 31))).toBeCloseTo(29 / 7, 6);
+  });
+});
+
+
+describe('Diet Planから段階式Planへの導線', () => {
+  it('現在体重と目標体重だけをURLへ渡す', () => {
+    expect(planStartPath(88, 78)).toBe('/start?weight=88&target=78');
   });
 });

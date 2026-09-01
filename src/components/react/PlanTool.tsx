@@ -32,6 +32,7 @@ import {
   PACE_BANDS,
   PACE_SOURCES,
   buildPlan,
+  planStartPath,
   validatePlanInput,
   weeksUntil,
   type PaceVerdict,
@@ -302,6 +303,12 @@ export default function PlanTool() {
 
       {plan && verdict && band && (
         <>
+          <section className="plan__quick-summary" aria-label="ダイエット計画の要点">
+            <div className="plan__quick-weights"><span className="num">{fmt(weightKg ?? 0, 1)}kg</span><span aria-hidden="true">→</span><strong className="num">{fmt(targetWeightKg ?? 0, 1)}kg</strong></div>
+            <strong className="plan__quick-change num">{plan.mode === 'cut' ? '−' : '+'}{fmt(plan.totalChangeKg, 1)}kg</strong>
+            <div className="plan__quick-grid"><div><span>推奨期間</span><strong className="num">{fmt(plan.recommendedWeeks.fastest, 0)}〜{fmt(plan.recommendedWeeks.slowest, 0)}週</strong></div><div><span>目安</span><strong className="num">{plan.recommendedDailyKcalGap.steepest < 0 ? '−' : '+'}{fmt(Math.abs(plan.recommendedDailyKcalGap.steepest), 0)}〜{fmt(Math.abs(plan.recommendedDailyKcalGap.gentlest), 0)} kcal/日</strong></div><div><span>あなたの設定</span><strong className="num">{fmt(plan.weeks, 0)}週</strong></div></div>
+            {weightKg != null && targetWeightKg != null && <a className="button button--block button--lg" href={url(planStartPath(weightKg, targetWeightKg))}>この条件でBodymakers Planを作る</a>}
+          </section>
           <div className={`slip record ${verdict.tone}`}>
             <div className="slip__band">
               <span>{plan.mode === 'cut' ? 'FAT LOSS PLAN' : 'WEIGHT GAIN PLAN'}</span>
@@ -339,7 +346,7 @@ export default function PlanTool() {
 
               <div className="record__rule" />
 
-              <p className="plan__verdict">
+              <details className="plan__details"><summary>このペースの説明を見る</summary><p className="plan__verdict">
                 {plan.verdict === 'recommended' && (
                   <>
                     いいペースです。この速さは
@@ -396,7 +403,7 @@ export default function PlanTool() {
                     ごろを目安にすると、続けながら届きやすくなります。
                   </>
                 )}
-              </p>
+              </p></details>
 
               <div className="plan__grid">
                 <div className="plan__cell">
@@ -591,7 +598,7 @@ export default function PlanTool() {
             )}
           </Slip>
 
-          <Slip code="SOURCE" title="この判定の根拠">
+          <details className="plan__details"><summary>詳しい計算・根拠を見る</summary><Slip code="SOURCE" title="この判定の根拠">
             <p className="note">
               <span className="note__title">体重1kgあたり{KCAL_PER_KG_FAT.toLocaleString('ja-JP')}kcalで計算しています</span>
               体脂肪1kgぶんのエネルギーは出典によって幅があり、厚生労働省の解説では約7,000kcal、
@@ -623,7 +630,7 @@ export default function PlanTool() {
               ありません。体組成・年齢・服薬・持病によって適切な速さは変わります。
               健康状態に不安がある場合は、自己判断で進めず医療機関にご相談ください。
             </p>
-          </Slip>
+          </Slip></details>
         </>
       )}
     </div>

@@ -356,3 +356,32 @@ export function tierProgress(percentile: number): number {
   }
   return LEVELS.length;
 }
+
+
+/** Strength Level表に出す、既存アンカー体重ごとの5段階境界。 */
+export interface StrengthLevelTableRow {
+  bodyweightKg: number;
+  /** 初心者は表の下限未満なので数値を置かず、以降は各レベルの下限重量を示す。 */
+  levels: Record<LevelId, number | null>;
+}
+
+/**
+ * OpenPowerlifting由来のアンカーと既存の補間・レベル境界だけから、表の行を作る。
+ * 新たな体重比ルールや一般ジム利用者向けの基準は追加しない。
+ */
+export function buildStrengthLevelTable(
+  dataset: StrengthStandardsDataset,
+  sex: Sex,
+  lift: LiftId,
+): StrengthLevelTableRow[] {
+  return dataset.anchors[sex].map((anchor) => {
+    const curve = interpolateCurve(dataset, sex, lift, anchor.bodyweightKg);
+    const levels = {} as Record<LevelId, number | null>;
+    for (const level of LEVELS) {
+      levels[level.id] = curve == null || level.minPercentile === 0
+        ? null
+        : weightForPercentile(curve, dataset.percentileGrid, level.minPercentile);
+    }
+    return { bodyweightKg: anchor.bodyweightKg, levels };
+  });
+}

@@ -4,6 +4,7 @@
  */
 
 import { isFiniteNumber } from './format';
+import { roundToIncrement } from './onerm';
 
 export type SmolovVariant = 'jr' | 'base';
 
@@ -95,6 +96,7 @@ export function buildSmolov(
     const workingMax = oneRM + weeklyIncrement * w;
 
     if (isTestWeek) {
+      const targetWeight = roundToIncrement(oneRM + weeklyIncrement * 3, 2.5);
       weeks.push({
         week: w + 1,
         label: `Week ${w + 1}`,
@@ -106,12 +108,12 @@ export function buildSmolov(
             sets: 1,
             reps: 1,
             percent: 100,
-            weight: oneRM + weeklyIncrement * 3,
-            tonnage: oneRM + weeklyIncrement * 3,
+            weight: targetWeight,
+            tonnage: targetWeight,
             totalReps: 1,
           },
         ],
-        tonnage: oneRM + weeklyIncrement * 3,
+        tonnage: targetWeight,
         totalReps: 1,
         isTestWeek: true,
       });
@@ -119,7 +121,7 @@ export function buildSmolov(
     }
 
     const days: SmolovDay[] = template.map((d) => {
-      const weight = (workingMax * d.percent) / 100;
+      const weight = roundToIncrement((workingMax * d.percent) / 100, 2.5);
       const totalReps = d.sets * d.reps;
       return {
         label: d.label,

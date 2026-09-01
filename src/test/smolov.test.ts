@@ -38,6 +38,22 @@ describe('buildSmolov — 重量計算', () => {
   });
 
 
+  it('全通常日の weight は2.5kg刻み', () => {
+    for (const variant of ['jr', 'base'] as const) {
+      const plan = buildSmolov(173, variant, { weeklyIncrement: 3.5, testWeek: false })!;
+      for (const week of plan.weeks) {
+        for (const day of week.days) {
+          expect(day.weight / 2.5).toBeCloseTo(Math.round(day.weight / 2.5), 10);
+        }
+      }
+    }
+  });
+
+  it('170kgのSmolov Jr. Week 1は実際に組める重量になる', () => {
+    const days = buildSmolov(170, 'jr')!.weeks[0].days;
+    expect(days.map((day) => day.weight)).toEqual([120, 127.5, 135, 145]);
+  });
+
   it('1日の tonnage = 重量 × セット × レップ', () => {
     const plan = buildSmolov(100, 'jr')!;
     for (const week of plan.weeks) {
@@ -78,6 +94,13 @@ describe('buildSmolov — テスト週', () => {
     const plan = buildSmolov(100)!;
     expect(plan.weeks[3].isTestWeek).toBe(true);
     expect(plan.weeks.slice(0, 3).every((w) => !w.isTestWeek)).toBe(true);
+  });
+
+  it('テスト週の重量も2.5kg刻み', () => {
+    const day = buildSmolov(101, 'jr', { weeklyIncrement: 2.5 })!.weeks[3].days[0];
+    expect(day.weight).toBe(107.5);
+    expect(day.tonnage).toBe(day.weight);
+    expect(day.weight / 2.5).toBeCloseTo(Math.round(day.weight / 2.5), 10);
   });
 
   it('testWeek: false なら通常週になる', () => {

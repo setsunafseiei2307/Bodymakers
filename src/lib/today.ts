@@ -164,7 +164,7 @@ export function summarizeExercise(
   const items: ExerciseSummary['items'] = [];
   let kcal = 0;
 
-  for (const [entryIndex, entry] of entries.entries()) {
+  for (const entry of entries) {
     const activity = findActivity(entry.activityId);
     if (activity == null) continue;
     const burned = burnedKcal(activity.mets, entry.minutes, weightKg);

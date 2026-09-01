@@ -148,6 +148,9 @@ function finite(value: unknown): value is number {
 function includes<T extends readonly string[]>(values: T, value: unknown): value is T[number] {
   return typeof value === 'string' && values.includes(value);
 }
+function includesNumber<T extends readonly number[]>(values: T, value: unknown): value is T[number] {
+  return typeof value === 'number' && values.includes(value);
+}
 function normalizeLiftMap(value: unknown): Partial<Record<LiftId, number>> {
   if (!isRecord(value)) return {};
   const lifts: Partial<Record<LiftId, number>> = {};
@@ -170,8 +173,8 @@ export function normalizePersonalPlan(value: unknown): SavedPersonalPlan | null 
   if (!includes(GOAL_IDS, input.goal) || (body.sex !== 'male' && body.sex !== 'female')) return null;
   if (!finite(body.age) || body.age < 13 || body.age > 120 || !finite(body.heightCm) || body.heightCm < 100 || body.heightCm > 250 || !finite(body.weightKg) || body.weightKg < 30 || body.weightKg > 300) return null;
   if (body.bodyFatPercent != null && (!finite(body.bodyFatPercent) || body.bodyFatPercent < 0 || body.bodyFatPercent >= 100)) return null;
-  if (!includes(TRAINING_EXPERIENCES, training.experience) || ![1, 2, 3, 4, 5].includes(training.daysPerWeek as number) || ![30, 45, 60, 90].includes(training.sessionMinutes as number) || !includes(TRAINING_LOCATIONS, training.location) || !includes(TRAINING_FOCUSES, training.focus)) return null;
-  if (![1, 2, 3, 4].includes(food.mealsPerDay as number) || !['rarely', 'sometimes', 'daily'].includes(food.breakfast as string) || !includes(PROTEIN_HABITS, food.protein) || !includes(VEGETABLE_HABITS, food.vegetables) || !['daily', 'threeToFour', 'oneToTwo', 'rarely'].includes(food.outsideMeals as string) || !includes(MEAL_AMOUNTS, food.amount)) return null;
+  if (!includes(TRAINING_EXPERIENCES, training.experience) || !includesNumber([1, 2, 3, 4, 5] as const, training.daysPerWeek) || !includesNumber([30, 45, 60, 90] as const, training.sessionMinutes) || !includes(TRAINING_LOCATIONS, training.location) || !includes(TRAINING_FOCUSES, training.focus)) return null;
+  if (!includesNumber([1, 2, 3, 4] as const, food.mealsPerDay) || !['rarely', 'sometimes', 'daily'].includes(food.breakfast as string) || !includes(PROTEIN_HABITS, food.protein) || !includes(VEGETABLE_HABITS, food.vegetables) || !['daily', 'threeToFour', 'oneToTwo', 'rarely'].includes(food.outsideMeals as string) || !includes(MEAL_AMOUNTS, food.amount)) return null;
   if (!includes(SLEEP_DURATIONS, lifestyle.sleepDuration) || !includes(SLEEP_QUALITIES, lifestyle.sleepQuality) || !includes(DAILY_ACTIVITIES, lifestyle.dailyActivity) || !includes(ALCOHOL_HABITS, lifestyle.alcohol) || typeof lifestyle.smoking !== 'boolean' || !includes(STRESS_LEVELS, lifestyle.stress) || typeof lifestyle.painOrInjury !== 'boolean') return null;
   const targetWeightKg = targets.weightKg == null ? null : finite(targets.weightKg) && targets.weightKg >= 30 && targets.weightKg <= 300 ? targets.weightKg : null;
   return {

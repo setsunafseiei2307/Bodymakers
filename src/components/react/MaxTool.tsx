@@ -12,7 +12,6 @@ import {
   estimateOneRM,
   platesPerSide,
   repTableFromOneRM,
-  rmDisplayRange,
   roundToIncrement,
   type RmDisplayRange,
 } from '../../lib/onerm';
@@ -29,7 +28,6 @@ import {
   LEVELS,
   LIFT_LABELS,
   buildStrengthLevelTable,
-  type LevelId,
   type LiftId,
   type Sex as StrengthSex,
 } from '../../lib/strength/standards';

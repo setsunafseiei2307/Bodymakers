@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { getFeaturedArticles } from '../lib/articles';
-import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { CATEGORIES, SITE_DESCRIPTION } from '../config/site';
 import { TOOLS } from '../config/tools';
@@ -13,8 +12,6 @@ import '../styles/strength.css';
 import { url } from '../lib/url';
 import Dashboard from '../components/react/Dashboard';
 
-const totalLifters =
-  STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
 // 新着順ではなく、記事側で featured を立てたものを出す。
 // 書いた順という運営の都合が、そのまま並びになるのを避けるため。
 const articles = await getFeaturedArticles(4);
@@ -26,18 +23,14 @@ const articles = await getFeaturedArticles(4);
     <div class="container hero__inner">
       <p class="hero__eyebrow">登録不要・入力内容は送信されません</p>
       <h1 class="hero__title">
-        あなたの筋力は<br />
-        <span class="hero__accent">上位何%</span>ですか？
+        なりたい身体から、<br />
+        <span class="hero__accent">今日やることまで。</span>
       </h1>
       <p class="hero__lead">
-        競技会の記録 {totalLifters.toLocaleString('ja-JP')}人分と比較。
-        まずはベンチプレスだけで測れます。
+        身体・筋力・食事・生活習慣を順に選ぶだけで、あなた用の12週間Planを作れます。
       </p>
-
-      {/*
-        client:load にしているのは、ここが「開いた直後に触られる」場所だから。
-        遅延させるとタップに反応せず、体験そのものが壊れる。
-      */}
+      <p class="hero__actions"><a class="button button--lg" href={url('/start')}>身体づくり診断をはじめる</a></p>
+      <p class="hero__sublead">まずBIG3の現在地だけ知りたい人はこちら</p>
       <div class="hero__tool">
         <StrengthForm client:load quickStart />
       </div>
@@ -222,9 +215,13 @@ const articles = await getFeaturedArticles(4);
     line-height: 1.9;
   }
 
-  /* 診断フォームはヒーローの中に置く。遷移を挟まない */
+  .hero__actions { margin-top: var(--s5); }
+  .hero__actions .button { text-decoration: none; }
+  .hero__sublead { margin-top: var(--s6); color: var(--muted); font-size: .8125rem; font-weight: 700; }
+
+  /* すぐBIG3だけを見たい人のため、既存の診断フォームは残す。 */
   .hero__tool {
-    margin-top: var(--s5);
+    margin-top: var(--s3);
   }
 
   .dashboard-wrap {

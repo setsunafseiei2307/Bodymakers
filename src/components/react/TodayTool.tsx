@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { fmt, parseNumber } from '../../lib/format';
+import { buildPersonalPlan } from '../../lib/diagnosis/plan';
 import { DISHES, calcDish } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food, type NutrientKey } from '../../lib/foods';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
@@ -36,6 +37,7 @@ import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
 import { localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
+import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
 import ShareCard from './ShareCard';
 import SavedStrengthSummary from './SavedStrengthSummary';
@@ -68,6 +70,7 @@ export default function TodayTool() {
   const [sleepHours, setSleepHours] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [dietPlan, setDietPlan] = useState<SavedDietPlan | null>(null);
+  const [personalPlan, setPersonalPlan] = useState<SavedPersonalPlan | null>(null);
   const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
@@ -101,6 +104,7 @@ export default function TodayTool() {
       .find((item) => item.weightKg != null);
     const profile = data.profile;
     setDietPlan(data.dietPlan);
+    setPersonalPlan(data.personalPlan);
     setStrengthHistory(data.strengthHistory);
 
     const savedWeight =
@@ -164,6 +168,25 @@ export default function TodayTool() {
     }),
     [intake.totals, manualKcalValue, manualProteinValue],
   );
+  const generatedPersonalPlan = useMemo(
+    () => (personalPlan ? buildPersonalPlan(personalPlan.input) : null),
+    [personalPlan],
+  );
+  const nutritionTarget = useMemo(() => {
+    if (dietPlan) return {
+      calories: dietPlan.targetCalories,
+      protein: dietPlan.proteinGrams,
+      fat: dietPlan.fatGrams,
+      carbs: dietPlan.carbsGrams,
+    };
+    if (generatedPersonalPlan?.nutrition) return {
+      calories: generatedPersonalPlan.nutrition.calories,
+      protein: generatedPersonalPlan.nutrition.protein,
+      fat: generatedPersonalPlan.nutrition.fat,
+      carbs: generatedPersonalPlan.nutrition.carbs,
+    };
+    return null;
+  }, [dietPlan, generatedPersonalPlan]);
   const exercise = useMemo(
     () => (weightKg == null ? null : summarizeExercise(exercises, weightKg)),
     [exercises, weightKg],
@@ -287,14 +310,14 @@ export default function TodayTool() {
   return (
     <div className="tool">
       <Slip code="QUICK" title="10秒で今日を記録">
-        {dietPlan && (
+        {nutritionTarget && (
           <section className="today__macro-dashboard" aria-label="今日の栄養目標達成状況">
             <p className="today__dashboard-title">今日の栄養</p>
             {[
-              { label: 'kcal', value: intakeTotals.kcal, target: dietPlan.targetCalories, unit: 'kcal' },
-              { label: 'P', value: intakeTotals.protein, target: dietPlan.proteinGrams, unit: 'g' },
-              { label: 'F', value: intakeTotals.fat, target: dietPlan.fatGrams, unit: 'g' },
-              { label: 'C', value: intakeTotals.carbs, target: dietPlan.carbsGrams, unit: 'g' },
+              { label: 'kcal', value: intakeTotals.kcal, target: nutritionTarget.calories, unit: 'kcal' },
+              { label: 'P', value: intakeTotals.protein, target: nutritionTarget.protein, unit: 'g' },
+              { label: 'F', value: intakeTotals.fat, target: nutritionTarget.fat, unit: 'g' },
+              { label: 'C', value: intakeTotals.carbs, target: nutritionTarget.carbs, unit: 'g' },
             ].map((item) => (
               <div className="today__macro-card" key={item.label}>
                 <span>{item.label}</span>
@@ -347,6 +370,27 @@ export default function TodayTool() {
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
       </Slip>
+
+      {generatedPersonalPlan && (
+        <Slip code="TODAY" title="今日やること">
+          <div className="today__plan-actions">
+            <section>
+              <span>今日のトレーニング</span>
+              {generatedPersonalPlan.todayWorkout ? <><strong>{generatedPersonalPlan.todayWorkout.label}</strong><p>{generatedPersonalPlan.todayWorkout.exerciseIds.map((id) => findExercise(id)?.name).filter(Boolean).join('・')}</p><a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a></> : <p>今週のトレーニングを予定に入れましょう。</p>}
+            </section>
+            <section>
+              <span>NUTRITION</span>
+              {nutritionTarget ? <><strong className="num">{fmt(intakeTotals.kcal, 0)} / {fmt(nutritionTarget.calories, 0)} kcal</strong><p className="num">P {fmt(intakeTotals.protein, 0)} / {nutritionTarget.protein}g</p><a href={url('/tools/foods')}>食事を追加する →</a></> : <p>Planで栄養目標を確認できます。</p>}
+            </section>
+            <section>
+              <span>RECOVERY</span>
+              <strong className="num">{sleepValue == null ? '—' : `${fmt(sleepValue, 1)}h`}</strong><p>{stepsValue == null ? '歩数は未記録' : `${fmt(stepsValue, 0)}歩`}</p>
+            </section>
+          </div>
+          {generatedPersonalPlan.diagnosis.priorities[0] && <div className="today__next-action"><span>NEXT ACTION</span><strong>{generatedPersonalPlan.diagnosis.priorities[0].title}</strong><p>{generatedPersonalPlan.diagnosis.priorities[0].action}</p></div>}
+          <p className="next"><a href={url('/plan')}>12週間Planを見る →</a><a href={url('/tools/one-rep-max')}>1RMを更新する →</a></p>
+        </Slip>
+      )}
 
       <SavedStrengthSummary history={strengthHistory} title="今日の筋力目標" />
 
@@ -455,6 +499,7 @@ export default function TodayTool() {
       </Slip>
 
       {/* --- 動いたもの --- */}
+      <div id="workout">
       <Slip code="MOVE" title="動いたもの">
         <div className="row">
           <SelectField
@@ -552,6 +597,8 @@ export default function TodayTool() {
           </div>
         </fieldset>
       </Slip>
+
+      </div>
 
       {/* --- 集計 --- */}
       {hasAnything && (

@@ -6,6 +6,7 @@
  */
 
 import type { Sex } from './nutrition';
+import { normalizePersonalPlan, type SavedPersonalPlan } from './diagnosis/types';
 import { MEAL_TYPES, type ExerciseEntry, type MealEntry, type MealType, type MuscleGroup } from './today';
 import {
   STRENGTH_HISTORY_LIMIT,
@@ -67,6 +68,8 @@ export interface BodymakersData {
   /** ユーザー個人の筋力入力。参照用の筋力基準データとは分離して端末内だけに保存する。 */
   strengthProfile: SavedStrengthProfile | null;
   strengthHistory: SavedStrengthDiagnosis[];
+  /** なりたい身体から作った端末内専用の診断・12週間Plan。 */
+  personalPlan: SavedPersonalPlan | null;
 }
 
 export function emptyData(): BodymakersData {
@@ -77,6 +80,7 @@ export function emptyData(): BodymakersData {
     dailyLogs: [],
     strengthProfile: null,
     strengthHistory: [],
+    personalPlan: null,
   };
 }
 
@@ -150,6 +154,7 @@ export function parseStoredData(raw: string | null): BodymakersData {
             .filter((item): item is SavedStrengthDiagnosis => item != null)
             .slice(-STRENGTH_HISTORY_LIMIT)
         : [],
+      personalPlan: normalizePersonalPlan(parsed.personalPlan),
     };
   } catch {
     return emptyData();
@@ -195,6 +200,25 @@ export function saveDietPlan(
 ): boolean {
   const data = readData(storage);
   return writeData({ ...data, dietPlan: plan, profile }, storage);
+}
+
+/** 段階式診断の入力を保存する。既存の食事・筋力履歴・ダイエット計画は上書きしない。 */
+export function savePersonalPlan(
+  plan: SavedPersonalPlan,
+  storage: Storage | null = browserStorage(),
+): boolean {
+  const data = readData(storage);
+  const normalized = normalizePersonalPlan(plan);
+  if (normalized == null) return false;
+  const profile: SavedProfile = {
+    sex: normalized.input.body.sex,
+    age: normalized.input.body.age,
+    heightCm: normalized.input.body.heightCm,
+    weightKg: normalized.input.body.weightKg,
+    activity: { desk: 'sedentary', someWalk: 'light', walk: 'moderate', active: 'active' }[normalized.input.lifestyle.dailyActivity],
+    trainingDaysPerWeek: normalized.input.training.daysPerWeek,
+  };
+  return writeData({ ...data, profile, personalPlan: normalized }, storage);
 }
 
 /** 診断履歴と、次回入力に使う最新の体重・BIG3を同時に保存する。 */

@@ -50,7 +50,9 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: '/tools/today', label: '今日の記録', primary: true },
+  { href: '/start', label: '診断', primary: true },
+  { href: '/plan', label: 'Plan' },
+  { href: '/tools/today', label: '今日' },
   { href: '/tools', label: 'ツール' },
   { href: '/articles', label: '記事' },
 ] as const;

@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Onboarding from '../components/react/Onboarding';
+import '../styles/tools.css';
+import '../styles/diagnosis.css';
+
+const title = '身体づくり診断';
+const description = 'なりたい身体・今の身体・筋力・食事・生活習慣から、端末内だけで12週間のBodymakers Planを作ります。';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container diagnosis-page">
+    <div class="diagnosis-page__intro">
+      <p>BODYMAKERS START</p>
+      <h1>なりたい身体から、<br />今日やることまで。</h1>
+      <p>身体・筋力・食事・生活習慣をまとめて診断して、あなた用の12週間Planを作ります。</p>
+      <a class="button button--lg diagnosis-page__cta" href="#diagnosis">診断をはじめる</a>
+      <div class="diagnosis-page__meta"><span>約2〜3分</span><span>登録不要</span><span>端末内に保存</span></div>
+    </div>
+    <div id="diagnosis"><Onboarding client:load /></div>
+  </main>
+</BaseLayout>

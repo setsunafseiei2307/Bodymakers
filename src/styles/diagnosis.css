@@ -1,0 +1,126 @@
+/* 段階式の身体づくり診断と12週間Plan。既存の計測票らしさを残しつつ、タップを主役にする。 */
+.diagnosis-page { width: min(100% - var(--s6), 46rem); padding-block: var(--s6) var(--s8); }
+.diagnosis-page__intro { max-width: 38rem; margin: 0 auto var(--s6); text-align: center; }
+.diagnosis-page__intro > p:first-child, .journey-kicker, .personal-plan__code, .personal-plan__section-head p { color: var(--signal); font-family: var(--f-mono); font-size: .72rem; font-weight: 800; letter-spacing: .13em; }
+.diagnosis-page__intro h1 { margin-top: var(--s2); font-size: clamp(2.2rem, 10vw, 4.4rem); font-family: var(--f-display); line-height: 1.05; }
+.diagnosis-page__intro > p:not(:first-child) { margin: var(--s4) auto 0; max-width: 32rem; color: var(--body); font-size: 1rem; }
+.diagnosis-page__cta { display: inline-flex; margin-top: var(--s5); text-decoration: none; }
+.diagnosis-page__meta { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--s2) var(--s4); margin-top: var(--s4); color: var(--muted); font-size: .75rem; }
+.diagnosis-page__meta span + span::before { content: '•'; margin-right: var(--s4); color: var(--hair); }
+
+.journey, .personal-plan { max-width: 42rem; margin-inline: auto; }
+.journey { padding: var(--s5); border: 1px solid var(--hair); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow-sm); }
+.journey--loading, .personal-plan--loading { min-height: 20rem; background: linear-gradient(100deg, var(--inset), var(--surface-raised, var(--surface)), var(--inset)); }
+.journey-progress { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 0 var(--s3); margin-bottom: var(--s5); }
+.journey-progress > span { color: var(--signal); font-family: var(--f-mono); font-size: .75rem; font-weight: 800; }
+.journey-progress > strong { color: var(--ink); font-size: .875rem; }
+.journey-progress > div { grid-column: 1 / -1; height: .45rem; overflow: hidden; border-radius: var(--r-full); background: var(--hair); }
+.journey-progress > div > span { display: block; height: 100%; border-radius: inherit; background: var(--signal); transition: width 220ms var(--ease); }
+.journey-step { animation: journey-step-in 180ms var(--ease); }
+@keyframes journey-step-in { from { opacity: 0; transform: translateX(.6rem); } to { opacity: 1; transform: translateX(0); } }
+.journey h2, .personal-plan h1 { margin-top: var(--s2); font-size: clamp(1.75rem, 7vw, 2.65rem); }
+.journey-lead { margin-top: var(--s3); color: var(--body); font-size: .9rem; line-height: 1.8; }
+.journey-choice-group { margin: var(--s5) 0 0; padding: 0; border: 0; }
+.journey-choice-group legend { margin-bottom: var(--s2); color: var(--ink); font-size: .88rem; font-weight: 800; }
+.journey-choices { display: grid; gap: var(--s2); }
+.journey-choices--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.journey-choice { display: grid; min-height: 3.25rem; padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--surface-raised, var(--surface)); color: var(--body); font: inherit; text-align: left; cursor: pointer; transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.journey-choice:hover, .journey-choice:focus-visible { border-color: var(--signal); }
+.journey-choice:active { transform: scale(.985); }
+.journey-choice.is-selected { border: 2px solid var(--signal); padding: calc(var(--s3) - 1px); background: var(--signal-soft); color: var(--ink); }
+.journey-choice__icon { grid-row: span 2; align-self: center; margin-right: var(--s2); color: var(--signal); font-family: var(--f-display); font-size: 1.5rem; }
+.journey-choice__label { font-size: .875rem; font-weight: 800; line-height: 1.4; }
+.journey-choice__detail { margin-top: .15rem; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+.journey-lift-inputs { display: grid; gap: var(--s3); margin-top: var(--s5); }
+.journey-lift-inputs > p { margin: 0; color: var(--ink); font-size: .88rem; font-weight: 800; }
+.journey-set-card { padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--inset); }
+.journey-set-card > strong { display: block; margin-bottom: var(--s2); color: var(--ink); font-size: .9rem; }
+.journey-actions { display: flex; justify-content: space-between; gap: var(--s3); margin-top: var(--s6); }
+.journey-actions .button:last-child { margin-left: auto; }
+.journey-privacy { margin-top: var(--s4); color: var(--muted); font-size: .73rem; text-align: center; }
+.journey--result { animation: journey-step-in 220ms var(--ease); }
+.journey-result-map { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s2); margin: var(--s5) 0; padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-md); background: var(--inset); text-align: center; }
+.journey-result-map > div { min-width: 0; }
+.journey-result-map span { display: block; color: var(--muted); font-size: .72rem; }
+.journey-result-map strong { display: block; margin-top: var(--s1); color: var(--ink); font-size: clamp(1rem, 4vw, 1.35rem); }
+.journey-panel { margin-top: var(--s4); padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-md); background: var(--surface-raised, var(--surface)); }
+.journey-panel h2 { margin-bottom: var(--s3); font-size: 1.05rem; }
+.journey-axis { display: grid; grid-template-columns: 1fr auto; gap: var(--s1) var(--s3); padding-block: var(--s2); }
+.journey-axis > span { color: var(--body); font-size: .85rem; }
+.journey-axis > strong { color: var(--signal); font-size: 1rem; }
+.journey-axis > div { grid-column: 1 / -1; height: .35rem; overflow: hidden; border-radius: var(--r-full); background: var(--hair); }
+.journey-axis > div span { display: block; height: 100%; border-radius: inherit; background: var(--data); transition: width 220ms var(--ease); }
+.journey-axis details { grid-column: 1 / -1; color: var(--muted); font-size: .76rem; }
+.journey-axis summary { color: var(--body); cursor: pointer; }
+.journey-axis details p { margin-top: var(--s1); }
+.journey-priorities { display: grid; gap: var(--s4); margin: 0; padding: 0; list-style: none; }
+.journey-priorities li { display: grid; grid-template-columns: 2rem 1fr; gap: var(--s3); }
+.journey-priorities > li > span { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; background: var(--signal); color: var(--paper); font-family: var(--f-mono); font-weight: 800; }
+.journey-priorities strong { color: var(--ink); font-size: .92rem; }
+.journey-priorities p { margin-top: var(--s1); color: var(--body); font-size: .82rem; line-height: 1.7; }
+.journey-priorities details { margin-top: var(--s2); color: var(--muted); font-size: .78rem; }
+.journey-priorities summary { color: var(--body); cursor: pointer; }
+.journey-gaps { display: grid; gap: var(--s2); }
+.journey-gaps > div { display: grid; grid-template-columns: 5rem 1fr auto; align-items: center; gap: var(--s2); padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--inset); }
+.journey-gaps span { color: var(--muted); font-size: .75rem; }
+.journey-gaps strong { color: var(--ink); font-size: .82rem; }
+.journey-gaps small { color: var(--signal); font-family: var(--f-mono); }
+.journey-back-link { display: block; margin: var(--s4) auto 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: .8rem; cursor: pointer; }
+
+.personal-plan__head { padding-bottom: var(--s5); border-bottom: 3px solid var(--rule); }
+.personal-plan__head > p:last-child { margin-top: var(--s3); color: var(--body); font-size: .86rem; }
+.personal-plan__today { margin-top: var(--s5); padding: var(--s5); border: 2px solid var(--signal); border-radius: var(--r-md); background: var(--signal-soft); }
+.personal-plan__today h2 { margin-top: var(--s1); font-size: 1.45rem; }
+.personal-plan__today-grid { display: grid; gap: var(--s3); margin-top: var(--s4); }
+.personal-plan__today-grid article { display: grid; gap: var(--s1); min-height: 8.5rem; padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--surface); }
+.personal-plan__today-grid article > span { color: var(--muted); font-family: var(--f-mono); font-size: .68rem; font-weight: 800; letter-spacing: .08em; }
+.personal-plan__today-grid strong { color: var(--ink); font-size: 1.1rem; }
+.personal-plan__today-grid strong small { color: var(--muted); font-size: .72rem; }
+.personal-plan__today-grid p { color: var(--body); font-size: .8rem; }
+.personal-plan__today-grid a:not(.button) { align-self: end; color: var(--signal); font-size: .8rem; font-weight: 800; }
+.personal-plan__nutrition-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--s2) var(--s3); margin-top: var(--s4); font-size: .74rem; }
+.personal-plan__nutrition-progress progress { width: 100%; height: .45rem; overflow: hidden; border: 0; border-radius: var(--r-full); background: var(--hair); }
+.personal-plan__nutrition-progress progress::-webkit-progress-bar { background: var(--hair); }
+.personal-plan__nutrition-progress progress::-webkit-progress-value { background: var(--signal); }
+.personal-plan__nutrition-progress progress::-moz-progress-bar { background: var(--signal); }
+.personal-plan__action { margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--hair); }
+.personal-plan__action span { color: var(--signal); font-family: var(--f-mono); font-size: .68rem; font-weight: 800; letter-spacing: .1em; }
+.personal-plan__action strong { display: block; margin-top: var(--s1); color: var(--ink); }
+.personal-plan__action p { margin-top: var(--s1); color: var(--body); font-size: .84rem; }
+.personal-plan__section { margin-top: var(--s7); }
+.personal-plan__section-head { display: flex; align-items: end; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s4); }
+.personal-plan__section-head h2 { margin-top: var(--s1); }
+.personal-plan__section-head > a { color: var(--signal); font-size: .76rem; font-weight: 800; text-align: right; }
+.personal-plan__phases, .personal-plan__workouts { display: grid; gap: var(--s3); }
+.personal-plan__phases article, .personal-plan__workouts article { padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-md); background: var(--surface); }
+.personal-plan__phases article > span, .personal-plan__workouts article > span { color: var(--signal); font-family: var(--f-mono); font-size: .7rem; font-weight: 800; }
+.personal-plan__phases h3, .personal-plan__workouts h3 { margin-top: var(--s2); font-size: 1rem; }
+.personal-plan__phases p { margin-top: var(--s2); color: var(--body); font-size: .84rem; }
+.personal-plan__workouts ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s1) var(--s3); margin-top: var(--s3); padding: 0; list-style: none; color: var(--body); font-size: .8rem; }
+.personal-plan__workouts li::before { content: '•'; margin-right: var(--s1); color: var(--signal); }
+.personal-plan__macros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
+.personal-plan__macros > div { padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--inset); }
+.personal-plan__macros span { display: block; color: var(--muted); font-size: .7rem; font-weight: 800; }
+.personal-plan__macros strong { display: block; margin-top: var(--s1); color: var(--ink); font-size: 1.25rem; }
+.personal-plan--empty { padding: var(--s7) var(--s5); text-align: center; }
+.personal-plan--empty > p:not(.journey-kicker):not(.journey-privacy) { margin: var(--s4) auto; max-width: 32rem; }
+.personal-plan--empty .button { display: inline-flex; text-decoration: none; }
+
+@media (min-width: 40rem) {
+  .personal-plan__today-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .personal-plan__phases { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .personal-plan__workouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .personal-plan__macros { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 25rem) {
+  .diagnosis-page { width: min(100% - var(--s4), 46rem); }
+  .journey { padding: var(--s4); }
+  .journey-choices--2 { grid-template-columns: 1fr; }
+  .journey-gaps > div { grid-template-columns: 1fr auto; }
+  .journey-gaps strong { grid-column: 1 / 2; }
+  .journey-gaps small { grid-column: 2; grid-row: 1 / 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-step, .journey--result { animation: none; }
+  .journey-progress > div > span, .journey-axis > div span, .journey-choice { transition: none; }
+}

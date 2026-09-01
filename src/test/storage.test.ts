@@ -7,6 +7,7 @@ import {
   readData,
   saveStrengthDiagnosis,
   addMealsToToday,
+  savePersonalPlan,
 } from '../lib/storage';
 import { diagnose } from '../lib/strength/diagnose';
 import { snapshotDiagnosis } from '../lib/strength/history';
@@ -72,6 +73,28 @@ describe('端末内データ', () => {
       { foodId: '01088', grams: 100 },
       { foodId: '12004', grams: 60, mealType: 'breakfast' },
     ]);
+  });
+
+  it('段階式診断を既存の記録を残したまま保存・再読込できる', () => {
+    const storage = memoryStorage();
+    expect(addMealsToToday([{ foodId: '01088', grams: 100 }], 'lunch', storage)).toBe(true);
+    const personalPlan = {
+      version: 1 as const,
+      createdAt: '2026-09-01T00:00:00.000Z',
+      input: {
+        goal: 'health' as const,
+        targets: { weightKg: null, lifts: {} },
+        body: { sex: 'male' as const, age: 30, heightCm: 172, weightKg: 70, bodyFatPercent: null },
+        training: { experience: 'none' as const, daysPerWeek: 2 as const, sessionMinutes: 45 as const, location: 'home' as const, focus: 'health' as const },
+        strength: {},
+        food: { mealsPerDay: 3 as const, breakfast: 'daily' as const, protein: 'unknown' as const, vegetables: 'normal' as const, outsideMeals: 'oneToTwo' as const, amount: 'normal' as const },
+        lifestyle: { sleepDuration: 'sixToSeven' as const, sleepQuality: 'normal' as const, dailyActivity: 'someWalk' as const, alcohol: 'oneToTwo' as const, smoking: false, stress: 'normal' as const, painOrInjury: false },
+      },
+    };
+    expect(savePersonalPlan(personalPlan, storage)).toBe(true);
+    const data = readData(storage);
+    expect(data.personalPlan?.input.goal).toBe('health');
+    expect(data.dailyLogs[0]?.meals).toEqual([{ foodId: '01088', grams: 100, mealType: 'lunch' }]);
   });
 
   it('筋力診断を履歴と次回入力プロフィールへ保存する', () => {

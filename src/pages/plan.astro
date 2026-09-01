@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PersonalPlanDashboard from '../components/react/PersonalPlanDashboard';
+import '../styles/tools.css';
+import '../styles/diagnosis.css';
+
+const title = 'あなたの12週間Plan';
+const description = 'Bodymakersの段階式診断から作る、目標・トレーニング・食事・今日の行動をひとつにつなぐ12週間Planです。';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container diagnosis-page diagnosis-page--plan">
+    <PersonalPlanDashboard client:load />
+  </main>
+</BaseLayout>

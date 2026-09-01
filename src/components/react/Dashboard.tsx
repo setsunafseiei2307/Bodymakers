@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { fmt } from '../../lib/format';
+import { buildPersonalPlan } from '../../lib/diagnosis/plan';
 import { planProgress, weightTrend } from '../../lib/progress';
 import {
   DATA_CHANGED_EVENT,
@@ -38,9 +39,10 @@ export default function Dashboard() {
   const kcal = today?.manualIntake.kcal ?? intake?.totals.kcal ?? 0;
   const protein = today?.manualIntake.protein ?? intake?.totals.protein ?? 0;
   const progress = data?.dietPlan ? planProgress(data.dietPlan, data.dailyLogs) : null;
+  const personal = useMemo(() => data?.personalPlan ? buildPersonalPlan(data.personalPlan.input) : null, [data]);
   const trend = data ? weightTrend(data.dailyLogs, 14) : [];
   const hasDailyData = Boolean(data?.dietPlan || today || (data?.dailyLogs.length ?? 0) > 0);
-  const hasData = Boolean(hasDailyData || (data?.strengthHistory.length ?? 0) > 0);
+  const hasData = Boolean(hasDailyData || (data?.strengthHistory.length ?? 0) > 0 || data?.personalPlan);
 
   if (data == null) {
     return <div className="dashboard dashboard--loading" aria-hidden="true" />;
@@ -73,12 +75,16 @@ export default function Dashboard() {
             アカウント登録もサーバー送信もありません。
           </p>
           <div className="dashboard__actions">
-            <a className="button" href={url('/tools/plan')}>目標をつくる</a>
+            <a className="button" href={url('/start')}>診断をはじめる</a>
             <a className="button button--ghost" href={url('/tools/today')}>今日を記録する</a>
           </div>
         </div>
       ) : (
         <>
+          {personal && <div className="dashboard__plan">
+            <div className="dashboard__planText"><strong>12週間Planを保存済み</strong><span>{personal.todayWorkout?.label ?? '次のトレーニングを確認'} ・ {personal.diagnosis.priorities[0]?.title ?? '今日の記録を続ける'}</span></div>
+            <div className="dashboard__actions"><a className="button button--block" href={url('/plan')}>今日やることを見る</a></div>
+          </div>}
           {hasDailyData && <div className="dashboard__grid">
             <a className="dashboard__metric" href={url('/tools/today')}>
               <span>体重</span>

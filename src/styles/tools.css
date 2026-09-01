@@ -1123,3 +1123,16 @@
   .app-toast, .today__meal-card, .dish__item, .dish__head, .food__nutrient-group { transition: none; animation: none; }
   .external-food__skeletons span { animation: none; }
 }
+
+
+/* 保存済み12週間PlanからTodayへ渡す、次の一手 */
+.today__plan-actions { display: grid; gap: var(--s3); }
+.today__plan-actions > section { display: grid; gap: var(--s1); min-height: 7.5rem; padding: var(--s4); border: 1px solid var(--hair); border-radius: var(--r-sm); background: var(--inset); }
+.today__plan-actions > section > span, .today__next-action > span { color: var(--signal); font-family: var(--f-mono); font-size: .68rem; font-weight: 800; letter-spacing: .1em; }
+.today__plan-actions strong { color: var(--ink); font-size: 1rem; }
+.today__plan-actions strong + p { color: var(--body); font-size: .8rem; }
+.today__plan-actions a:not(.button) { align-self: end; color: var(--signal); font-size: .8rem; font-weight: 800; }
+.today__next-action { margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--hair); }
+.today__next-action strong { display: block; margin-top: var(--s1); color: var(--ink); }
+.today__next-action p { margin-top: var(--s1); color: var(--body); font-size: .84rem; }
+@media (min-width: 40rem) { .today__plan-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

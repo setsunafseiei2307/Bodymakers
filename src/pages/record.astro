@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RecordDashboard from '../components/react/RecordDashboard';
+import '../styles/app-shell.css';
+
+const title = '記録';
+const description = '今週の食事・トレーニング・睡眠・体重の記録を、端末内のBodymakersデータからひとつにまとめます。';
+---
+<BaseLayout title={title} description={description}>
+  <main class="container app-page"><RecordDashboard client:load /></main>
+</BaseLayout>

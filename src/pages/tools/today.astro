@@ -7,9 +7,9 @@ import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
 import ToolArticles from '../../components/ToolArticles.astro';
 
-const title = '今日の記録';
+const title = '今日';
 const description =
-  '体重・摂取カロリー・タンパク質をすばやく記録。食事の自然文入力、歩数・睡眠・運動の詳細も追加でき、ダイエット計画の目標と同じ画面で確認できます。';
+  '今日のトレーニング、食事、回復をひとつにまとめ、次にやることをすぐ確認・記録できます。';
 ---
 
 <BaseLayout title={title} description={description}>
@@ -25,7 +25,7 @@ const description =
       <p class="tool-page__code">TODAY</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">保存ボタンを押した記録だけ、このブラウザに保存します。サーバーには送信しません。</p>
+      <p class="tool-page__privacy">トレーニング、食事、回復をこの順で確認できます。保存した記録はこのブラウザだけに残ります。</p>
     </header>
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、

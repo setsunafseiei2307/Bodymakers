@@ -3,179 +3,24 @@ import { NAV_ITEMS, SITE_SHORT_NAME } from '../config/site';
 import ThemeToggle from './ThemeToggle.astro';
 import { sitePath, url } from '../lib/url';
 
-/** 現在のパス。ナビの現在地表示に使う。配信先のベースパスは取り除く。 */
 const pathname = sitePath(Astro.url.pathname);
-
 function isCurrent(href: string): boolean {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 ---
-
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="site-header__logo" href={url('/')}>
-      <svg class="site-header__mark" viewBox="0 0 32 32" aria-hidden="true">
-        <!-- バーベルを模した記号。装飾なのでテキストは持たせない -->
-        <rect x="2" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
-        <rect x="6.5" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"></rect>
-        <rect x="11" y="14.5" width="10" height="3" fill="currentColor"></rect>
-        <rect x="21" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"></rect>
-        <rect x="26" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"></rect>
-      </svg>
+    <a class="site-header__logo" href={url('/')} aria-label={`${SITE_SHORT_NAME} ホーム`}>
+      <svg class="site-header__mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"/><rect x="6.5" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"/><rect x="11" y="14.5" width="10" height="3" fill="currentColor"/><rect x="21" y="9.5" width="4.5" height="13" rx="1.5" fill="currentColor"/><rect x="26" y="12.5" width="4" height="7" rx="1.5" fill="currentColor"/></svg>
       <span class="site-header__name">{SITE_SHORT_NAME}</span>
     </a>
-
-    <nav class="site-header__nav" aria-label="メインナビゲーション">
-      <ul class="site-header__list">
-        {
-          NAV_ITEMS.map((item) => (
-            <li>
-              <a
-                href={url(item.href)}
-                class:list={[
-                  'site-header__link',
-                  item.primary && 'site-header__link--primary',
-                ]}
-                aria-current={isCurrent(item.href) ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
-
+    <nav class="site-header__nav" aria-label="メインナビゲーション"><ul>{NAV_ITEMS.map((item) => <li><a href={url(item.href)} class:list={[item.primary && 'is-primary']} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>)}</ul></nav>
     <ThemeToggle />
   </div>
 </header>
-
 <style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: color-mix(in srgb, var(--surface) 88%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--hair);
-  }
-
-  .site-header__inner {
-    display: flex;
-    align-items: center;
-    gap: var(--s3);
-    min-height: 3.5rem;
-  }
-
-  .site-header__logo {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s2);
-    color: var(--ink);
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 1.0625rem;
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
-  }
-
-  .site-header__mark {
-    width: 1.75rem;
-    height: 1.75rem;
-    color: var(--signal);
-  }
-
-  .site-header__nav {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .site-header__list {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--s1);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .site-header__link {
-    display: inline-block;
-    padding: var(--s2) var(--s3);
-    border-radius: var(--r-md);
-    color: var(--body);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .site-header__link:hover {
-    background: var(--inset);
-    color: var(--ink);
-  }
-
-  .site-header__link[aria-current='page'] {
-    color: var(--signal);
-    background: var(--signal-soft);
-  }
-
-  /* 診断への導線はナビの中でも一段強調する */
-  .site-header__link--primary {
-    background: var(--signal);
-    color: var(--paper);
-  }
-
-  .site-header__link--primary:hover {
-    background: var(--signal);
-    color: var(--paper);
-  }
-
-  .site-header__link--primary[aria-current='page'] {
-    background: var(--signal);
-    color: var(--paper);
-  }
-
-  /* スマホではナビをロゴの下の段に落とす。
-     1行に押し込むとラベルが見切れてしまい、
-     一番重要な「筋力レベル診断」が読めなくなるため。 */
-  @media (max-width: 47.99rem) {
-    /* スマホでは追従させない。
-       ナビが2段になるとヘッダーが165pxになり、800pxの画面の2割を
-       常に占める。記事ページは1本9,000px近くあるので、
-       読む面積を優先する。診断への導線は記事の中に置く。 */
-    .site-header {
-      position: static;
-    }
-
-    .site-header__inner {
-      flex-wrap: wrap;
-      padding-block: var(--s2);
-    }
-
-    .site-header__logo {
-      margin-right: auto;
-    }
-
-    .site-header__nav {
-      order: 3;
-      flex-basis: 100%;
-    }
-
-    /* 横スクロールにはしない。
-       スクロールバーを隠すと「まだ右に続きがある」手がかりが無くなり、
-       実測で「このサイトについて」が 320/360/390px のすべてで画面外に
-       出ていた。折り返して全項目を見せるほうを取る。 */
-    .site-header__list {
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: var(--s1) var(--s2);
-    }
-
-    .site-header__link {
-      padding-inline: var(--s2);
-    }
-  }
+.site-header { position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--paper) 82%, transparent); backdrop-filter:blur(18px); border-bottom:1px solid color-mix(in srgb, var(--hair) 80%, transparent); }
+.site-header__inner { display:flex; align-items:center; min-height:4.25rem; gap:var(--s3); }.site-header__logo { display:inline-flex; align-items:center; gap:.6rem; color:var(--ink); font-size:1.05rem; font-weight:900; text-decoration:none; }.site-header__mark { width:2rem; color:var(--signal); }.site-header__nav { flex:1; }.site-header__nav ul { display:flex; justify-content:flex-end; gap:.2rem; margin:0; padding:0; list-style:none; }.site-header__nav a { display:inline-flex; min-height:2.75rem; align-items:center; padding:0 .8rem; border-radius:var(--r-full); color:var(--body); font-size:.85rem; font-weight:800; text-decoration:none; }.site-header__nav a:hover, .site-header__nav a[aria-current='page'] { background:var(--signal-soft); color:var(--signal); }.site-header__nav a.is-primary { background:var(--signal); color:white; }
+@media (max-width:47.99rem) { .site-header { position:sticky; }.site-header__inner { min-height:3.75rem; }.site-header__nav { display:none; }.site-header__name { font-size:1rem; } }
 </style>

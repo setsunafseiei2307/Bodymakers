@@ -1,13 +1,8 @@
-# Codex 作業ルール
+# Bodymakers 作業ルール
 
-- 作業対象は原則として、このリポジトリ内に限定する。
-- Windows本体や、関係のないユーザーファイルを探索しない。
-- `/mnt/c` は原則として触らない。開発はLinux側の `~/projects/Bodymakers` で行う。
-- Windows、OS、PATH、レジストリ、グローバル環境を勝手に変更しない。必要な場合は変更前に理由を説明する。
-- 同じコードや環境を、必要なく何度も再調査しない。
-- Codexの利用量と実行時間を意識し、目的に不要な調査・再設計・再テストを避ける。
-- 実装後は変更範囲とリスクに応じた必要な検証だけを行う。
-- 完成作業はcommitで終わらせず、問題がなければGitHubへpushする。
-- push後は既存のCloudflare deployが成功したことを確認する。
-- 公開URLで変更が配信されたことを実際に確認して、初めて完成とする。
-
+- 作業対象は、作業開始時に確認した正しいBodymakers working copyだけに限定する。固定のOSパスを永続ルールにしない。
+- 必要なファイルだけを読み、無意味なリポジトリ全体再解析をしない。既存機能・URL・localStorage互換を壊さない。
+- Windows、OS、PATH、レジストリ、グローバル環境、既存の認証・Cloudflare構成を勝手に変更しない。
+- 実装後は `git diff --check`、`npm test`、`npm run build`、`npm run check:links` を実行し、実際のexit codeを確認する。コード問題は最大3回まで自己修正する。
+- 検証成功後はmainへpushする。pushだけで完了扱いにせず、既存Cloudflare Worker `bodymakers` への本番deployと公開URL確認まで行う。
+- 新しいWorkerやPages projectを作らず、完了後に勝手に次の機能を開始しない。

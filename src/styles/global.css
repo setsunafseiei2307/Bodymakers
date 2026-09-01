@@ -1,12 +1,11 @@
 /*
  * デザイントークンとベーススタイル。
  *
- * 方向性:「計測機器のリザルト票」。
- *   - 骨格は公式競技会のリザルト票。細いヘアラインと台帳のような行組み、
- *     数字は極太コンデンスと等幅で、計測された記録としての緊張感を出す。
- *   - ライトは紙（bone paper）、ダークは計器のパネル。
- *     同じ骨格のままダークにすると近未来的な計器の表示に見える。
- *   - 差し色は2本だけ。signal（赤）＝判定・警告、data（シアン）＝チャートと副データ。
+ * 方向性: 毎日開けるフィットネスアプリ。
+ *   - 行動を先に、専門データは必要なときに。
+ *   - 余白、柔らかなsurface、意味のある色でTraining / Nutrition / Recoveryを区別する。
+ *   - 1RMや基準表だけは、データの読みやすさを優先してtechnicalな表現を残す。
+ *   - signalはprimary action、dataは副次データに使う。
  *
  * 規則:
  *   - 色は必ずカスタムプロパティ経由。生の色値をコンポーネントに書かない。
@@ -22,26 +21,26 @@
   color-scheme: light;
 
   /* --- 面 --- */
-  --paper: #faf9f6;
+  --paper: #f5f7ff;
   --surface: #ffffff;
-  --inset: #f1efe9;
-  --band: #101014;
+  --inset: #eef1fb;
+  --band: #202d60;
 
   /* --- 文字 --- */
-  --ink: #101014;
-  --body: #34343c;
-  --muted: #6a6862;
-  --on-band: #faf9f6;
+  --ink: #182042;
+  --body: #3e496a;
+  --muted: #71809d;
+  --on-band: #ffffff;
 
   /* --- 罫 --- */
-  --hair: #d8d5cd;
-  --rule: #101014;
+  --hair: #dce2f2;
+  --rule: #202d60;
 
   /* --- 差し色は2本だけ --- */
-  --signal: #c4162e;
-  --signal-soft: #fbeaec;
-  --data: #007c8c;
-  --data-soft: #e2f2f4;
+  --signal: #4058d8;
+  --signal-soft: #e9edff;
+  --data: #168b8b;
+  --data-soft: #e2f7f6;
 
   /* --- 状態 --- */
   --danger: #b32020;
@@ -64,12 +63,13 @@
   --lv-5-soft: #fbe9ec;
 
   /* --- 影は最小限。紙の質感を壊さない --- */
-  --shadow-sm: 0 1px 2px rgb(16 16 20 / 6%);
-  --shadow-md: 0 4px 16px rgb(16 16 20 / 9%);
+  --shadow-sm: 0 4px 12px rgb(38 52 104 / 8%);
+  --shadow-md: 0 14px 32px rgb(38 52 104 / 14%);
 
   /* --- 角丸はほぼ使わない。票の直線的な印象を保つ --- */
-  --r-sm: 3px;
-  --r-md: 5px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
   --r-full: 999px;
 
   /* --- 余白（4px基準） --- */
@@ -334,6 +334,8 @@ code {
 .slip {
   background: var(--surface);
   border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 票の見出し帯 */
@@ -372,7 +374,7 @@ code {
   min-height: 2.75rem;
   padding: var(--s3) var(--s5);
   border: 1.5px solid var(--signal);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-full);
   background: var(--signal);
   color: #fff;
   font-size: 1rem;
@@ -419,6 +421,7 @@ code {
   padding: var(--s4);
   border: 1px solid var(--hair);
   border-left: 3px solid var(--rule);
+  border-radius: var(--r-sm);
   background: var(--inset);
   color: var(--body);
   font-size: 0.9375rem;

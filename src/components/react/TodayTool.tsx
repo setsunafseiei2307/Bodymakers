@@ -343,7 +343,20 @@ export default function TodayTool() {
 
   return (
     <div className="tool">
-      <Slip code="QUICK" title="今日の食事">
+      {activeProgram && activeProgramDefinition && (
+        <Slip code="ACTIVE" title="今日のトレーニング">
+          <div id="active-program" className="today__active-program">
+            <span>{activeProgramDefinition.name}</span>
+            <strong>Week {activeProgram.currentWeek} / Day {activeProgram.currentDay}</strong>
+            {activeProgramSession ? <><p>{activeProgramSession.label}／{activeProgramSession.focus}</p><ul>{activeProgramSession.exercises.map((item) => <li key={item.exerciseId}><span>{item.label}</span><strong>{item.weightKg == null ? item.note ?? 'フォームを保てる負荷で' : `${fmt(item.weightKg, 1)}kg`}</strong><small>{item.sets}セット × {item.reps}回</small></li>)}</ul></> : <p>現在のDayを読み込めませんでした。Program Libraryで条件を確認してください。</p>}
+            <a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a>
+            <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
+            {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
+          </div>
+        </Slip>
+      )}
+
+      <div id="quick-record"><Slip code="QUICK" title="今日の食事">
         <section className="today__macro-dashboard" aria-label="今日の食事の摂取量">
           <p className="today__dashboard-title">今日の食事</p>
           {[
@@ -401,7 +414,7 @@ export default function TodayTool() {
         </button>
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="tool__note">この端末にのみ保存します。サーバーへの送信はありません。</p>
-      </Slip>
+      </Slip></div>
 
       <Slip code="BALANCE" title="今日の栄養バランス">
         {nutritionProgressItems.length === 0 ? <p className="tool__note">プロフィールまたは診断で年齢・性別を保存すると、厚労省の食事摂取基準（2025年版）との今日の進捗を表示します。</p> : <>
@@ -423,18 +436,7 @@ export default function TodayTool() {
         </>}
       </Slip>
 
-      {activeProgram && activeProgramDefinition && (
-        <Slip code="ACTIVE" title="今日のトレーニング">
-          <div id="active-program" className="today__active-program">
-            <span>{activeProgramDefinition.name}</span>
-            <strong>Week {activeProgram.currentWeek} / Day {activeProgram.currentDay}</strong>
-            {activeProgramSession ? <><p>{activeProgramSession.label}／{activeProgramSession.focus}</p><ul>{activeProgramSession.exercises.map((item) => <li key={item.exerciseId}><span>{item.label}</span><strong>{item.weightKg == null ? item.note ?? 'フォームを保てる負荷で' : `${fmt(item.weightKg, 1)}kg`}</strong><small>{item.sets}セット × {item.reps}回</small></li>)}</ul></> : <p>現在のDayを読み込めませんでした。Program Libraryで条件を確認してください。</p>}
-            <a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a>
-            <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
-            {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
-          </div>
-        </Slip>
-      )}
+
 
       {generatedPersonalPlan && (
         <Slip code="TODAY" title="今日やること">

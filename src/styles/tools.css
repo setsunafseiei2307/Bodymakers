@@ -1674,3 +1674,30 @@
 .first-week__unlocks li { color: var(--muted); font-size: .78rem; line-height: 1.6; }
 .first-week__unlocks li::before { content: '・'; }
 .first-week .button { margin-top: var(--s2); min-height: 3rem; }
+
+/* よく食べるもの。検索せず1タップで、前回の分量のまま入れる。 */
+.quick-food { display: grid; gap: var(--s2); margin-bottom: var(--s3); }
+.quick-food__title { margin: 0; color: var(--muted); font-size: .72rem; font-weight: 800; letter-spacing: .06em; }
+.quick-food__list { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.quick-food__add {
+  display: flex; align-items: baseline; gap: var(--s2);
+  /* 指で押せる高さを確保する */
+  min-height: 2.75rem; padding: var(--s2) var(--s3);
+  border: 1px solid var(--hair); border-radius: 999px;
+  background: var(--surface); color: inherit; font-size: .82rem; cursor: pointer;
+  transition: border-color .18s var(--ease), background-color .18s var(--ease);
+}
+.quick-food__add:hover { border-color: var(--signal); background: var(--signal-soft); }
+.quick-food__add:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.quick-food__name { font-weight: 600; }
+.quick-food__grams { color: var(--muted); font-size: .74rem; }
+.quick-food__undo {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2);
+  margin: 0 0 var(--s3); color: var(--muted); font-size: .8rem;
+}
+.quick-food__undo button {
+  min-height: 2.75rem; padding: 0 var(--s3);
+  border: 0; background: none; color: var(--signal);
+  font-size: .8rem; font-weight: 700; text-decoration: underline; cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) { .quick-food__add { transition: none; } }

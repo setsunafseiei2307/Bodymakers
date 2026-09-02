@@ -19,6 +19,7 @@ import { fmt, parseNumber } from '../../lib/format';
 import { buildPersonalPlan } from '../../lib/diagnosis/plan';
 import { DISHES, calcDish, dishMealEntries } from '../../lib/dishes';
 import { commonFoods, searchFoods, type Food, type NutrientKey } from '../../lib/foods';
+import { frequentFoods, lastAmountFor } from '../../lib/foodHistory';
 import { nutritionPriorities, nutritionProgress, recommendFoods } from '../../lib/foodRecommendations';
 import { NUTRITION_REFERENCE_SOURCE } from '../../lib/nutritionReference';
 import { ACTIVITIES, activityGroups } from '../../lib/mets';
@@ -109,6 +110,8 @@ export default function TodayTool() {
   /** その日の食事記録が揃ったという印。 */
   const [nutritionComplete, setNutritionComplete] = useState(false);
   const [nutritionMessage2, setNutritionMessage2] = useState('');
+  /** 直前に追加した食品の数。押し間違いをその場で戻せるようにする。 */
+  const [lastAddedCount, setLastAddedCount] = useState(0);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -258,6 +261,15 @@ export default function TodayTool() {
   const nextPreview = useMemo(
     () => buildNextSessionPreview(activeProgram, trainingAdjustments),
     [activeProgram, trainingAdjustments],
+  );
+
+  /**
+   * よく食べるもの。保存済みの記録からその場で数えるので、
+   * お気に入り用の保存領域は持たない。
+   */
+  const frequent = useMemo(
+    () => (savedData == null ? [] : frequentFoods(savedData.dailyLogs, { limit: 6 })),
+    [savedData],
   );
 
   /** 使いはじめの段階。初週のあいだは重い集計を前に出さない。 */
@@ -449,9 +461,25 @@ export default function TodayTool() {
     setNutritionMessage(`${food.name}を${MEAL_OPTIONS.find((option) => option.value === mealType)?.label ?? '食事'}に追加しました。`);
   }
 
-  function addMeal(food: Food) {
-    setMeals((list) => [...list, { foodId: food.id, grams: DEFAULT_GRAMS, mealType }]);
+  /**
+   * 食品を1つ追加する。
+   * 前にその食品を食べていれば、そのときの分量を初期値にする。
+   * 毎回100gから打ち直さなくて済む。
+   */
+  function addMeal(food: Food, grams?: number) {
+    const amount = grams
+      ?? (savedData == null ? null : lastAmountFor(savedData.dailyLogs, food.id))
+      ?? DEFAULT_GRAMS;
+    setMeals((list) => [...list, { foodId: food.id, grams: amount, mealType }]);
     setQuery('');
+    setLastAddedCount(1);
+  }
+
+  /** 直前に追加したぶんだけを取り消す。 */
+  function undoLastAdd() {
+    if (lastAddedCount <= 0) return;
+    setMeals((list) => list.slice(0, Math.max(0, list.length - lastAddedCount)));
+    setLastAddedCount(0);
   }
 
   function addMealText() {
@@ -460,6 +488,7 @@ export default function TodayTool() {
     if (parsed.meals.length > 0) {
       setMeals((list) => [...list, ...parsed.meals.map((meal) => ({ ...meal, mealType }))]);
       setMealText('');
+      setLastAddedCount(parsed.meals.length);
     }
   }
 
@@ -471,7 +500,9 @@ export default function TodayTool() {
   function addDish(dishId: string) {
     const dish = DISHES.find((d) => d.id === dishId);
     if (dish == null) return;
-    setMeals((list) => [...list, ...dishMealEntries(dish, mealType, `${dish.id}-${Date.now()}`)]);
+    const entries = dishMealEntries(dish, mealType, `${dish.id}-${Date.now()}`);
+    setMeals((list) => [...list, ...entries]);
+    setLastAddedCount(entries.length);
   }
 
   function setGrams(index: number, value: string) {
@@ -753,8 +784,8 @@ export default function TodayTool() {
           >
             <span className="today__nutrition-complete-mark" aria-hidden="true">{nutritionComplete ? '✓' : '　'}</span>
             <span>
-              <strong>{nutritionComplete ? '今日の食事記録は完了' : '今日の食事記録を完了にする'}</strong>
-              <small>{nutritionComplete ? 'あとから外せます。' : '記録がだいたい揃ったら押してください。見直しの判断に使います。'}</small>
+              <strong>{nutritionComplete ? '今日はだいたい記録できた' : '今日はだいたい記録できた'}</strong>
+              <small>{nutritionComplete ? '見直しの判断に使います。あとから外せます。' : '完璧でなくて大丈夫です。押した日だけを見直しの判断に使います。'}</small>
             </span>
           </button>
         )}
@@ -840,6 +871,39 @@ export default function TodayTool() {
             ))}
           </div>
         </div>
+
+        {/* よく食べるもの。1タップで前回の分量のまま入る。 */}
+        {frequent.length > 0 && query.trim() === '' && (
+          <div className="quick-food">
+            <p className="quick-food__title">よく食べるもの</p>
+            <ul className="quick-food__list">
+              {frequent.map((item) => (
+                <li key={item.food.id}>
+                  <button
+                    type="button"
+                    className="quick-food__add"
+                    onClick={() => addMeal(item.food, item.grams)}
+                    aria-label={`${item.food.name} を ${item.grams}g 追加する`}
+                  >
+                    <span className="quick-food__name">
+                      {item.food.emoji && <span aria-hidden="true">{item.food.emoji} </span>}
+                      {item.food.name}
+                    </span>
+                    <span className="quick-food__grams num">{item.grams}g</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 押し間違いをその場で戻せるようにする。 */}
+        {lastAddedCount > 0 && (
+          <p className="quick-food__undo" role="status">
+            追加しました。
+            <button type="button" onClick={undoLastAdd}>元に戻す</button>
+          </p>
+        )}
 
         <ul className="today__suggest">
           {suggestions.map((food) => (

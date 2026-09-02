@@ -33,3 +33,17 @@ One session may adjust a lift once. The session key `programId:wNdM` records wha
 The rule only uses what is actually saved: which exercises were ticked, and whether the session was marked 完了 or スキップ. Per-set weight and reps are not stored, so no rule may depend on them until they are.
 
 Changing any of this requires updating this file with the reason.
+
+## 2026-09-03 Planned and actual are separate, and only actual moves the weight
+
+Set records store the program's planned weight / sets / reps alongside what was actually lifted. The two are never merged. Pressing 完了 is a navigation action, not evidence that the planned work was done, so on its own it no longer raises the weight.
+
+Achieved reps count only sets that were tapped and were at or above the planned weight. Reducing the weight to finish more reps is a valid session, but it is not the same as hitting the target, and the next weight must not rise because of it.
+
+A near miss (85% or more of planned reps) holds the weight without counting as a miss. Starting to reduce the weight one rep short would stall progress that is nearly there.
+
+When no set record exists for a session, the v1 rule (完了 / スキップ) runs unchanged. Older saves must never lose behaviour because a newer path exists.
+
+The v1 guards stay as they are: ±40kg offset limit, 20kg display floor, one adjustment per session key, and the program's own weights are never rewritten.
+
+Changing any of this requires updating this file with the reason.

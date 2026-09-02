@@ -39,11 +39,13 @@ import {
 import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
-import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type BodymakersData, type DailyLog, type SavedDietPlan } from '../../lib/storage';
+import { advanceActiveProgram, localDateKey, readData, saveDailyLog, saveTrainingSession, todayLog, type BodymakersData, type DailyLog, type SavedDietPlan } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { resolveTodayAction } from '../../lib/todayAction';
 import { LIFT_LABELS as ADAPTIVE_LIFT_LABELS, adjustSession, adjustmentSummaryLines, emptyTrainingAdjustments, recentAdjustments } from '../../lib/training/adaptive';
 import { blankLog, buildWeeklySummary, summarizeActivity, todayProgress, weeklyProgress } from '../../lib/activity';
+import { draftSessionFromProgram, findSessionLog, hasRecordedSets, type TrainingSessionLog } from '../../lib/training/log';
+import SetTracker from './SetTracker';
 import { TodayProgressPanel, WeeklyProgressPanel } from './DailyLoop';
 import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
@@ -85,6 +87,8 @@ export default function TodayTool() {
   const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
   /** 継続日数と直近7日の集計に使う、端末内データそのもの。 */
   const [savedData, setSavedData] = useState<BodymakersData | null>(null);
+  /** いま記録中のセッション。予定値から作り、押した内容をここへ入れていく。 */
+  const [sessionLog, setSessionLog] = useState<TrainingSessionLog | null>(null);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -199,6 +203,23 @@ export default function TodayTool() {
     const session = sessionForActiveProgram(activeProgram);
     return session == null ? null : adjustSession(session, trainingAdjustments);
   }, [activeProgram, trainingAdjustments]);
+  /**
+   * 記録用の下敷きを用意する。
+   * すでに押した実績が保存されていればそれを、無ければ予定値から作る。
+   */
+  useEffect(() => {
+    if (activeProgram == null || activeProgramSession == null || savedData == null) {
+      setSessionLog(null);
+      return;
+    }
+    setSessionLog((current) => {
+      const key = `${activeProgram.programId}:w${activeProgram.currentWeek}d${activeProgram.currentDay}`;
+      if (current != null && current.sessionKey === key) return current;
+      return findSessionLog(savedData.trainingSessions, key)
+        ?? draftSessionFromProgram(activeProgram, activeProgramSession, localDateKey());
+    });
+  }, [activeProgram, activeProgramSession, savedData]);
+
   const adjustmentLines = useMemo(() => adjustmentSummaryLines(trainingAdjustments), [trainingAdjustments]);
   const adjustmentHistory = useMemo(() => recentAdjustments(trainingAdjustments, 5), [trainingAdjustments]);
   /**
@@ -293,7 +314,8 @@ export default function TodayTool() {
   }, [detailed, weightKg, exercise, intakeTotals.kcal, sex, age, height]);
 
   function advanceProgram(action: 'complete' | 'skip') {
-    const result = advanceActiveProgram(action);
+    // 押したセットの実績を一緒に渡す。あれば実績で、無ければ完了/スキップで判定される。
+    const result = advanceActiveProgram(action, sessionLog);
     if (result == null) {
       setActiveProgramMessage('進行を保存できませんでした。ブラウザの保存設定を確認してください。');
       return;
@@ -301,7 +323,21 @@ export default function TodayTool() {
     setActiveProgram(result.activeProgram);
     // 調整結果を含めて読み直す。次回の提示重量がその場で変わる。
     setSavedData(readData());
-    setActiveProgramMessage(result.completed ? 'プログラムを完了しました。履歴に保存しました。' : action === 'complete' ? '完了を記録して、次のDayへ進みました。' : 'このDayをスキップして、次へ進みました。');
+    setSessionLog(null);
+    const recorded = result.source === 'sets' ? '記録した内容から次回の重量を決めました。' : '';
+    setActiveProgramMessage(
+      result.completed
+        ? `プログラムを完了しました。履歴に保存しました。${recorded}`
+        : action === 'complete'
+          ? `完了を記録して、次のDayへ進みました。${recorded}`
+          : 'このDayをスキップして、次へ進みました。',
+    );
+  }
+
+  /** 押した内容をその場で残す。完了を押す前に閉じても消えない。 */
+  function updateSessionLog(next: TrainingSessionLog) {
+    setSessionLog(next);
+    if (hasRecordedSets(next)) saveTrainingSession(next);
   }
 
   function addRecommendedFood(food: Food, grams: number) {
@@ -436,8 +472,9 @@ export default function TodayTool() {
             <span>{activeProgramDefinition.name}</span>
             <strong>Week {activeProgram.currentWeek} / Day {activeProgram.currentDay}</strong>
             {activeProgramSession ? <><p>{activeProgramSession.label}／{activeProgramSession.focus}</p><ul>{activeProgramSession.exercises.map((item) => <li key={item.exerciseId}><span>{item.label}</span><strong>{item.weightKg == null ? item.note ?? 'フォームを保てる負荷で' : `${fmt(item.weightKg, 1)}kg`}</strong><small>{item.sets}セット × {item.reps}回</small></li>)}</ul></> : <p>現在のDayを読み込めませんでした。Program Libraryで条件を確認してください。</p>}
-            <a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a>
-            <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
+            {/* 実際にやったセットをその場で押す。予定値が最初から入っている。 */}
+            {sessionLog && <SetTracker log={sessionLog} onChange={updateSessionLog} />}
+            <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>セッションを完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
             {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
             {/* なぜこの重量なのか。記録の結果が次回へどう返ったかを短く出す。 */}
             {adjustmentLines.length > 0 && (

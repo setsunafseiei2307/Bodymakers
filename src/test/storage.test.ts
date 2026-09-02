@@ -136,8 +136,8 @@ describe('端末内データ', () => {
     const storage = memoryStorage();
     const active: ActiveProgram = { programId: 'bodymakers-linear', startedAt: '2026-09-02T00:00:00.000Z', currentWeek: 1, currentDay: 1, trainingMaxes: { bench: 100 }, daysPerWeek: 1, durationWeeks: 2, primaryLift: 'bench', completedSessions: 0 };
     expect(startActiveProgram(active, storage)).toBe(true);
-    expect(advanceActiveProgram('complete', storage)).toMatchObject({ completed: false, activeProgram: { currentWeek: 2, currentDay: 1, completedSessions: 1 } });
-    expect(advanceActiveProgram('skip', storage)).toMatchObject({ completed: true, activeProgram: null });
+    expect(advanceActiveProgram('complete', null, storage)).toMatchObject({ completed: false, activeProgram: { currentWeek: 2, currentDay: 1, completedSessions: 1 } });
+    expect(advanceActiveProgram('skip', null, storage)).toMatchObject({ completed: true, activeProgram: null });
     const data = readData(storage);
     expect(data.activeProgram).toBeNull();
     expect(data.programHistory).toHaveLength(1);

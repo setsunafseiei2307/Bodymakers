@@ -20,6 +20,7 @@
 
 import type { LiftId } from '../strength/standards';
 import type { ActiveProgram, ProgramSession } from '../programLibrary';
+import { summarizeSession, type TrainingSessionLog } from './log';
 
 /** バーベルの実用的な刻み。上半身は小さく、下半身は大きく動かす。 */
 export const LIFT_STEP_KG: Readonly<Record<LiftId, number>> = {
@@ -58,6 +59,16 @@ export type SessionOutcome = 'completed' | 'missed';
 
 /** なぜその重量になったか。 */
 export type AdjustmentReasonId = 'start' | 'increase' | 'hold' | 'deload';
+
+/**
+ * 予定に対してどこまでできたら次へ進めるか。
+ *
+ * 1.0 … 予定の回数をすべて予定重量以上でこなした
+ * 0.85以上 … あと少し。重量は動かさずもう一度
+ * 0.85未満 … 明確に届いていない。続けば1段階下げる
+ */
+export const PROGRESS_RATIO = 1;
+export const HOLD_RATIO = 0.85;
 
 export interface LiftAdjustment {
   /** Programが出した重量に足すズレ。 */
@@ -339,4 +350,196 @@ export function adjustmentSummaryLines(adjustments: TrainingAdjustments): string
 /** 直近の調整履歴。新しい順。 */
 export function recentAdjustments(adjustments: TrainingAdjustments, limit = 5): AdjustmentEvent[] {
   return [...adjustments.history].reverse().slice(0, Math.max(0, limit));
+}
+
+/* ==========================================================================
+   Adaptive v2 — 実際のセット実績から判定する
+   ========================================================================== */
+
+/** その種目について、実績から導いた判定。 */
+export interface LiftEvaluation {
+  lift: LiftId;
+  outcome: SessionOutcome;
+  /** 予定に対する達成率。予定が無ければ null。 */
+  ratio: number | null;
+  /** 予定重量以上でこなせた回数。 */
+  completedReps: number;
+  plannedTotalReps: number;
+  /** 実績から判定したか、完了ボタンだけで判定したか。 */
+  source: 'sets' | 'session';
+  /** 一部未達で据え置きにする場合は true。未達の回数には数えない。 */
+  partial: boolean;
+}
+
+/**
+ * セット実績から、種目ごとの判定を出す。
+ *
+ * 予定の回数を予定重量以上でこなせていれば次へ進む。
+ * あと少し（85%以上）なら、未達とは数えずに据え置く。
+ * 明確に届いていなければ未達として数え、続けば1段階下げる。
+ *
+ * 「完了ボタンを押した」だけでは増量しない。ここが v1 との違い。
+ */
+export function evaluateSessionLog(log: TrainingSessionLog): LiftEvaluation[] {
+  const evaluations: LiftEvaluation[] = [];
+  for (const performance of summarizeSession(log)) {
+    if (performance.lift == null) continue;
+    // 重量の決まっていない補助種目は動かさない。
+    if (performance.plannedWeightKg == null) continue;
+    if (evaluations.some((item) => item.lift === performance.lift)) continue;
+
+    const ratio = performance.ratio;
+    let outcome: SessionOutcome;
+    let partial = false;
+    if (ratio == null) {
+      // 予定回数が読めないときは、完了セットがあるかどうかで見る。
+      outcome = performance.completedSets > 0 ? 'completed' : 'missed';
+    } else if (ratio >= PROGRESS_RATIO) {
+      outcome = 'completed';
+    } else if (ratio >= HOLD_RATIO) {
+      outcome = 'missed';
+      partial = true;
+    } else {
+      outcome = 'missed';
+    }
+
+    evaluations.push({
+      lift: performance.lift,
+      outcome,
+      ratio,
+      completedReps: performance.completedReps,
+      plannedTotalReps: performance.plannedTotalReps,
+      source: 'sets',
+      partial,
+    });
+  }
+  return evaluations;
+}
+
+/**
+ * 実績から出した判定を、次回の重量へ反映する。
+ *
+ * 一部未達（partial）は据え置きだけにして、未達の回数には数えない。
+ * あと1回のところで下げ始めると、かえって進まなくなるため。
+ */
+export function applySessionEvaluations(
+  adjustments: TrainingAdjustments,
+  sessionKey: string,
+  evaluations: readonly LiftEvaluation[],
+  date: string,
+  now = new Date(),
+): TrainingAdjustments {
+  let next = adjustments;
+  for (const evaluation of evaluations) {
+    if (evaluation.partial) {
+      next = applyHold(next, sessionKey, evaluation.lift, date, now);
+      continue;
+    }
+    next = applySessionOutcome(next, {
+      sessionKey,
+      lifts: [evaluation.lift],
+      outcome: evaluation.outcome,
+      date,
+    }, now);
+  }
+  return next;
+}
+
+/** 重量を動かさず、未達の回数も増やさない据え置き。 */
+function applyHold(
+  adjustments: TrainingAdjustments,
+  sessionKey: string,
+  lift: LiftId,
+  date: string,
+  now: Date,
+): TrainingAdjustments {
+  const current = adjustments.lifts[lift] ?? startingAdjustment();
+  if (current.lastSessionKey === sessionKey) return adjustments;
+  const updated: LiftAdjustment = {
+    ...current,
+    reason: 'hold',
+    lastDeltaKg: 0,
+    updatedAt: now.toISOString(),
+    lastSessionKey: sessionKey,
+  };
+  return {
+    version: 1,
+    lifts: { ...adjustments.lifts, [lift]: updated },
+    history: [
+      ...adjustments.history,
+      { id: `${sessionKey}:${lift}`, date, lift, reason: 'hold' as const, deltaKg: 0, offsetKg: current.offsetKg, sessionKey },
+    ].slice(-ADJUSTMENT_HISTORY_LIMIT),
+  };
+}
+
+/**
+ * セッションを終えたときの調整。
+ *
+ * セット実績があればそれを優先する（v2）。
+ * 無ければ、完了 / スキップだけで判定する従来の動き（v1）へ落とす。
+ * 旧データや、記録せずに完了だけ押した人でもそのまま動く。
+ */
+export function applySessionCompletion(
+  adjustments: TrainingAdjustments,
+  input: {
+    sessionKey: string;
+    date: string;
+    /** Programのセッション。v1のfallbackで対象の種目を決めるのに使う。 */
+    session: ProgramSession | null;
+    /** 実績。無ければ null。 */
+    log: TrainingSessionLog | null;
+    outcome: SessionOutcome;
+  },
+  now = new Date(),
+): { adjustments: TrainingAdjustments; evaluations: LiftEvaluation[]; source: 'sets' | 'session' } {
+  const evaluations = input.log == null ? [] : evaluateSessionLog(input.log);
+
+  if (evaluations.length > 0 && input.outcome === 'completed') {
+    return {
+      adjustments: applySessionEvaluations(adjustments, input.sessionKey, evaluations, input.date, now),
+      evaluations,
+      source: 'sets',
+    };
+  }
+
+  // 実績が無い、またはスキップされた場合は従来どおりの判定にする。
+  const lifts = liftsInSession(input.session);
+  return {
+    adjustments: applySessionOutcome(adjustments, { sessionKey: input.sessionKey, lifts, outcome: input.outcome, date: input.date }, now),
+    evaluations: lifts.map((lift) => ({
+      lift,
+      outcome: input.outcome,
+      ratio: null,
+      completedReps: 0,
+      plannedTotalReps: 0,
+      source: 'session' as const,
+      partial: false,
+    })),
+    source: 'session',
+  };
+}
+
+/**
+ * 実績を踏まえた理由の説明。
+ * 数字を出せるときは出し、無理なら従来の言い方に落とす。
+ */
+export function evaluationReasonText(evaluation: LiftEvaluation, deltaKg: number): string {
+  const label = LIFT_LABELS[evaluation.lift];
+  const step = Math.abs(deltaKg);
+  if (evaluation.source === 'sets' && evaluation.plannedTotalReps > 0) {
+    const done = `目標${evaluation.plannedTotalReps}回中${evaluation.completedReps}回`;
+    if (evaluation.outcome === 'completed') {
+      return step > 0
+        ? `${label}は${done}を完了したので、次回は+${step}kgです。`
+        : `${label}は${done}を完了しました。次回も同じ重量です。`;
+    }
+    if (evaluation.partial) return `${label}は${done}でした。次回も同じ重量でもう一度です。`;
+    return step > 0
+      ? `${label}は${done}でした。次回は−${step}kgで整えます。`
+      : `${label}は${done}でした。次回も同じ重量でもう一度です。`;
+  }
+  if (evaluation.outcome === 'completed') {
+    return step > 0 ? `${label}はセッションを完了したので、次回は+${step}kgです。` : `${label}は次回も同じ重量です。`;
+  }
+  return step > 0 ? `${label}は次回−${step}kgで整えます。` : `${label}は次回も同じ重量でもう一度です。`;
 }

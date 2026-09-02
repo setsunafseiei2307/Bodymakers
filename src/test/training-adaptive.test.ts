@@ -332,7 +332,7 @@ describe('Record → 保存 → 次回のTodayへ反映', () => {
     const storage = memoryStorage();
     storage.setItem(STORAGE_KEY, JSON.stringify({ ...emptyData(), activeProgram }));
 
-    const result = advanceActiveProgram('complete', storage);
+    const result = advanceActiveProgram('complete', null, storage);
     expect(result).not.toBeNull();
     expect(result!.adjustments.lifts.squat?.reason).toBe('increase');
 
@@ -347,7 +347,7 @@ describe('Record → 保存 → 次回のTodayへ反映', () => {
     const storage = memoryStorage();
     storage.setItem(STORAGE_KEY, JSON.stringify({ ...emptyData(), activeProgram }));
 
-    advanceActiveProgram('skip', storage);
+    advanceActiveProgram('skip', null, storage);
     const stored = parseStoredData(storage.getItem(STORAGE_KEY));
     expect(offsetFor(stored.trainingAdjustments, 'squat')).toBe(0);
     expect(stored.trainingAdjustments.lifts.squat?.consecutiveMisses).toBe(1);
@@ -357,8 +357,8 @@ describe('Record → 保存 → 次回のTodayへ反映', () => {
     const storage = memoryStorage();
     storage.setItem(STORAGE_KEY, JSON.stringify({ ...emptyData(), activeProgram }));
 
-    advanceActiveProgram('skip', storage);
-    advanceActiveProgram('skip', storage);
+    advanceActiveProgram('skip', null, storage);
+    advanceActiveProgram('skip', null, storage);
 
     const stored = parseStoredData(storage.getItem(STORAGE_KEY));
     expect(offsetFor(stored.trainingAdjustments, 'squat')).toBeLessThan(0);
@@ -369,7 +369,7 @@ describe('Record → 保存 → 次回のTodayへ反映', () => {
   it('実行中Programが無ければ、何も記録しない', () => {
     const storage = memoryStorage();
     storage.setItem(STORAGE_KEY, JSON.stringify(emptyData()));
-    expect(advanceActiveProgram('complete', storage)).toBeNull();
+    expect(advanceActiveProgram('complete', null, storage)).toBeNull();
   });
 
   it('食事や体重などの既存データは壊さない', () => {
@@ -381,7 +381,7 @@ describe('Record → 保存 → 次回のTodayへ反映', () => {
       recentFoodIds: ['01088'],
     }));
 
-    advanceActiveProgram('complete', storage);
+    advanceActiveProgram('complete', null, storage);
 
     const stored = parseStoredData(storage.getItem(STORAGE_KEY));
     expect(stored.dailyLogs).toHaveLength(1);

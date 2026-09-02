@@ -1428,3 +1428,85 @@
 .today__adaptive-history li { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s2); align-items: baseline; font-size: .78rem; }
 .today__adaptive-history time { color: var(--muted); font-family: var(--f-mono); font-size: .72rem; }
 .today__adaptive-history strong { font-family: var(--f-mono); }
+
+/* ==========================================================================
+   セットの記録
+   ジムで片手で押す前提。行は詰めすぎず、押す場所を大きく取る。
+   ========================================================================== */
+.set-tracker { display: grid; gap: var(--s4); margin-block: var(--s3); }
+.set-tracker__exercise { display: grid; gap: var(--s2); padding: var(--s3); border-radius: var(--r-md); background: var(--surface); }
+.set-tracker__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.set-tracker__head strong { display: block; font-size: .92rem; }
+.set-tracker__head > div > span { color: var(--muted); font-size: .74rem; }
+.set-tracker__count { flex: none; color: var(--muted); font-size: .78rem; font-weight: 700; }
+
+.set-tracker__sets { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.set-tracker__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center; gap: var(--s1);
+  /* 押す場所を44px以上に保つ */
+  min-height: 3rem;
+  padding: var(--s1) var(--s2);
+  border-radius: var(--r-sm);
+  background: var(--inset);
+}
+/* 完了は色だけでなく、チェックと文字でも示す */
+.set-tracker__row.is-done { background: color-mix(in srgb, var(--ok, #168b63) 10%, var(--inset)); }
+.set-tracker__label { color: var(--muted); font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.set-tracker__field { display: flex; align-items: baseline; gap: 2px; min-width: 0; }
+.set-tracker__field > span { color: var(--muted); font-size: .7rem; }
+.set-tracker__input {
+  width: 100%; min-width: 0; max-width: 3.6rem;
+  min-height: 2.5rem; padding: var(--s1);
+  border: 1px solid var(--hair); border-radius: var(--r-sm);
+  background: var(--surface); color: inherit;
+  font-family: var(--f-mono); font-size: .9rem; text-align: right;
+}
+.set-tracker__input:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
+.set-tracker__times { color: var(--muted); font-size: .78rem; }
+.set-tracker__done {
+  display: grid; justify-items: center; align-content: center; gap: 1px;
+  min-width: 3.25rem; min-height: 2.75rem; padding: var(--s1) var(--s2);
+  border: 2px solid var(--hair); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--muted);
+  font-size: .9rem; font-weight: 800; cursor: pointer;
+  transition: background-color .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease);
+}
+.set-tracker__done-text { font-size: .6rem; font-weight: 700; letter-spacing: .02em; }
+.set-tracker__row.is-done .set-tracker__done { border-color: var(--ok, #168b63); background: var(--ok, #168b63); color: white; }
+.set-tracker__done:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+@media (max-width: 22rem) {
+  .set-tracker__row { grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); grid-template-rows: auto auto; }
+  .set-tracker__done { grid-column: 1 / -1; width: 100%; }
+}
+
+/* --- Recordのトレーニング振り返り --- */
+.training-review { display: grid; gap: var(--s3); margin-top: var(--s6); padding-top: var(--s5); border-top: 1px solid var(--hair); }
+.training-review__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.training-review__head h2 { margin: 0; font-size: 1.05rem; }
+.training-review__head span { color: var(--muted); font-size: .78rem; }
+.training-review__lines { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.training-review__lines li { color: var(--body); font-size: .86rem; line-height: 1.65; }
+.training-review__lines li::before { content: '・'; color: var(--muted); }
+.training-review__lifts { display: grid; gap: var(--s2); }
+.training-review__lifts article { display: grid; gap: 2px; padding: var(--s3); border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow-sm); }
+.training-review__lifts span { color: var(--muted); font-size: .72rem; font-weight: 800; }
+.training-review__lifts strong { font-size: 1rem; }
+.training-review__lifts small { color: var(--muted); font-size: .74rem; }
+.training-review__lifts p { margin: var(--s1) 0 0; color: var(--body); font-size: .8rem; line-height: 1.6; }
+.training-review__sessions summary { cursor: pointer; color: var(--muted); font-size: .8rem; font-weight: 700; }
+.training-review__sessions ol { display: grid; gap: var(--s3); margin: var(--s3) 0 0; padding: 0; list-style: none; }
+.training-review__sessions li { display: grid; gap: var(--s1); padding: var(--s3); border-radius: var(--r-sm); background: var(--inset); }
+.training-review__sessions time { color: var(--muted); font-family: var(--f-mono); font-size: .74rem; }
+.training-review__sessions p { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2); margin: 0; font-size: .82rem; }
+.training-review__sessions p strong { font-family: var(--f-mono); }
+.training-review__sessions p small { color: var(--muted); font-size: .72rem; }
+
+@media (min-width: 40rem) {
+  .training-review__lifts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .set-tracker__done { transition: none; }
+}

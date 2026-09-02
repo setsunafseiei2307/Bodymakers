@@ -10,13 +10,20 @@ import { sessionForActiveProgram, type ActiveProgram } from './programLibrary';
 import { normalizePersonalPlan, type SavedPersonalPlan } from './diagnosis/types';
 import { MEAL_TYPES, type ExerciseEntry, type MealEntry, type MealType, type MuscleGroup } from './today';
 import {
-  applySessionOutcome,
+  applySessionCompletion,
   emptyTrainingAdjustments,
-  liftsInSession,
   normalizeTrainingAdjustments,
   sessionKeyFor,
+  type LiftEvaluation,
   type TrainingAdjustments,
 } from './training/adaptive';
+import {
+  findSessionLog,
+  isWorthSaving,
+  normalizeTrainingSessions,
+  TRAINING_SESSION_LIMIT,
+  type TrainingSessionLog,
+} from './training/log';
 import {
   STRENGTH_HISTORY_LIMIT,
   normalizeStrengthDiagnosis,
@@ -90,6 +97,11 @@ export interface BodymakersData {
    * 旧v1データには存在しないため、空の状態として復元する。
    */
   trainingAdjustments: TrainingAdjustments;
+  /**
+   * 実際にやったセットの記録。
+   * 旧v1データには存在しないため、空配列として復元する。
+   */
+  trainingSessions: TrainingSessionLog[];
 }
 
 export interface CompletedProgram extends ActiveProgram {
@@ -109,6 +121,7 @@ export function emptyData(): BodymakersData {
     programHistory: [],
     recentFoodIds: [],
     trainingAdjustments: emptyTrainingAdjustments(),
+    trainingSessions: [],
   };
 }
 
@@ -230,6 +243,7 @@ export function parseStoredData(raw: string | null): BodymakersData {
         ? [...new Set(parsed.recentFoodIds.filter((item): item is string => typeof item === 'string' && item.length > 0))].slice(0, 12)
         : [],
       trainingAdjustments: normalizeTrainingAdjustments(parsed.trainingAdjustments),
+      trainingSessions: normalizeTrainingSessions(parsed.trainingSessions),
     };
   } catch {
     return emptyData();
@@ -401,29 +415,61 @@ export function startActiveProgram(
   return writeData({ ...data, activeProgram: normalized }, storage);
 }
 
+/** 進行中セッションの実績を保存する。完了前の途中保存にも使う。 */
+export function saveTrainingSession(
+  log: TrainingSessionLog,
+  storage: Storage | null = browserStorage(),
+): boolean {
+  if (!isWorthSaving(log)) return false;
+  const data = readData(storage);
+  const trainingSessions = [...data.trainingSessions.filter((item) => item.id !== log.id), { ...log, savedAt: new Date().toISOString() }]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+    .slice(-TRAINING_SESSION_LIMIT);
+  return writeData({ ...data, trainingSessions }, storage);
+}
+
 /**
  * 現在の1日を進め、最終日を終えたProgramは履歴へ残す。
  *
  * ここで、いま終えたセッションの結果を次回の提示重量へ返す。
- * 完了なら1段階上げる候補にし、スキップなら据え置き（続けば下げる）。
+ * セットの実績が残っていればそれを見て判定し（v2）、
+ * 無ければ従来どおり完了 / スキップだけで判定する（v1）。
  * 判定そのものは src/lib/training/adaptive.ts が持っている。
  */
 export function advanceActiveProgram(
   action: 'complete' | 'skip',
+  sessionLog: TrainingSessionLog | null = null,
   storage: Storage | null = browserStorage(),
-): { activeProgram: ActiveProgram | null; completed: boolean; adjustments: TrainingAdjustments } | null {
+): {
+  activeProgram: ActiveProgram | null;
+  completed: boolean;
+  adjustments: TrainingAdjustments;
+  evaluations: LiftEvaluation[];
+  source: 'sets' | 'session';
+} | null {
   const data = readData(storage);
   const current = data.activeProgram;
   if (current == null) return null;
 
-  // いま終えたセッションの重量を見てから進める。進めた後だと別のDayになる。
+  // いま終えたセッションを見てから進める。進めた後だと別のDayになる。
+  const sessionKey = sessionKeyFor(current);
   const session = sessionForActiveProgram(current);
-  const trainingAdjustments = applySessionOutcome(data.trainingAdjustments, {
-    sessionKey: sessionKeyFor(current),
-    lifts: liftsInSession(session),
-    outcome: action === 'complete' ? 'completed' : 'missed',
-    date: localDateKey(),
-  });
+  const date = localDateKey();
+
+  // 引数で渡された実績を優先し、無ければ保存済みの実績を探す。
+  const log = sessionLog != null && isWorthSaving(sessionLog)
+    ? sessionLog
+    : findSessionLog(data.trainingSessions, sessionKey);
+
+  const outcome = action === 'complete' ? 'completed' : 'missed';
+  const applied = applySessionCompletion(data.trainingAdjustments, { sessionKey, date, session, log, outcome });
+
+  // 実績があれば、調整と同じ書き込みでまとめて残す。
+  const trainingSessions = log != null && isWorthSaving(log)
+    ? [...data.trainingSessions.filter((item) => item.id !== log.id), { ...log, savedAt: new Date().toISOString() }]
+        .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+        .slice(-TRAINING_SESSION_LIMIT)
+    : data.trainingSessions;
 
   const completedSessions = current.completedSessions + (action === 'complete' ? 1 : 0);
   const advanced: ActiveProgram = current.currentDay < current.daysPerWeek
@@ -431,11 +477,24 @@ export function advanceActiveProgram(
     : current.currentWeek < current.durationWeeks
       ? { ...current, currentWeek: current.currentWeek + 1, currentDay: 1, completedSessions }
       : { ...current, completedSessions };
+
+  const result = {
+    adjustments: applied.adjustments,
+    evaluations: applied.evaluations,
+    source: applied.source,
+  };
+
   if (current.currentWeek === current.durationWeeks && current.currentDay === current.daysPerWeek) {
     const completed: CompletedProgram = { ...advanced, completedAt: new Date().toISOString() };
-    const saved = writeData({ ...data, activeProgram: null, programHistory: [...data.programHistory, completed].slice(-24), trainingAdjustments }, storage);
-    return saved ? { activeProgram: null, completed: true, adjustments: trainingAdjustments } : null;
+    const saved = writeData({
+      ...data,
+      activeProgram: null,
+      programHistory: [...data.programHistory, completed].slice(-24),
+      trainingAdjustments: applied.adjustments,
+      trainingSessions,
+    }, storage);
+    return saved ? { activeProgram: null, completed: true, ...result } : null;
   }
-  const saved = writeData({ ...data, activeProgram: advanced, trainingAdjustments }, storage);
-  return saved ? { activeProgram: advanced, completed: false, adjustments: trainingAdjustments } : null;
+  const saved = writeData({ ...data, activeProgram: advanced, trainingAdjustments: applied.adjustments, trainingSessions }, storage);
+  return saved ? { activeProgram: advanced, completed: false, ...result } : null;
 }

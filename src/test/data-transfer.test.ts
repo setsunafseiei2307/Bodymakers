@@ -78,7 +78,7 @@ describe('データの書き出し', () => {
     expect(keys).toEqual([
       'activeProgram', 'dailyLogs', 'dietPlan', 'personalPlan', 'profile',
       'programHistory', 'recentFoodIds', 'strengthHistory', 'strengthProfile',
-      'trainingAdjustments', 'version',
+      'trainingAdjustments', 'trainingSessions', 'version',
     ]);
   });
 });

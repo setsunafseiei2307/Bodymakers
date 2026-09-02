@@ -27,6 +27,32 @@
 
 All user data remains in the browser unless a future product explicitly adds consented sync.
 
+## Home (`/`)
+- Home is **read-only**. It never writes to localStorage and defines no storage key of its own. It reads `bodymakers:data:v1` and `bodymakers:diagnosis:draft:v1` only.
+- STATE is decided in exactly one place, `src/lib/home/state.ts` (`resolveHomeState`):
+  - `A` no plan, no diagnosis draft
+  - `B` no plan, diagnosis draft present
+  - `C` plan present, no activity in the last 7 days
+  - `D1` plan present, active in the last 7 days, nothing recorded today
+  - `D2` plan present, active in the last 7 days, already recorded today
+  - Any parse failure or unexpected shape falls back to `A`.
+- "Plan present" means a saved Personal Plan **or** an active Program. A user running a Program has not been shown the first-time explanation.
+- Recent activity and today's activity come from `src/lib/activity/` (`weeklyProgress`, `summarizeActivity`). Home does not define what an active day is.
+- `src/lib/todayAction.ts` stays separate: it answers "what is the single next action inside Today", which is about session progression. Home answers "which entry point to show". The only shared concept is "has a plan"; the activity test is shared through `src/lib/activity/`.
+- Sections by state: `A`/`B` show everything; `C` shows hero, loop, evidence, and the final CTA; `D1`/`D2` show the hero only.
+- Streak, today's progress, and the weekly summary are implemented and stay on Today and `/record/`. They are deliberately **not** shown on Home, so the same numbers do not appear on two screens. This is a placement decision, not a missing feature.
+
+### First paint
+- The first-time hero and all body sections are static HTML in `src/pages/index.astro` and need no JavaScript.
+- A synchronous inline script in `<head>` sets `data-home-known="1"` when either storage key exists. This is a presence check only — it carries no STATE meaning — and exists so returning visitors do not see the first-time hero flash before hydration. The same pattern is already used for the theme FOUC guard.
+- `HomeHero` (`client:load`) resolves the real STATE and stamps `data-home-state`, which decides the final section visibility.
+- Known trade-off: a visitor who has `bodymakers:data:v1` but no plan and no draft resolves to `A`, so the body sections appear after hydration rather than before. Content is added rather than removed, so nothing collapses. Needs a look on a real device.
+
+### Not on Home
+- No sticky CTA. `BottomNav` is already `position: fixed` on mobile across every page, so a second fixed bar would sit on top of it.
+- No article list, tool link list, carousel, or card grid in the Home body.
+- No account, login, or cloud sync wording anywhere.
+
 ## Streak and weekly summary rules
 - An active day is a day with at least one meaningful record: training, food, or a weight / steps / sleep check-in. A saved-but-empty day is not active. Page views are never counted.
 - Completed programs count as training on their completion date.
@@ -35,17 +61,46 @@ All user data remains in the browser unless a future product explicitly adds con
 - Weekly figures use a rolling 7-day window ending today. The previous week is only compared once the whole previous window could have been observed (14 days of history).
 - Summary lines are rule-based from local records only, capped at four, and state facts without health or medical judgement.
 
+## Claims used in Home copy (verified in this repo)
+Only these were written into the page. Anything not verifiable was left out.
+- Strength figures: 387,265 lifters = 262,191 male + 125,074 female, from `STRENGTH_STANDARDS.totalLifters` in `src/lib/strength/standardsData.ts`. Source OpenPowerlifting, public domain, attribution string from `STANDARDS_SOURCE.attribution`.
+- Nutrient values: 日本食品標準成分表（八訂）増補2023年 (`FOOD_SOURCE` in `src/lib/foods.ts`).
+- Daily reference values: 日本人の食事摂取基準（2025年版）, 厚生労働省 (`NUTRITION_REFERENCE_SOURCE`).
+- Programs: linear progression, upper/lower, PPL and similar named構成 exist in `PROGRAM_LIBRARY`; no paid template is copied.
+- Today does show a kcal and protein target, so the Home mock includes that line.
+- Diagnosis draft can report "n問目 / 全m問" via `questionProgress`.
+
+### Deliberately absent from Home copy
+- "やったことが、翌週の内容に反映されます。" — `buildPersonalPlan` never reads `dailyLogs`, so recorded work does not change next week's menu.
+- "体重が思ったように動かなければ、食事の目安が変わります。" — nutrition targets come from the diagnosis-time `input.body`, not from logged weight.
+- "重量が上がれば、次回の提示重量も上がります。" — `ActiveProgram.trainingMaxes` is fixed when the program starts; `advanceActiveProgram` never updates it from records.
+- Instead Home says only "プログラムに沿って、週ごとに負荷が上がっていきます。", which the generated week-by-week sessions do support.
+
+## Analytics
+- No vendor, no SDK, no snippet. `src/lib/analytics.ts` exposes a single `track()` that is a deliberate no-op, plus the event names and properties as types.
+- Fired on Home now: `home_view`, `hero_cta_click` (`position: hero | final`), `hero_secondary_click`, `draft_resume_click`, each carrying `state`.
+- Reserved as types only, not fired: `quiz_start`, `quiz_question_view`, `quiz_abandon`, `quiz_complete`, `plan_view`, `today_start`, `today_complete`.
+- No `position: sticky` value exists, because there is no sticky CTA.
+- No personal data is ever passed to `track()`.
+
+## Performance
+Not measured. There is no Lighthouse or field-measurement setup in this repository, and `typecheck` / `test` / `build` cannot measure any of these.
+- LCP: 未測定
+- CLS: 未測定
+- INP: 未測定
+These are real-device checks, not something the current verification commands can pass or fail.
+
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (159 files)
-- `npm test`: 668 tests in 34 files passed
+- `npm run typecheck`: 0 errors (161 files)
+- `npm test`: 688 tests in 35 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- The daily-loop commit and the diagnosis UX commit are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 2 commits.
-- Nothing in this state file has been verified in production. The daily loop and the one-question diagnosis are not live.
+- The Home Phase 1, daily-loop, and diagnosis UX commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 5 commits.
+- Nothing in this state file has been verified in production. The new Home, the daily loop, and the one-question diagnosis are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.
 - Production: not verified from this session. Direct deploy and `wrangler login` are not used here.

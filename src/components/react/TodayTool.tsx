@@ -56,6 +56,8 @@ import {
 import NutritionReviewCard from './NutritionReviewCard';
 import { buildWeeklyCoach } from '../../lib/coach';
 import WeeklyCoachCard from './WeeklyCoachCard';
+import { buildFirstWeekProgress } from '../../lib/onboarding';
+import FirstWeekCard from './FirstWeekCard';
 import { draftSessionFromProgram, findSessionLog, hasRecordedSets, previousPerformance, type PreviousPerformance, type TrainingSessionLog } from '../../lib/training/log';
 import { buildNextSessionPreview, buildSessionFeedback, type SessionFeedback } from '../../lib/training/feedback';
 import SetTracker from './SetTracker';
@@ -257,6 +259,9 @@ export default function TodayTool() {
     () => buildNextSessionPreview(activeProgram, trainingAdjustments),
     [activeProgram, trainingAdjustments],
   );
+
+  /** 使いはじめの段階。初週のあいだは重い集計を前に出さない。 */
+  const firstWeek = useMemo(() => (savedData == null ? null : buildFirstWeekProgress(savedData)), [savedData]);
 
   /** 今週のまとめ。Todayでは「今日やること」より小さく扱う。 */
   const coach = useMemo(() => (savedData == null ? null : buildWeeklyCoach(savedData)), [savedData]);
@@ -564,6 +569,10 @@ export default function TodayTool() {
         {dailyProgress && activitySummary && (
           <TodayProgressPanel progress={dailyProgress} activity={activitySummary} />
         )}
+        {/* 使いはじめの案内。初週と、久しぶりに戻った人にだけ出す。 */}
+        {firstWeek && (firstWeek.isFirstWeek || firstWeek.returningAfterGap) && (
+          <FirstWeekCard progress={firstWeek} />
+        )}
       </Slip>
 
       {activeProgram && activeProgramDefinition && (
@@ -648,13 +657,13 @@ export default function TodayTool() {
         </Slip>
       )}
 
-      {coach && coach.training.hasData && (
+      {coach && coach.training.hasData && firstWeek?.isFirstWeek !== true && (
         <Slip code="WEEK" title="今週">
           <WeeklyCoachCard coach={coach} variant="compact" />
         </Slip>
       )}
 
-      {nutritionReview && nutritionTarget && (
+      {nutritionReview && nutritionTarget && firstWeek?.isFirstWeek !== true && (
         <Slip code="REVIEW" title="今週の栄養">
           <NutritionReviewCard
             trend={nutritionReview.trend}
@@ -669,7 +678,7 @@ export default function TodayTool() {
         </Slip>
       )}
 
-      {week && weeklySummary && (
+      {week && weeklySummary && firstWeek?.isFirstWeek !== true && (
         <Slip code="STREAK" title="続いていること">
           <WeeklyProgressPanel week={week} summary={weeklySummary} />
           <p className="next"><a href={url('/record')}>今週の記録を詳しく見る →</a></p>

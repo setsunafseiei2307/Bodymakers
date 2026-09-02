@@ -1658,3 +1658,19 @@
 @media (prefers-reduced-motion: reduce) {
   .today__nutrition-complete { transition: none; }
 }
+
+/* 使いはじめの案内。チェックリストのアプリに見せない。 */
+.first-week { display: grid; gap: var(--s2); margin-top: var(--s4); padding-top: var(--s4); border-top: 1px solid var(--hair); }
+.first-week__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.first-week__headline { margin: 0; font-size: .92rem; font-weight: 800; }
+.first-week__count { color: var(--muted); font-size: .78rem; }
+.first-week__detail { margin: 0; color: var(--body); font-size: .82rem; line-height: 1.65; }
+.first-week__steps { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s1) 0 0; padding: 0; list-style: none; }
+.first-week__steps li { display: flex; align-items: center; gap: 4px; padding: var(--s1) var(--s3); border-radius: 999px; background: var(--inset); font-size: .76rem; }
+.first-week__steps li.is-done { background: color-mix(in srgb, var(--ok, #168b63) 12%, var(--inset)); color: var(--ok, #168b63); }
+.first-week__mark { font-weight: 900; }
+.first-week__next { margin: 0; color: var(--signal); font-size: .82rem; line-height: 1.6; }
+.first-week__unlocks { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.first-week__unlocks li { color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.first-week__unlocks li::before { content: '・'; }
+.first-week .button { margin-top: var(--s2); min-height: 3rem; }

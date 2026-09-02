@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DataManager from '../components/react/DataManager';
+import '../styles/tools.css';
+
+const title = 'データの管理';
+const description = 'Bodymakersの端末内データを、JSONファイルとして書き出し・読み込みします。機種変更やブラウザデータの削除に備えるための機能です。';
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container tool-page">
+    <header class="tool-page__header">
+      <p class="tool-page__code">YOUR DATA</p>
+      <h1>{title}</h1>
+      <p class="tool-page__lead">記録・Plan・Programはこの端末にだけ保存されています。ファイルに書き出しておけば、別の端末やブラウザへ移せます。</p>
+      <p class="tool-page__privacy">書き出しも読み込みもブラウザ内だけで行います。サーバーへの送信はありません。</p>
+    </header>
+    <div class="tool-page__body">
+      <div class="tool-page__main"><DataManager client:load /></div>
+    </div>
+  </div>
+</BaseLayout>

@@ -3,6 +3,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fmt, parseNumber } from '../../lib/format';
 import { estimateOneRM } from '../../lib/onerm';
 import { buildPersonalPlan } from '../../lib/diagnosis/plan';
+import {
+  DIAGNOSIS_STEP_TITLES,
+  clearDiagnosisDraft,
+  defaultDiagnosisInput,
+  draftStepLabel,
+  emptySetInputs,
+  readDiagnosisDraft,
+  writeDiagnosisDraft,
+  type DiagnosisDraft,
+  type StrengthInputMode,
+  type StrengthSetInputs,
+} from '../../lib/diagnosis/draft';
 import type { GoalId, PersonalPlanInput } from '../../lib/diagnosis/types';
 import { readData, savePersonalPlan, type SavedProfile } from '../../lib/storage';
 import type { LiftId } from '../../lib/strength/standards';
@@ -23,26 +35,22 @@ const GOALS: { value: GoalId; icon: string; title: string; detail: string }[] = 
   { value: 'strength', icon: '▰', title: '筋力を伸ばしたい', detail: 'BIG3を強くしたい' },
   { value: 'health', icon: '◎', title: '健康的な身体を作りたい', detail: '運動・食事習慣を整えたい' },
 ];
-const STEP_TITLES = ['なりたい身体', '現在の身体', '筋トレ状況', '現在の筋力', '食生活', '生活習慣'] as const;
+const STEP_TITLES = DIAGNOSIS_STEP_TITLES;
 
-type StrengthMode = 'oneRm' | 'set';
-type SetInput = Record<LiftId, { weight: string; reps: string }>;
+type SetInput = StrengthSetInputs;
 
 function defaultInput(profile: SavedProfile | null, strength: Partial<Record<LiftId, number>>): PersonalPlanInput {
+  const base = defaultDiagnosisInput();
   return {
-    goal: 'health',
-    targets: { weightKg: null, lifts: {} },
+    ...base,
     body: {
-      sex: profile?.sex ?? 'male',
-      age: profile?.age ?? 30,
-      heightCm: profile?.heightCm ?? 170,
-      weightKg: profile?.weightKg ?? 70,
-      bodyFatPercent: null,
+      ...base.body,
+      sex: profile?.sex ?? base.body.sex,
+      age: profile?.age ?? base.body.age,
+      heightCm: profile?.heightCm ?? base.body.heightCm,
+      weightKg: profile?.weightKg ?? base.body.weightKg,
     },
-    training: { experience: 'none', daysPerWeek: 3, sessionMinutes: 60, location: 'gym', focus: 'health' },
     strength,
-    food: { mealsPerDay: 3, breakfast: 'daily', protein: 'unknown', vegetables: 'normal', outsideMeals: 'oneToTwo', amount: 'normal' },
-    lifestyle: { sleepDuration: 'sixToSeven', sleepQuality: 'normal', dailyActivity: 'someWalk', alcohol: 'oneToTwo', smoking: false, stress: 'normal', painOrInjury: false },
   };
 }
 
@@ -77,48 +85,93 @@ function AxisBar({ label, score, reasons }: { label: string; score: number; reas
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [input, setInput] = useState<PersonalPlanInput>(() => defaultInput(null, {}));
-  const [strengthMode, setStrengthMode] = useState<StrengthMode>('oneRm');
-  const [setInputs, setSetInputs] = useState<SetInput>({
-    bench: { weight: '', reps: '' }, squat: { weight: '', reps: '' }, deadlift: { weight: '', reps: '' },
-  });
+  const [input, setInputState] = useState<PersonalPlanInput>(() => defaultInput(null, {}));
+  const [strengthMode, setStrengthModeState] = useState<StrengthInputMode>('oneRm');
+  const [setInputs, setSetInputsState] = useState<SetInput>(() => emptySetInputs());
   const [saveMessage, setSaveMessage] = useState('');
   const [ready, setReady] = useState(false);
+  /** 前回の途中入力。答えるかどうかを本人に選んでもらうまで、下書きは触らない。 */
+  const [pendingDraft, setPendingDraft] = useState<DiagnosisDraft | null>(null);
   const journeyRef = useRef<HTMLElement>(null);
+  /**
+   * 本人が1つでも答えたか。
+   * 初期表示やURLパラメータの反映だけで下書きを作ると、
+   * 何もしていない人に「前回の続きがあります」と出てしまう。
+   */
+  const touchedRef = useRef(false);
+
+  /** 本人の操作による更新。ここを通ったものだけ下書きに残す。 */
+  const setInput: typeof setInputState = (value) => {
+    touchedRef.current = true;
+    setInputState(value);
+  };
+  const setStrengthMode: typeof setStrengthModeState = (value) => {
+    touchedRef.current = true;
+    setStrengthModeState(value);
+  };
+  const setSetInputs: typeof setSetInputsState = (value) => {
+    touchedRef.current = true;
+    setSetInputsState(value);
+  };
 
   useEffect(() => {
     const data = readData();
     if (data.personalPlan) {
-      setInput(data.personalPlan.input);
+      setInputState(data.personalPlan.input);
     } else {
       const lifts: Partial<Record<LiftId, number>> = {};
       for (const lift of LIFTS) {
         const saved = data.strengthProfile?.lifts[lift.id];
         if (saved) lifts[lift.id] = saved.oneRmKg;
       }
-      setInput(defaultInput(data.profile, lifts));
+      setInputState(defaultInput(data.profile, lifts));
     }
+    setPendingDraft(readDiagnosisDraft());
     setReady(true);
   }, []);
 
   useQueryDefaults((params) => {
     const weight = parseNumber(params.get('weight') ?? '');
     const target = parseNumber(params.get('target') ?? '');
-    setInput((current) => ({
+    setInputState((current) => ({
       ...current,
       body: weight != null && weight >= 30 && weight <= 300 ? { ...current.body, weightKg: weight } : current.body,
       targets: target != null && target >= 30 && target <= 300 ? { ...current.targets, weightKg: target } : current.targets,
     }));
   });
 
+  /** 答えるたびに端末内へ下書きを残す。正式なPlanは診断を終えたときだけ保存する。 */
+  useEffect(() => {
+    if (!ready || pendingDraft != null || !touchedRef.current) return;
+    if (step >= STEP_TITLES.length) return;
+    writeDiagnosisDraft({ step, input, strengthMode, setInputs });
+  }, [ready, pendingDraft, step, input, strengthMode, setInputs]);
+
+  function resumeDraft() {
+    if (pendingDraft == null) return;
+    setInputState(pendingDraft.input);
+    setStrengthModeState(pendingDraft.strengthMode);
+    setSetInputsState(pendingDraft.setInputs);
+    setStep(pendingDraft.step);
+    touchedRef.current = true;
+    setPendingDraft(null);
+  }
+
+  function discardDraft() {
+    clearDiagnosisDraft();
+    touchedRef.current = false;
+    setPendingDraft(null);
+    setStep(0);
+  }
+
   const result = useMemo(() => buildPersonalPlan(input), [input]);
   const bodyReady = input.body.age >= 13 && input.body.age <= 120 && input.body.heightCm >= 100 && input.body.heightCm <= 250 && input.body.weightKg >= 30 && input.body.weightKg <= 300;
 
   useEffect(() => {
-    if (!ready || step === 0) return;
+    if (!ready || pendingDraft != null || step === 0) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     journeyRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-  }, [ready, step]);
+  }, [ready, pendingDraft, step]);
 
   function updateBody(key: keyof PersonalPlanInput['body'], raw: string) {
     const value = raw === '' ? 0 : parseNumber(raw) ?? 0;
@@ -161,10 +214,31 @@ export default function Onboarding() {
       setSaveMessage('保存できませんでした。ブラウザの保存設定を確認してください。');
       return;
     }
+    // 正式なPlanになったので、途中保存はもう要らない。
+    clearDiagnosisDraft();
     window.location.assign(url('/plan'));
   }
 
   if (!ready) return <div className="journey journey--loading" aria-hidden="true" />;
+
+  if (pendingDraft != null) {
+    return (
+      <section ref={journeyRef} className="journey journey--resume" aria-live="polite">
+        <p className="journey-kicker">RESUME</p>
+        <h2>前回の続きがあります</h2>
+        <p className="journey-lead">
+          この端末に、途中まで答えた診断が残っています。続きから再開すると、入力し直さずに終わりまで進められます。
+        </p>
+        <div className="journey-resume__meta">
+          <span>前回の位置</span>
+          <strong>{draftStepLabel(pendingDraft)}</strong>
+        </div>
+        <button type="button" className="button button--block button--lg" onClick={resumeDraft}>続きから再開する</button>
+        <button type="button" className="button button--ghost button--block" onClick={discardDraft}>最初からやり直す</button>
+        <p className="journey-privacy">途中の入力もこの端末にだけ残ります。サーバーへの送信はありません。</p>
+      </section>
+    );
+  }
 
   if (step === STEP_TITLES.length) {
     return (
@@ -183,7 +257,7 @@ export default function Onboarding() {
         {result.diagnosis.gaps.length > 0 && <section className="journey-panel"><h2>ゴールとの差</h2><div className="journey-gaps">{result.diagnosis.gaps.map((gap) => <div key={gap.id}><span>{gap.label}</span><strong>{gap.current} → {gap.target}</strong><small>{gap.difference}</small></div>)}</div></section>}
         {input.lifestyle.painOrInjury && <p className="note note--warn"><span className="note__title">痛みがある場合</span>無理に負荷を上げないでください。この診断は医療判断を行いません。</p>}
         <button type="button" className="button button--block button--lg" onClick={saveAndOpenPlan}>このPlanを保存して12週間を見る</button>
-        <p className="next"><a href={url('/tools/one-rep-max')}>1RMを詳しく計算する →</a><a href={url('/tools/foods')}>食品を追加する →</a><a href={url('/tools/today')}>今日の記録を見る →</a></p>
+        <p className="next"><a href={url('/tools/one-rep-max')}>1RMを詳しく計算する →</a><a href={url('/strength-standards')}>競技リフター基準で診断する →</a><a href={url('/tools/foods')}>食品を追加する →</a><a href={url('/tools/today')}>今日の記録を見る →</a></p>
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <button type="button" className="journey-back-link" onClick={() => setStep(STEP_TITLES.length - 1)}>← 診断を見直す</button>
       </section>
@@ -219,7 +293,9 @@ export default function Onboarding() {
           <p className="journey-kicker">STRENGTH</p><h2>現在の筋力</h2><p className="journey-lead">1RMを知っている種目だけで大丈夫です。入力がない項目は推測しません。</p>
           <Segmented label="入力方法" value={strengthMode} onChange={setStrengthMode} options={[{ value: 'oneRm', label: '1RMを知っている' }, { value: 'set', label: '重量×回数から計算' }]} />
           <div className="journey-lift-inputs">{LIFTS.map((lift) => strengthMode === 'oneRm' ? <NumberField key={lift.id} label={`${lift.label} 推定1RM`} unit="kg" value={input.strength[lift.id] == null ? '' : String(input.strength[lift.id])} onChange={(value) => updateLift('strength', lift.id, value)} placeholder="100" /> : <div key={lift.id} className="journey-set-card"><strong>{lift.label}</strong><div className="row row--2"><NumberField label="重量" unit="kg" value={setInputs[lift.id].weight} onChange={(value) => setSetInputs((current) => ({ ...current, [lift.id]: { ...current[lift.id], weight: value } }))} placeholder="80" /><NumberField label="回数" unit="回" value={setInputs[lift.id].reps} onChange={(value) => setSetInputs((current) => ({ ...current, [lift.id]: { ...current[lift.id], reps: value } }))} placeholder="5" inputMode="numeric" /></div></div>)}</div>
-          <p className="next"><a href={url('/tools/one-rep-max')}>1RMツールで詳しく計算する →</a><a href={url('/strength-standards')}>競技リフター基準で診断する →</a></p>
+          {/* 診断の途中に外部ツールへの導線を置くと、そこで離脱して入力が中断する。
+              詳しい計算は診断結果の画面から案内する。 */}
+          <p className="journey-hint">1RMが分からない種目は空のままで大丈夫です。詳しい計算は診断結果から開けます。</p>
         </>}
         {step === 4 && <>
           <p className="journey-kicker">FOOD</p><h2>ふだんの食生活</h2><p className="journey-lead">正確なカロリーではなく、普段の傾向を選んでください。</p>
@@ -245,7 +321,7 @@ export default function Onboarding() {
         {step > 0 && <button type="button" className="button button--ghost" onClick={() => setStep((current) => current - 1)}>← 戻る</button>}
         <button type="button" className="button button--lg" onClick={next}>{step === STEP_TITLES.length - 1 ? '診断結果を見る' : '次へ →'}</button>
       </div>
-      <p className="journey-privacy">登録不要・診断を保存するまで、この入力は端末にも保存しません。</p>
+      <p className="journey-privacy">登録不要・途中の入力はこの端末にだけ残ります。サーバーへの送信はありません。</p>
     </section>
   );
 }

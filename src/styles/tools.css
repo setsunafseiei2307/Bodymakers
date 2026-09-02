@@ -1296,3 +1296,26 @@
 .nutrition-recommendation-card li { display: flex; justify-content: space-between; gap: var(--s2); color: var(--body); font-size: .76rem; }
 .nutrition-recommendation-card li strong { color: var(--signal); font-family: var(--f-mono); }
 @media (min-width: 42rem) { .nutrition-progress__featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nutrition-recommendations__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 今日の一手。Todayでいちばん最初に読む1枚。 */
+.today-action { display: grid; gap: var(--s3); }
+.today-action__title { font-size: 1.15rem; line-height: 1.4; }
+.today-action__detail { margin: 0; color: var(--body); font-size: .88rem; line-height: 1.6; }
+.today-action .button { min-height: 3.25rem; }
+.today-action__secondary { justify-self: start; color: var(--muted); font-size: .82rem; }
+.today-action--diagnosis .today-action__title { color: var(--signal); }
+
+/* データの書き出し・読み込み。 */
+.data-manager__summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
+.data-manager__summary > div {
+  display: grid; gap: var(--s1); padding: var(--s3);
+  border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.data-manager__summary span { color: var(--muted); font-size: .74rem; font-weight: 700; }
+.data-manager__summary strong { font-size: .95rem; }
+.data-manager__text {
+  width: 100%; padding: var(--s3); border: 1px solid var(--rule); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--body); font-family: var(--f-mono); font-size: .74rem;
+  line-height: 1.5; resize: vertical;
+}
+@media (min-width: 42rem) { .data-manager__summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

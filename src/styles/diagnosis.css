@@ -124,3 +124,17 @@
   .journey-step, .journey--result { animation: none; }
   .journey-progress > div > span, .journey-axis > div span, .journey-choice { transition: none; }
 }
+
+/* 診断の途中保存を再開するかどうかの案内。
+   入力の代わりに1枚だけ出すので、選択肢は2つに絞る。 */
+.journey--resume { display: grid; gap: var(--s3); }
+.journey--resume h2 { margin: 0; }
+.journey-resume__meta {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3);
+  padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--signal-soft);
+}
+.journey-resume__meta > span { color: var(--muted); font-size: .78rem; font-weight: 700; letter-spacing: .08em; }
+.journey-resume__meta > strong { color: var(--signal); font-size: .95rem; }
+.journey--resume .button { min-height: 3rem; }
+/* 診断中は外部ツールへ飛ばさない。代わりに一言だけ添える。 */
+.journey-hint { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.6; }

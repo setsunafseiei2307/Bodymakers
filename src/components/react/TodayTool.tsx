@@ -41,6 +41,7 @@ import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
 import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
+import { resolveTodayAction } from '../../lib/todayAction';
 import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
 import ShareCard from './ShareCard';
@@ -183,6 +184,22 @@ export default function TodayTool() {
   );
   const activeProgramDefinition = useMemo(() => activeProgram ? programById(activeProgram.programId) : null, [activeProgram]);
   const activeProgramSession = useMemo(() => activeProgram ? sessionForActiveProgram(activeProgram) : null, [activeProgram]);
+  /**
+   * 画面のいちばん上に出す「今日の一手」。
+   * 食事や栄養の詳細より前に、次の1アクションだけを見せる。
+   */
+  const todayAction = useMemo(
+    () => resolveTodayAction({
+      activeProgram,
+      activeProgramName: activeProgramDefinition?.name ?? null,
+      activeProgramSession,
+      personalPlan,
+      planWorkoutLabel: generatedPersonalPlan?.todayWorkout?.label ?? null,
+      trainedToday: doneExercises.length > 0 || muscles.length > 0,
+      ateToday: meals.length > 0,
+    }),
+    [activeProgram, activeProgramDefinition, activeProgramSession, personalPlan, generatedPersonalPlan, doneExercises, muscles, meals],
+  );
   const referenceAge = parseNumber(age);
   const referenceSex = sex;
   const nutritionProgressItems = useMemo(
@@ -341,9 +358,25 @@ export default function TodayTool() {
     setSaveMessage(saved ? '今日の記録を保存しました。' : '保存できませんでした。ブラウザの保存設定を確認してください。');
   }
 
+  /** 「今日の一手」の行き先。ページ内アンカーはそのまま、ページはベースパスを付ける。 */
+  function actionHref(href: string): string {
+    return href.startsWith('#') ? href : url(href);
+  }
+
   return (
     <div className="tool">
-      {!activeProgram && !generatedPersonalPlan && <Slip code="NEXT" title="まず今日の方向を決めよう"><div className="today__first-action"><span aria-hidden="true">◎</span><div><strong>Planを作ると、トレーニング・食事・回復の次の一手がまとまります。</strong><p>食事だけを先に記録したい場合も、下からすぐ始められます。</p></div><a className="button button--block button--lg" href={url('/start')}>診断からPlanを作る</a><a className="button button--ghost button--block" href={url('/tools/programs')}>Programから選ぶ</a><a href="#quick-record">食事だけ記録する →</a></div></Slip>}
+      {/* 今日の一手。状態にかかわらず、いちばん上に1枚だけ出す。 */}
+      <Slip code={todayAction.code} title={todayAction.heading}>
+        <div className={`today-action today-action--${todayAction.kind}`}>
+          <strong className="today-action__title">{todayAction.title}</strong>
+          <p className="today-action__detail">{todayAction.detail}</p>
+          <a className="button button--block button--lg" href={actionHref(todayAction.cta.href)}>{todayAction.cta.label}</a>
+          {todayAction.secondary && (
+            <a className="today-action__secondary" href={actionHref(todayAction.secondary.href)}>{todayAction.secondary.label} →</a>
+          )}
+        </div>
+      </Slip>
+
       {activeProgram && activeProgramDefinition && (
         <Slip code="ACTIVE" title="今日のトレーニング">
           <div id="active-program" className="today__active-program">
@@ -356,6 +389,30 @@ export default function TodayTool() {
           </div>
         </Slip>
       )}
+
+      {/* Training → Nutrition → Recovery の順で今日の状態をまとめる。 */}
+      {generatedPersonalPlan && (
+        <Slip code="TODAY" title="今日やること">
+          <div className="today__plan-actions">
+            <section>
+              <span>今日のトレーニング</span>
+              {generatedPersonalPlan.todayWorkout ? <><strong>{generatedPersonalPlan.todayWorkout.label}</strong><p>{generatedPersonalPlan.todayWorkout.exerciseIds.map((id) => findExercise(id)?.name).filter(Boolean).join('・')}</p><a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a></> : <p>今週のトレーニングを予定に入れましょう。</p>}
+            </section>
+            <section>
+              <span>NUTRITION</span>
+              {nutritionTarget ? <><strong className="num">{fmt(intakeTotals.kcal, 0)} / {fmt(nutritionTarget.calories, 0)} kcal</strong><p className="num">P {fmt(intakeTotals.protein, 0)} / {nutritionTarget.protein}g</p><a href="#quick-record">食事を記録する →</a></> : <p>Planで栄養目標を確認できます。</p>}
+            </section>
+            <section>
+              <span>RECOVERY</span>
+              <strong className="num">{sleepValue == null ? '—' : `${fmt(sleepValue, 1)}h`}</strong><p>{stepsValue == null ? '歩数は未記録' : `${fmt(stepsValue, 0)}歩`}</p>
+            </section>
+          </div>
+          {generatedPersonalPlan.diagnosis.priorities[0] && <div className="today__next-action"><span>NEXT ACTION</span><strong>{generatedPersonalPlan.diagnosis.priorities[0].title}</strong><p>{generatedPersonalPlan.diagnosis.priorities[0].action}</p></div>}
+          <p className="next"><a href={url('/plan')}>12週間Planを見る →</a><a href={url('/tools/one-rep-max')}>1RMを更新する →</a></p>
+        </Slip>
+      )}
+
+      <SavedStrengthSummary history={strengthHistory} title="今日の筋力目標" />
 
       <div id="quick-record"><Slip code="QUICK" title="今日の食事">
         <section className="today__macro-dashboard" aria-label="今日の食事の摂取量">
@@ -429,38 +486,16 @@ export default function TodayTool() {
           <details className="tool__details nutrition-progress__details"><summary>すべての栄養素を見る</summary>
             {[['ビタミン', ['vitaminA','vitaminD','vitaminE','vitaminK','vitaminB1','vitaminB2','vitaminB6','vitaminB12','folate','pantothenic','biotin','vitaminC']], ['ミネラル', ['potassium','calcium','magnesium','phosphorus','iron','zinc','copper','manganese']], ['その他', ['fiber','salt']]].map(([title, keys]) => <section key={String(title)} className="nutrition-progress__group"><h3>{title}</h3>{nutritionProgressItems.filter((item) => (keys as string[]).includes(item.nutrient)).map((item) => <div key={item.nutrient} className={`nutrition-progress nutrition-progress--${item.state}`}><div><strong>{item.label}</strong>{item.status === 'unresolved' ? <span>基準未確定</span> : <span className="num">{fmt(item.intake, item.digits)} / {fmt(item.value, item.digits)} {item.unit}</span>}</div>{item.status === 'unresolved' ? <small>{item.unresolvedReason}</small> : item.kind === 'dg-max' ? <small>{item.state === 'over' ? '今日は目安を超えています' : `目標上限まであと${fmt(item.remaining ?? 0, item.digits)} ${item.unit}`}</small> : <><progress value={Math.min(item.intake, item.value)} max={item.value} /><small>{item.remaining != null && item.remaining > 0 ? `今日の目安まであと${fmt(item.remaining, item.digits)} ${item.unit}` : '今日の目安に到達'}</small></>}</div>)}</section>)}
           </details>
+          {/* 食品候補は最初から開くと情報の壁になる。必要な人だけ開く。 */}
+          <details className="tool__details"><summary>今日あと何食べる？を見る</summary>
           <section className="nutrition-recommendations"><div className="nutrition-recommendations__heading"><span>WHAT TO EAT</span><h3>今日あと何食べる？</h3><p>成分表の食品から、今日の目安までの距離を埋めやすい候補を出します。</p></div><Segmented label="追加する食事" options={MEAL_OPTIONS} value={mealType} onChange={setMealType} />
             {foodRecommendations.length === 0 ? <p className="tool__note">表示できる範囲の栄養素は、今日の目安に到達しています。</p> : <div className="nutrition-recommendations__grid">{foodRecommendations.map((recommendation) => <article key={recommendation.food.id} className="nutrition-recommendation-card"><span className="nutrition-recommendation-card__emoji" aria-hidden="true">{recommendation.food.emoji ?? '🍽️'}</span><div><strong>{recommendation.food.name}</strong><small>{recommendation.serving.label}</small></div><p>{recommendation.reason}</p><ul>{recommendation.contributions.slice(0, 2).map((contribution) => <li key={contribution.nutrient.nutrient}>{contribution.nutrient.label} <strong>+{fmt(contribution.value, contribution.nutrient.digits)} {contribution.nutrient.unit}</strong></li>)}</ul><button type="button" className="button button--block" onClick={() => addRecommendedFood(recommendation.food, recommendation.serving.grams)}>今日の食事に追加</button></article>)}</div>}
             {nutritionMessage && <p className="tool__status" role="status">{nutritionMessage}</p>}
           </section>
+          </details>
           <p className="tool__note">1日の値だけで栄養状態を診断するものではありません。栄養成分: 日本食品標準成分表（八訂）増補2023年／基準値: {NUTRITION_REFERENCE_SOURCE.title}・{NUTRITION_REFERENCE_SOURCE.publisher}</p>
         </>}
       </Slip>
-
-
-
-      {generatedPersonalPlan && (
-        <Slip code="TODAY" title="今日やること">
-          <div className="today__plan-actions">
-            <section>
-              <span>今日のトレーニング</span>
-              {generatedPersonalPlan.todayWorkout ? <><strong>{generatedPersonalPlan.todayWorkout.label}</strong><p>{generatedPersonalPlan.todayWorkout.exerciseIds.map((id) => findExercise(id)?.name).filter(Boolean).join('・')}</p><a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a></> : <p>今週のトレーニングを予定に入れましょう。</p>}
-            </section>
-            <section>
-              <span>NUTRITION</span>
-              {nutritionTarget ? <><strong className="num">{fmt(intakeTotals.kcal, 0)} / {fmt(nutritionTarget.calories, 0)} kcal</strong><p className="num">P {fmt(intakeTotals.protein, 0)} / {nutritionTarget.protein}g</p><a href={url('/tools/foods')}>食事を追加する →</a></> : <p>Planで栄養目標を確認できます。</p>}
-            </section>
-            <section>
-              <span>RECOVERY</span>
-              <strong className="num">{sleepValue == null ? '—' : `${fmt(sleepValue, 1)}h`}</strong><p>{stepsValue == null ? '歩数は未記録' : `${fmt(stepsValue, 0)}歩`}</p>
-            </section>
-          </div>
-          {generatedPersonalPlan.diagnosis.priorities[0] && <div className="today__next-action"><span>NEXT ACTION</span><strong>{generatedPersonalPlan.diagnosis.priorities[0].title}</strong><p>{generatedPersonalPlan.diagnosis.priorities[0].action}</p></div>}
-          <p className="next"><a href={url('/plan')}>12週間Planを見る →</a><a href={url('/tools/one-rep-max')}>1RMを更新する →</a></p>
-        </Slip>
-      )}
-
-      <SavedStrengthSummary history={strengthHistory} title="今日の筋力目標" />
 
       {/* --- 食べたもの --- */}
       <Slip code="EAT" title="食べたもの">

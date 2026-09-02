@@ -140,7 +140,10 @@ export default function Dashboard() {
         </>
       )}
 
-      <p className="dashboard__privacy">保存先はこのブラウザだけです。Bodymakersのサーバーには送信されません。</p>
+      <p className="dashboard__privacy">
+        保存先はこのブラウザだけです。Bodymakersのサーバーには送信されません。
+        {' '}<a href={url('/data')}>データを書き出す・読み込む</a>
+      </p>
     </section>
   );
 }

@@ -69,3 +69,19 @@ Direction comes from the saved goal only. `recomp`, `health`, and `strength` hol
 No medical judgement is made, and copy never blames the user for what they ate.
 
 Changing any of this requires updating this file with the reason.
+
+## 2026-09-03 The Weekly Coach composes; it never re-judges
+
+`buildWeeklyCoach` reads the results the training and nutrition engines already produced and does four things: order them, pick one recommendation, explain, and preview next week. It does not recompute training completion, weight trend, nutrition adherence, or any adaptive decision, and it writes nothing. A third engine with its own opinion would be a second source of truth for the same questions.
+
+At most one primary action per week. In a week where a lift already went up and a calorie change is also available, the user is asked for one decision, not two.
+
+Automatic change and user decision stay separate. A weight the training engine already moved is reported as a fact with no button. A calorie change needs consent, so it gets the action — and it reuses the existing nutrition confirmation UI rather than a second apply path.
+
+`recomp` gets no automatic calorie candidate in v1. Body weight alone cannot tell whether a recomposition is going well. Describing training progress and weight together is explanation, not an adjustment.
+
+Coach output is never persisted. It is rebuilt from current records on every read, so a corrected weight or a fixed log cannot leave a stale summary behind.
+
+The 800 kcal clamp in `resolveNutritionTarget` is a technical floor, not a target Bodymakers may adjust down to. When a further decrease would land within one step of it, the engine returns `plan-review` and the coach routes to reviewing the plan. No generic medical minimum is introduced, and no target is ever described as dangerous — Bodymakers does not diagnose required intake.
+
+Changing any of this requires updating this file with the reason.

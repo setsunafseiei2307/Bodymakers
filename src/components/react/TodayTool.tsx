@@ -54,6 +54,8 @@ import {
   weightTrend,
 } from '../../lib/nutritionAdaptive';
 import NutritionReviewCard from './NutritionReviewCard';
+import { buildWeeklyCoach } from '../../lib/coach';
+import WeeklyCoachCard from './WeeklyCoachCard';
 import { draftSessionFromProgram, findSessionLog, hasRecordedSets, previousPerformance, type PreviousPerformance, type TrainingSessionLog } from '../../lib/training/log';
 import { buildNextSessionPreview, buildSessionFeedback, type SessionFeedback } from '../../lib/training/feedback';
 import SetTracker from './SetTracker';
@@ -255,6 +257,9 @@ export default function TodayTool() {
     () => buildNextSessionPreview(activeProgram, trainingAdjustments),
     [activeProgram, trainingAdjustments],
   );
+
+  /** 今週のまとめ。Todayでは「今日やること」より小さく扱う。 */
+  const coach = useMemo(() => (savedData == null ? null : buildWeeklyCoach(savedData)), [savedData]);
 
   const adjustmentLines = useMemo(() => adjustmentSummaryLines(trainingAdjustments), [trainingAdjustments]);
   const adjustmentHistory = useMemo(() => recentAdjustments(trainingAdjustments, 5), [trainingAdjustments]);
@@ -640,6 +645,12 @@ export default function TodayTool() {
           </div>
           {generatedPersonalPlan.diagnosis.priorities[0] && <div className="today__next-action"><span>NEXT ACTION</span><strong>{generatedPersonalPlan.diagnosis.priorities[0].title}</strong><p>{generatedPersonalPlan.diagnosis.priorities[0].action}</p></div>}
           <p className="next"><a href={url('/plan')}>12週間Planを見る →</a><a href={url('/tools/one-rep-max')}>1RMを更新する →</a></p>
+        </Slip>
+      )}
+
+      {coach && coach.training.hasData && (
+        <Slip code="WEEK" title="今週">
+          <WeeklyCoachCard coach={coach} variant="compact" />
         </Slip>
       )}
 

@@ -20,6 +20,7 @@
 - Finishing a session shows a short completion card — what was done, what Bodymakers decided, and the next session's weights — plus a next-session preview that stays after the card is dismissed
 - The previous performance for each exercise is shown next to the set inputs, so the last weight and reps do not need looking up in Record
 - Nutrition Adaptive Loop v1: marking a day's food record complete, plus enough weight measurements, lets Bodymakers propose a small calorie change. Nothing is applied until the user chooses it.
+- Weekly Coach v1: once there is enough data, Today shows a compact "this week" card and Record shows the full weekly summary — training, nutrition, what changed, one recommendation, and next week
 - User data export / import as JSON at `/data/`, with a one-slot pre-import backup in `bodymakers:data:backup:v1`
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
@@ -101,6 +102,21 @@ All user data remains in the browser unless a future product explicitly adds con
 - Re-running the diagnosis or changing the goal produces a new plan key, and the old offset stops applying. It is never carried silently onto a new baseline.
 - No medical judgement, and no wording that blames the user for what they ate.
 
+## Weekly Coach v1
+- **It is not a third adaptive engine.** `buildWeeklyCoach` in `src/lib/coach/weekly.ts` reads what the training and nutrition engines already decided and only composes, prioritises, and explains. It never re-judges training progression or nutrition adherence, and it never writes.
+- Reused as-is: `buildWeeklyTrainingReview`, `liftProgressSummaries`, `buildNextSessionPreview`, `trainingAdjustments.history`, `recommendNutrition`, `weightTrend`, `nutritionAdherence`, `resolveNutritionTarget`, `weeklyProgress`.
+- "This week" is the same rolling 7 days used by `src/lib/activity/`, so training, nutrition, and activity never disagree about the window.
+- States: `collecting-data`, `consistency-first`, `training-progressing`, `nutrition-review`, `plan-review`, `on-track`.
+- Priority: not enough data → how much was recorded → training → nutrition → plan.
+- **One primary action at most.** A week where both a lift went up and a calorie change is available still asks for one decision only.
+- **Automatic change and user decision are kept apart.** A weight that already moved is reported as a fact with no button. Only a calorie change, which needs consent, gets an action, and it reuses the existing nutrition confirmation UI rather than a second apply path.
+- `recomp` gets no automatic calorie candidate in v1. Training progress and weight are described side by side, which is explanation, not a new adjustment.
+- Nothing about the coach is persisted. It is rebuilt from current records on every read, so correcting an old weight cannot leave a stale summary behind.
+
+### Low-target hardening
+- The 800 kcal clamp in `resolveNutritionTarget` is a technical floor so the arithmetic cannot break. It is **not** a target Bodymakers may adjust down to.
+- When a further decrease would land within one step of that floor, the nutrition engine returns `plan-review` instead of a candidate, and the coach routes to reviewing the plan. No generic medical minimum (1200 / 1500 / 1800) is introduced, and the copy never calls a target dangerous.
+
 ## Streak and weekly summary rules
 - An active day is a day with at least one meaningful record: training, food, or a weight / steps / sleep check-in. A saved-but-empty day is not active. Page views are never counted.
 - Completed programs count as training on their completion date.
@@ -139,15 +155,15 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (179 files)
-- `npm test`: 893 tests in 42 files passed
+- `npm run typecheck`: 0 errors (185 files)
+- `npm test`: 928 tests in 43 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 / v2 / v2.1 and the Nutrition Adaptive Loop v1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 4 commits.
+- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 / v2 / v2.1 the Nutrition Adaptive Loop v1, and the Weekly Coach v1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 5 commits.
 - The Training Adaptive Loop and set-level logging have not been verified in production and are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.

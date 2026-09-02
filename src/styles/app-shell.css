@@ -62,3 +62,46 @@
 
 .personal-plan__empty-actions, .record-dashboard__empty > div { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:var(--s3); margin-top:var(--s4); }.personal-plan__empty-actions > a:not(.button), .record-dashboard__empty > div > a:not(.button) { color:var(--signal); font-size:.85rem; font-weight:800; }.today__first-action { display:grid; gap:var(--s3); padding:var(--s5); border-radius:var(--r-lg); background:linear-gradient(135deg,var(--training-soft),var(--surface)); }.today__first-action > span { display:grid; width:3rem; height:3rem; place-items:center; border-radius:1rem; background:var(--training); color:white; font-size:1.35rem; }.today__first-action strong { color:var(--ink); font-size:1.08rem; line-height:1.6; }.today__first-action p { color:var(--muted); font-size:.84rem; }.today__first-action > a:last-child { color:var(--training); font-size:.84rem; font-weight:800; text-align:center; }
 .record-dashboard__privacy { margin-top: var(--s5); color: var(--muted); font-size: .8rem; line-height: 1.6; }
+/* 今週のまとめ。Recordでは詳しく、Todayでは小さく。 */
+.record-dashboard__coach { margin-top: var(--s6); }
+.weekly-coach { display: grid; gap: var(--s3); }
+.weekly-coach--detailed { padding: var(--s5); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+.weekly-coach__head h2 { margin: var(--s1) 0 0; font-size: clamp(1.15rem, 5vw, 1.4rem); line-height: 1.4; }
+.weekly-coach__narrative { display: grid; gap: var(--s2); }
+.weekly-coach__narrative p { margin: 0; color: var(--body); font-size: .9rem; line-height: 1.75; }
+.weekly-coach__domains { display: grid; gap: var(--s3); }
+.weekly-coach__domain { display: grid; gap: 2px; padding: var(--s4); border-radius: var(--r-md); background: var(--inset); }
+.weekly-coach__domain > p { margin: 0; }
+.weekly-coach__domain > p > span { font-size: .66rem; font-weight: 900; letter-spacing: .12em; }
+.weekly-coach__domain--training > p > span { color: var(--training, #4263eb); }
+.weekly-coach__domain--nutrition > p > span { color: var(--nutrition, #168b63); }
+.weekly-coach__domain > strong { font-size: 1.35rem; }
+.weekly-coach__domain > small { color: var(--muted); font-size: .76rem; }
+.weekly-coach__domain ul { display: grid; gap: var(--s1); margin: var(--s2) 0 0; padding: 0; list-style: none; }
+.weekly-coach__domain li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); font-size: .82rem; }
+.weekly-coach__domain li strong { font-family: var(--f-mono); }
+.weekly-coach__details summary { cursor: pointer; margin-top: var(--s2); color: var(--muted); font-size: .78rem; font-weight: 700; }
+.weekly-coach__weight { display: flex; align-items: center; gap: var(--s3); margin: var(--s2) 0 0; font-size: .84rem; }
+.coach-sparkline { flex: 1; min-width: 4rem; height: 1.75rem; color: var(--signal); overflow: visible; }
+.weekly-coach__changes h3, .weekly-coach__verdict h3, .weekly-coach__next h3 { margin: 0 0 var(--s2); font-size: .92rem; }
+.weekly-coach__changes ul { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+/* 領域は色だけでなく、文言そのもので何が変わったか分かるようにしている */
+.weekly-coach__changes li { padding: var(--s1) var(--s3); border-radius: 999px; background: var(--inset); font-size: .78rem; font-weight: 600; }
+.weekly-coach__changes li.is-training { background: var(--training-soft, #e9edff); color: var(--training, #4263eb); }
+.weekly-coach__changes li.is-nutrition { background: var(--nutrition-soft, #e3f7ed); color: var(--nutrition, #168b63); }
+.weekly-coach__verdict { padding: var(--s4); border-radius: var(--r-md); border-inline-start: 5px solid var(--signal); background: var(--signal-soft); }
+.weekly-coach__verdict p { margin: 0 0 var(--s3); color: var(--body); font-size: .84rem; line-height: 1.65; }
+.weekly-coach__verdict p:last-child { margin-bottom: 0; }
+.weekly-coach__verdict .button { min-height: 3rem; }
+.weekly-coach__next dl { display: grid; gap: var(--s2); margin: 0; }
+.weekly-coach__next dl > div { display: flex; align-items: baseline; gap: var(--s3); }
+.weekly-coach__next dt { flex: none; min-width: 5.5rem; color: var(--muted); font-size: .68rem; font-weight: 900; letter-spacing: .08em; }
+.weekly-coach__next dd { margin: 0; font-size: .84rem; }
+/* Todayでは「今日やること」より小さく保つ */
+.weekly-coach--compact { gap: var(--s2); }
+.weekly-coach__headline { margin: 0; font-size: .95rem; font-weight: 800; }
+.weekly-coach__quick { display: flex; flex-wrap: wrap; gap: var(--s3); color: var(--muted); font-size: .8rem; }
+.weekly-coach__quick strong { color: var(--ink); }
+.weekly-coach__line { margin: 0; color: var(--body); font-size: .84rem; line-height: 1.65; }
+.weekly-coach__more { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--signal); font-size: .82rem; font-weight: 700; }
+@media (min-width: 40rem) { .weekly-coach__domains { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -57,6 +57,22 @@ export const MIN_NEAR_TARGET_DAYS = 3;
  */
 export const WEIGHT_NOISE_RATIO = 0.004;
 
+/**
+ * 目標カロリーを機械的に下回らせない値。target.ts のクランプと同じ。
+ *
+ * これは「ここまで下げてよい」という値ではない。
+ * 計算結果が壊れないための下限であって、健康上の最低量ではない。
+ */
+export const RESOLVED_CALORIE_FLOOR = 800;
+
+/**
+ * 自動の引き下げをやめる位置。
+ *
+ * 下限まで1段階を切ったら、そこから先は数字をいじらず、
+ * Planそのものを見直してもらう。Bodymakersは必要な摂取量を診断しない。
+ */
+export const LOW_TARGET_STOP_KCAL = RESOLVED_CALORIE_FLOOR + CALORIE_STEP_KCAL;
+
 export interface WeightTrend {
   currentAverageKg: number | null;
   previousAverageKg: number | null;
@@ -218,6 +234,8 @@ export type NutritionRecommendationState =
   | 'keep'
   /** 目標より記録が離れている。まず記録を揃える。 */
   | 'consistency-first'
+  /** 目標がすでに低く、これ以上は自動で下げない。 */
+  | 'plan-review'
   | 'adjust-down'
   | 'adjust-up';
 
@@ -346,6 +364,22 @@ export function recommendNutrition(input: {
 
   // ほぼ横ばい、または目的と逆に動いている。小さく試す候補を出す。
   const step = input.direction === 'cut' ? -CALORIE_STEP_KCAL : CALORIE_STEP_KCAL;
+
+  /*
+   * すでに低い目標から、さらに自動で下げない。
+   * ここで止めるのは計算の下限に近いからであって、
+   * その値が健康上どうかを判断しているわけではない。
+   */
+  if (step < 0 && currentCalories + step <= LOW_TARGET_STOP_KCAL) {
+    return {
+      state: 'plan-review',
+      deltaKcal: 0,
+      nextCalories: currentCalories,
+      headline: 'これ以上の自動調整は行いません',
+      detail: '今の目安はすでに低い値です。数字を下げ続けるより、診断からPlanを見直してください。',
+      needsMoreDays: null,
+    };
+  }
   const nextOffset = clampOffset(input.currentOffsetKcal + step);
   const deltaKcal = nextOffset - input.currentOffsetKcal;
 

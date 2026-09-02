@@ -15,6 +15,7 @@ import { track } from '../../lib/analytics';
 import { readHomeState, type HomeState } from '../../lib/home/state';
 import { fmt } from '../../lib/format';
 import { programById, sessionForActiveProgram } from '../../lib/programLibrary';
+import { adjustSession } from '../../lib/training/adaptive';
 import { DATA_CHANGED_EVENT, readData } from '../../lib/storage';
 import { url } from '../../lib/url';
 
@@ -37,8 +38,10 @@ function sessionLines(): { label: string; lines: SessionLine[]; more: number } |
     const data = readData();
     const active = data.activeProgram;
     if (active == null) return null;
-    const session = sessionForActiveProgram(active);
-    if (session == null) return null;
+    const base = sessionForActiveProgram(active);
+    if (base == null) return null;
+    // Todayと同じ提示重量にする。実績から積み上げたズレを反映する。
+    const session = adjustSession(base, data.trainingAdjustments);
     const definition = programById(active.programId);
     const lines = session.exercises.slice(0, 3).map((exercise, index) => ({
       key: `${exercise.exerciseId}-${index}`,

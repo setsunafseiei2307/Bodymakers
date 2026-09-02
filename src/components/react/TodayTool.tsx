@@ -42,6 +42,7 @@ import { url } from '../../lib/url';
 import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type BodymakersData, type DailyLog, type SavedDietPlan } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { resolveTodayAction } from '../../lib/todayAction';
+import { LIFT_LABELS as ADAPTIVE_LIFT_LABELS, adjustSession, adjustmentSummaryLines, emptyTrainingAdjustments, recentAdjustments } from '../../lib/training/adaptive';
 import { blankLog, buildWeeklySummary, summarizeActivity, todayProgress, weeklyProgress } from '../../lib/activity';
 import { TodayProgressPanel, WeeklyProgressPanel } from './DailyLoop';
 import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
@@ -188,7 +189,18 @@ export default function TodayTool() {
     [personalPlan],
   );
   const activeProgramDefinition = useMemo(() => activeProgram ? programById(activeProgram.programId) : null, [activeProgram]);
-  const activeProgramSession = useMemo(() => activeProgram ? sessionForActiveProgram(activeProgram) : null, [activeProgram]);
+  /**
+   * 提示重量は、Programが出した重量に実績から積み上げたズレを足したもの。
+   * Program側の週次progressionはそのまま使うので、二重には足さない。
+   */
+  const trainingAdjustments = savedData?.trainingAdjustments ?? emptyTrainingAdjustments();
+  const activeProgramSession = useMemo(() => {
+    if (activeProgram == null) return null;
+    const session = sessionForActiveProgram(activeProgram);
+    return session == null ? null : adjustSession(session, trainingAdjustments);
+  }, [activeProgram, trainingAdjustments]);
+  const adjustmentLines = useMemo(() => adjustmentSummaryLines(trainingAdjustments), [trainingAdjustments]);
+  const adjustmentHistory = useMemo(() => recentAdjustments(trainingAdjustments, 5), [trainingAdjustments]);
   /**
    * 画面のいちばん上に出す「今日の一手」。
    * 食事や栄養の詳細より前に、次の1アクションだけを見せる。
@@ -287,6 +299,7 @@ export default function TodayTool() {
       return;
     }
     setActiveProgram(result.activeProgram);
+    // 調整結果を含めて読み直す。次回の提示重量がその場で変わる。
     setSavedData(readData());
     setActiveProgramMessage(result.completed ? 'プログラムを完了しました。履歴に保存しました。' : action === 'complete' ? '完了を記録して、次のDayへ進みました。' : 'このDayをスキップして、次へ進みました。');
   }
@@ -426,6 +439,29 @@ export default function TodayTool() {
             <a className="button button--block" href={url('/tools/today#workout')}>トレーニングを開始</a>
             <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
             {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
+            {/* なぜこの重量なのか。記録の結果が次回へどう返ったかを短く出す。 */}
+            {adjustmentLines.length > 0 && (
+              <div className="today__adaptive">
+                <span>この重量になった理由</span>
+                <ul>{adjustmentLines.map((line) => <li key={line}>{line}</li>)}</ul>
+                {adjustmentHistory.length > 0 && (
+                  <details className="today__adaptive-history">
+                    <summary>これまでの調整（{adjustmentHistory.length}件）</summary>
+                    <ol>
+                      {adjustmentHistory.map((event) => (
+                        <li key={event.id}>
+                          <time>{event.date.replaceAll('-', '/')}</time>
+                          <span>{ADAPTIVE_LIFT_LABELS[event.lift]}</span>
+                          <strong className="num">
+                            {event.deltaKg === 0 ? '据え置き' : `${event.deltaKg > 0 ? '+' : '−'}${fmt(Math.abs(event.deltaKg), 1)}kg`}
+                          </strong>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
+              </div>
+            )}
           </div>
         </Slip>
       )}

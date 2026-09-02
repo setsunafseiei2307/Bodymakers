@@ -1417,3 +1417,14 @@
   .daily-loop__bar > span, .daily-loop__dot, .weekly-loop__mark { transition: none; }
   .daily-loop__done { animation: none; }
 }
+
+/* 提示重量がなぜ変わったか。責める言い方はしない。 */
+.today__adaptive { display: grid; gap: var(--s2); margin-top: var(--s3); padding: var(--s3); border-radius: var(--r-md); background: var(--surface); }
+.today__adaptive > span { color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .06em; }
+.today__adaptive ul { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.today__adaptive li { color: var(--body); font-size: .82rem; line-height: 1.6; }
+.today__adaptive-history summary { cursor: pointer; color: var(--muted); font-size: .78rem; font-weight: 700; }
+.today__adaptive-history ol { display: grid; gap: var(--s1); margin: var(--s2) 0 0; padding: 0; list-style: none; }
+.today__adaptive-history li { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s2); align-items: baseline; font-size: .78rem; }
+.today__adaptive-history time { color: var(--muted); font-family: var(--f-mono); font-size: .72rem; }
+.today__adaptive-history strong { font-family: var(--f-mono); }

@@ -15,6 +15,7 @@
 - Today: a single top priority action card, then today's progress, training, the last 7 days, food, nutrition targets/recommendations, recovery, and daily records
 - Daily loop: activity days, current / longest streak, last 7 and 30 active days, today's task checklist, and a rule-based weekly summary — all derived from existing records, with no new storage schema
 - Plan page also shows how much of the plan is actually being carried out this week
+- Training Adaptive Loop v1: finishing or skipping a program session moves the next session's suggested weight, and Today explains why
 - User data export / import as JSON at `/data/`, with a one-slot pre-import backup in `bodymakers:data:backup:v1`
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
@@ -25,6 +26,8 @@
 - `bodymakers:data:v1` — the user's saved data. Format unchanged.
 - `bodymakers:diagnosis:draft:v1` — unfinished diagnosis input, plus `questionId` for the current question. Drafts written before the one-question-per-screen change have no `questionId`; their section-based `step` is mapped to the first question of that section. Deleted when the Plan is saved or the user restarts. Ignored when older than 30 days, malformed, or incomplete.
 - `bodymakers:data:backup:v1` — the previous `bodymakers:data:v1` value, kept so an import can be undone.
+
+No new key was added for the adaptive loop. `bodymakers:data:v1` gained one optional field, `trainingAdjustments`, which older saves simply do not have and which restores as an empty state.
 
 All user data remains in the browser unless a future product explicitly adds consented sync.
 
@@ -53,6 +56,16 @@ All user data remains in the browser unless a future product explicitly adds con
 - No sticky CTA. `BottomNav` is already `position: fixed` on mobile across every page, so a second fixed bar would sit on top of it.
 - No article list, tool link list, carousel, or card grid in the Home body.
 - No account, login, or cloud sync wording anywhere.
+
+## Training Adaptive Loop v1
+- What is actually stored today is only which exercise IDs were ticked (`DailyLog.doneExercises`) and whether a program session was marked 完了 or スキップ. Per-set weight and reps are not stored, so the rule uses nothing else. Nothing is inferred from unsaved values.
+- Signal: pressing 完了 on the active program card counts as completed; スキップ counts as missed.
+- Rule: completed → the lift's offset goes up one step. Missed → hold. Two consecutive misses → down one step, and the counter resets.
+- Step size: bench 2.5kg, squat and deadlift 5kg. Only BIG3 lifts that already carry a weight in the session are adjusted; accessory work is never touched.
+- **Base weight stays the program's own.** The adaptive layer only stores a separate `offsetKg` and adds it at display time; `ProgramSession` weights and `ActiveProgram.trainingMaxes` are never rewritten. That is why the program's weekly progression and the adaptive offset cannot double-count.
+- One session adjusts once. `lastSessionKey` (`programId:wNdM`) blocks a repeat for the same week and day.
+- Offsets are clamped to ±40kg and a displayed weight never drops below 20kg.
+- Today shows the reason ("前回のセッションを完了したので、次回は+5kg") and the last five adjustments behind a details toggle. Wording never blames the user for a missed session.
 
 ## Streak and weekly summary rules
 - An active day is a day with at least one meaningful record: training, food, or a weight / steps / sleep check-in. A saved-but-empty day is not active. Page views are never counted.
@@ -92,16 +105,16 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (164 files)
-- `npm test`: 704 tests in 36 files passed
+- `npm run typecheck`: 0 errors (166 files)
+- `npm test`: 744 tests in 37 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- The re-diagnosis, Home Phase 1, daily-loop, and diagnosis UX commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 6 commits.
-- Nothing in this state file has been verified in production. The new Home, the daily loop, and the one-question diagnosis are not live.
+- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop commit is **implemented locally and not pushed**. `main` is ahead of `origin/main` by 1 commit.
+- The Training Adaptive Loop has not been verified in production and is not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.
 - Production: not verified from this session. Direct deploy and `wrangler login` are not used here.

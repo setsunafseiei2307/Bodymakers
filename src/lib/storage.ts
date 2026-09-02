@@ -6,9 +6,17 @@
  */
 
 import type { Sex } from './nutrition';
-import type { ActiveProgram } from './programLibrary';
+import { sessionForActiveProgram, type ActiveProgram } from './programLibrary';
 import { normalizePersonalPlan, type SavedPersonalPlan } from './diagnosis/types';
 import { MEAL_TYPES, type ExerciseEntry, type MealEntry, type MealType, type MuscleGroup } from './today';
+import {
+  applySessionOutcome,
+  emptyTrainingAdjustments,
+  liftsInSession,
+  normalizeTrainingAdjustments,
+  sessionKeyFor,
+  type TrainingAdjustments,
+} from './training/adaptive';
 import {
   STRENGTH_HISTORY_LIMIT,
   normalizeStrengthDiagnosis,
@@ -77,6 +85,11 @@ export interface BodymakersData {
   programHistory: CompletedProgram[];
   /** 最近Todayへ追加した食品。既存v1データでは空配列として復元する。 */
   recentFoodIds: string[];
+  /**
+   * 実績から積み上げた、提示重量のズレ。
+   * 旧v1データには存在しないため、空の状態として復元する。
+   */
+  trainingAdjustments: TrainingAdjustments;
 }
 
 export interface CompletedProgram extends ActiveProgram {
@@ -95,6 +108,7 @@ export function emptyData(): BodymakersData {
     activeProgram: null,
     programHistory: [],
     recentFoodIds: [],
+    trainingAdjustments: emptyTrainingAdjustments(),
   };
 }
 
@@ -215,6 +229,7 @@ export function parseStoredData(raw: string | null): BodymakersData {
       recentFoodIds: Array.isArray(parsed.recentFoodIds)
         ? [...new Set(parsed.recentFoodIds.filter((item): item is string => typeof item === 'string' && item.length > 0))].slice(0, 12)
         : [],
+      trainingAdjustments: normalizeTrainingAdjustments(parsed.trainingAdjustments),
     };
   } catch {
     return emptyData();
@@ -386,14 +401,30 @@ export function startActiveProgram(
   return writeData({ ...data, activeProgram: normalized }, storage);
 }
 
-/** 現在の1日を進め、最終日を終えたProgramは履歴へ残す。 */
+/**
+ * 現在の1日を進め、最終日を終えたProgramは履歴へ残す。
+ *
+ * ここで、いま終えたセッションの結果を次回の提示重量へ返す。
+ * 完了なら1段階上げる候補にし、スキップなら据え置き（続けば下げる）。
+ * 判定そのものは src/lib/training/adaptive.ts が持っている。
+ */
 export function advanceActiveProgram(
   action: 'complete' | 'skip',
   storage: Storage | null = browserStorage(),
-): { activeProgram: ActiveProgram | null; completed: boolean } | null {
+): { activeProgram: ActiveProgram | null; completed: boolean; adjustments: TrainingAdjustments } | null {
   const data = readData(storage);
   const current = data.activeProgram;
   if (current == null) return null;
+
+  // いま終えたセッションの重量を見てから進める。進めた後だと別のDayになる。
+  const session = sessionForActiveProgram(current);
+  const trainingAdjustments = applySessionOutcome(data.trainingAdjustments, {
+    sessionKey: sessionKeyFor(current),
+    lifts: liftsInSession(session),
+    outcome: action === 'complete' ? 'completed' : 'missed',
+    date: localDateKey(),
+  });
+
   const completedSessions = current.completedSessions + (action === 'complete' ? 1 : 0);
   const advanced: ActiveProgram = current.currentDay < current.daysPerWeek
     ? { ...current, currentDay: current.currentDay + 1, completedSessions }
@@ -402,9 +433,9 @@ export function advanceActiveProgram(
       : { ...current, completedSessions };
   if (current.currentWeek === current.durationWeeks && current.currentDay === current.daysPerWeek) {
     const completed: CompletedProgram = { ...advanced, completedAt: new Date().toISOString() };
-    const saved = writeData({ ...data, activeProgram: null, programHistory: [...data.programHistory, completed].slice(-24) }, storage);
-    return saved ? { activeProgram: null, completed: true } : null;
+    const saved = writeData({ ...data, activeProgram: null, programHistory: [...data.programHistory, completed].slice(-24), trainingAdjustments }, storage);
+    return saved ? { activeProgram: null, completed: true, adjustments: trainingAdjustments } : null;
   }
-  const saved = writeData({ ...data, activeProgram: advanced }, storage);
-  return saved ? { activeProgram: advanced, completed: false } : null;
+  const saved = writeData({ ...data, activeProgram: advanced, trainingAdjustments }, storage);
+  return saved ? { activeProgram: advanced, completed: false, adjustments: trainingAdjustments } : null;
 }

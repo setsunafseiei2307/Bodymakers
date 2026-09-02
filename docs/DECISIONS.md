@@ -21,3 +21,15 @@ Streak, today's progress, and the weekly summary stay on Today and `/record/` an
 No analytics vendor has been chosen. `src/lib/analytics.ts` holds the event contract and a no-op `track()`; no SDK or snippet is added until a vendor decision is recorded here.
 
 Changing any of this requires updating this file with the reason.
+
+## 2026-09-03 Adaptive weights sit on top of the program, never inside it
+
+The Training Adaptive Loop stores a per-lift `offsetKg` and adds it to the weight the program calculated, at display time. It never rewrites `ProgramSession` weights and never rewrites `ActiveProgram.trainingMaxes`.
+
+The program's own weekly progression stays the base. Because the adaptive layer is a separate addend, the two cannot double-count, and turning the adaptive layer off would restore the original program weights exactly.
+
+One session may adjust a lift once. The session key `programId:wNdM` records what has already been applied.
+
+The rule only uses what is actually saved: which exercises were ticked, and whether the session was marked 完了 or スキップ. Per-set weight and reps are not stored, so no rule may depend on them until they are.
+
+Changing any of this requires updating this file with the reason.

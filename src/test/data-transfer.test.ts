@@ -77,7 +77,8 @@ describe('データの書き出し', () => {
     const keys = Object.keys(buildExport(emptyData()).data).sort();
     expect(keys).toEqual([
       'activeProgram', 'dailyLogs', 'dietPlan', 'personalPlan', 'profile',
-      'programHistory', 'recentFoodIds', 'strengthHistory', 'strengthProfile', 'version',
+      'programHistory', 'recentFoodIds', 'strengthHistory', 'strengthProfile',
+      'trainingAdjustments', 'version',
     ]);
   });
 });

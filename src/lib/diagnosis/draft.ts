@@ -14,6 +14,12 @@
 
 import type { LiftId } from '../strength/standards';
 import {
+  RESULT_STEP,
+  questionIdFromLegacyStep,
+  questionProgress,
+  resolveQuestionId,
+} from './questions';
+import {
   ALCOHOL_HABITS,
   DAILY_ACTIVITIES,
   GOAL_IDS,
@@ -50,8 +56,16 @@ export type StrengthSetInputs = Record<LiftId, { weight: string; reps: string }>
 export interface DiagnosisDraft {
   version: 1;
   savedAt: string;
-  /** 0 〜 DIAGNOSIS_STEP_TITLES.length。最後の値は結果画面。 */
+  /**
+   * 章ごとの位置。1問1画面にする前の形式。
+   * 今は questionId を使うが、以前の下書きを読めるように残す。
+   */
   step: number;
+  /**
+   * 今どの質問にいるか。質問IDか 'result'。
+   * この項目が無い下書きは、step から位置を割り出す。
+   */
+  questionId: string | null;
   input: PersonalPlanInput;
   strengthMode: StrengthInputMode;
   setInputs: StrengthSetInputs;
@@ -188,10 +202,15 @@ export function normalizeDiagnosisDraft(value: unknown, now = new Date()): Diagn
   const maxStep = DIAGNOSIS_STEP_TITLES.length;
   const rawStep = value.step;
   const step = typeof rawStep === 'number' && Number.isInteger(rawStep) && rawStep >= 0 && rawStep <= maxStep ? rawStep : 0;
+  // IDの中身は質問表の側で確かめる。ここでは「文字列かどうか」だけを見る。
+  const questionId = typeof value.questionId === 'string' && value.questionId !== '' && value.questionId.length <= 64
+    ? value.questionId
+    : null;
   return {
     version: 1,
     savedAt: value.savedAt,
     step,
+    questionId,
     input: pickInput(value.input),
     strengthMode: value.strengthMode === 'set' ? 'set' : 'oneRm',
     setInputs: pickSetInputs(value.setInputs),
@@ -226,7 +245,7 @@ export function readDiagnosisDraft(storage: Storage | null = browserStorage(), n
 }
 
 export function writeDiagnosisDraft(
-  draft: Omit<DiagnosisDraft, 'version' | 'savedAt'> & { savedAt?: string },
+  draft: Omit<DiagnosisDraft, 'version' | 'savedAt' | 'questionId'> & { savedAt?: string; questionId?: string | null },
   storage: Storage | null = browserStorage(),
 ): boolean {
   if (storage == null) return false;
@@ -234,6 +253,7 @@ export function writeDiagnosisDraft(
     version: 1,
     savedAt: draft.savedAt ?? new Date().toISOString(),
     step: draft.step,
+    questionId: draft.questionId ?? null,
     input: draft.input,
     strengthMode: draft.strengthMode,
     setInputs: draft.setInputs,
@@ -257,9 +277,23 @@ export function clearDiagnosisDraft(storage: Storage | null = browserStorage()):
   }
 }
 
+/**
+ * 下書きの位置を、今の質問表の上の位置へ直す。
+ * questionId が無い古い下書きは、章の番号から割り出す。
+ */
+export function draftQuestionId(draft: DiagnosisDraft): string {
+  if (draft.questionId != null) {
+    const resolved = resolveQuestionId(draft.input, draft.questionId);
+    // 保存されたIDが今の質問表に無い場合だけ、章の番号へ落とす。
+    if (draft.questionId === RESULT_STEP || resolved === draft.questionId) return resolved;
+  }
+  return questionIdFromLegacyStep(draft.input, draft.step);
+}
+
 /** 「前回の続き」の案内に出す、どこまで進んでいたかの表示。 */
 export function draftStepLabel(draft: DiagnosisDraft): string {
-  const maxStep = DIAGNOSIS_STEP_TITLES.length;
-  if (draft.step >= maxStep) return '診断結果';
-  return `${draft.step + 1} / ${maxStep}・${DIAGNOSIS_STEP_TITLES[draft.step]}`;
+  const questionId = draftQuestionId(draft);
+  if (questionId === RESULT_STEP) return '診断結果';
+  const progress = questionProgress(draft.input, questionId);
+  return `${progress.position} / ${progress.total}問目`;
 }

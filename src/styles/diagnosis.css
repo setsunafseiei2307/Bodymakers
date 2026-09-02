@@ -138,3 +138,170 @@
 .journey--resume .button { min-height: 3rem; }
 /* 診断中は外部ツールへ飛ばさない。代わりに一言だけ添える。 */
 .journey-hint { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.6; }
+
+/* ==========================================================================
+   1問1画面の診断
+   ページ全体のデザインは変えず、診断の中だけを「答えていく」画面にする。
+   色は意味で使う: トレーニング=青、栄養=緑、方向づけ=橙。
+   ========================================================================== */
+
+.quiz {
+  --quiz-training: #4263eb;
+  --quiz-training-soft: #e9edff;
+  --quiz-nutrition: #168b63;
+  --quiz-nutrition-soft: #e3f7ed;
+  --quiz-direction: #c66a12;
+  --quiz-direction-soft: #fff1df;
+  display: grid;
+  gap: var(--s4);
+  /* 質問ごとの高さの差でページが跳ねないよう、下限を決めておく。 */
+  min-height: 26rem;
+  align-content: start;
+}
+
+/* --- 進捗 --- */
+.quiz-progress { display: grid; gap: var(--s2); }
+.quiz-progress__count {
+  font-family: var(--f-mono); font-size: .82rem; font-weight: 700;
+  color: var(--signal); letter-spacing: .04em;
+}
+.quiz-progress__count small { color: var(--muted); font-size: .78rem; font-weight: 500; }
+.quiz-progress__bar {
+  position: relative; height: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--signal) 14%, transparent); overflow: hidden;
+}
+.quiz-progress__bar > span {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--signal), color-mix(in srgb, var(--signal) 62%, white));
+  transition: width .3s var(--ease);
+}
+.quiz-progress--done .quiz-progress__count { color: var(--quiz-nutrition, var(--signal)); }
+
+/* --- 質問 --- */
+.quiz-question { display: grid; gap: var(--s3); }
+.quiz-question__kicker {
+  margin: 0; color: var(--signal); font-size: .68rem; font-weight: 900; letter-spacing: .14em;
+}
+.quiz-question__title { margin: 0; font-size: clamp(1.3rem, 5.4vw, 1.7rem); line-height: 1.35; }
+.quiz-question__lead { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.6; }
+.quiz-hint { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+.quiz-number { display: grid; gap: var(--s3); }
+
+/* --- 選択カード --- */
+.quiz-choices { display: grid; gap: var(--s2); }
+.quiz-choices--1 { grid-template-columns: 1fr; }
+.quiz-choices--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.quiz-choice {
+  position: relative;
+  display: grid; align-content: center; gap: 2px;
+  /* 指で押しやすい大きさ。誤タップを避けるため隙間も残す。 */
+  min-height: 3.75rem;
+  padding: var(--s3) 2.75rem var(--s3) var(--s4);
+  border: 2px solid transparent; border-radius: var(--r-md);
+  background: var(--surface); box-shadow: var(--shadow-sm);
+  color: inherit; text-align: left; cursor: pointer;
+  transition: transform .18s var(--ease), border-color .18s var(--ease), background-color .18s var(--ease);
+}
+.quiz-choices--2 .quiz-choice { padding-right: var(--s3); text-align: center; justify-items: center; }
+.quiz-choice:hover { border-color: color-mix(in srgb, var(--signal) 40%, transparent); }
+.quiz-choice:active { transform: scale(.985); }
+.quiz-choice.is-selected {
+  border-color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 8%, var(--surface));
+}
+.quiz-choice__icon { color: var(--signal); font-size: 1.1rem; line-height: 1; }
+.quiz-choice__label { font-size: .98rem; font-weight: 700; line-height: 1.35; }
+.quiz-choice__detail { color: var(--muted); font-size: .78rem; line-height: 1.45; }
+/* 選択中の印。選んだことが一目で分かるようにする。 */
+.quiz-choice__check {
+  position: absolute; inset-inline-end: var(--s3); inset-block-start: 50%;
+  width: 1.35rem; height: 1.35rem; margin-block-start: -.675rem;
+  border: 2px solid color-mix(in srgb, var(--muted) 40%, transparent); border-radius: 50%;
+  transition: background-color .18s var(--ease), border-color .18s var(--ease);
+}
+.quiz-choices--2 .quiz-choice__check { display: none; }
+.quiz-choice.is-selected .quiz-choice__check { border-color: var(--signal); background: var(--signal); }
+.quiz-choice.is-selected .quiz-choice__check::after {
+  content: ''; position: absolute; inset-block-start: 3px; inset-inline-start: 6px;
+  width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+
+.quiz-lifts { display: grid; gap: var(--s3); }
+.quiz-set-card { display: grid; gap: var(--s2); padding: var(--s3); border-radius: var(--r-md); background: var(--inset); }
+
+/* --- 操作 --- */
+.quiz-actions { display: grid; gap: var(--s2); justify-items: center; }
+.quiz-actions .button { width: 100%; min-height: 3.25rem; }
+.quiz-back {
+  border: 0; background: none; padding: var(--s2) var(--s3);
+  color: var(--muted); font-size: .84rem; cursor: pointer;
+}
+.quiz-back:hover { color: var(--signal); }
+
+/* --- 途中の声かけ --- */
+.quiz-interstitial {
+  display: grid; gap: var(--s2); padding: var(--s5);
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, var(--signal-soft), var(--surface));
+  text-align: center;
+}
+.quiz-interstitial__kicker { margin: 0; color: var(--signal); font-size: .68rem; font-weight: 900; letter-spacing: .14em; }
+.quiz-interstitial h2 { margin: 0; font-size: clamp(1.15rem, 4.8vw, 1.45rem); }
+.quiz-interstitial p { margin: 0; color: var(--body); font-size: .88rem; line-height: 1.65; }
+.quiz-interstitial__dots { display: flex; justify-content: center; gap: 6px; margin-top: var(--s2); }
+.quiz-interstitial__dots span {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--signal); opacity: .3;
+  animation: quiz-dot 1.05s var(--ease) infinite;
+}
+.quiz-interstitial__dots span:nth-child(2) { animation-delay: .15s; }
+.quiz-interstitial__dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes quiz-dot { 0%, 100% { opacity: .28; } 50% { opacity: 1; } }
+
+/* --- 結果 --- */
+.quiz-result-cards { display: grid; gap: var(--s3); margin-block: var(--s4); }
+.quiz-result-card {
+  display: grid; gap: var(--s1); padding: var(--s4);
+  border-radius: var(--r-md); box-shadow: var(--shadow-sm);
+}
+.quiz-result-card > span { font-size: .66rem; font-weight: 900; letter-spacing: .12em; }
+.quiz-result-card strong { font-size: 1.02rem; line-height: 1.4; }
+.quiz-result-card p { margin: 0; color: var(--body); font-size: .82rem; line-height: 1.55; }
+.quiz-result-card--training { background: var(--quiz-training-soft, #e9edff); }
+.quiz-result-card--training > span { color: var(--quiz-training, #4263eb); }
+.quiz-result-card--nutrition { background: var(--quiz-nutrition-soft, #e3f7ed); }
+.quiz-result-card--nutrition > span { color: var(--quiz-nutrition, #168b63); }
+.quiz-result-card--direction { background: var(--quiz-direction-soft, #fff1df); }
+.quiz-result-card--direction > span { color: var(--quiz-direction, #c66a12); }
+.quiz-result-next {
+  display: grid; gap: var(--s1); padding: var(--s4); margin-block: var(--s4);
+  border-radius: var(--r-md); border-inline-start: 5px solid var(--signal);
+  background: var(--signal-soft);
+}
+.quiz-result-next > span { color: var(--signal); font-size: .66rem; font-weight: 900; letter-spacing: .12em; }
+.quiz-result-next strong { font-size: 1.02rem; }
+.quiz-result-next p { margin: 0; color: var(--body); font-size: .85rem; line-height: 1.6; }
+
+/* --- 動き --- */
+/* 画面が切り替わったことが分かる程度。長く見せない。 */
+.quiz-appear { animation: quiz-appear .24s var(--ease) both; }
+@keyframes quiz-appear {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (min-width: 40rem) {
+  .quiz-result-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 22rem) {
+  .quiz-choices--2 { grid-template-columns: 1fr; }
+}
+
+/* 動きを減らす設定では、動かさずに機能だけ残す。 */
+@media (prefers-reduced-motion: reduce) {
+  .quiz-appear { animation: none; }
+  .quiz-interstitial__dots span { animation: none; opacity: .55; }
+  .quiz-progress__bar > span,
+  .quiz-choice,
+  .quiz-choice__check { transition: none; }
+  .quiz-choice:active { transform: none; }
+}

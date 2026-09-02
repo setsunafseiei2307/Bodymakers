@@ -5,6 +5,7 @@ import {
   DIAGNOSIS_STEP_TITLES,
   clearDiagnosisDraft,
   defaultDiagnosisInput,
+  draftQuestionId,
   draftStepLabel,
   emptySetInputs,
   normalizeDiagnosisDraft,
@@ -12,6 +13,7 @@ import {
   readDiagnosisDraft,
   writeDiagnosisDraft,
 } from '../lib/diagnosis/draft';
+import { RESULT_STEP, visibleQuestions } from '../lib/diagnosis/questions';
 import { STORAGE_KEY, emptyData, parseStoredData } from '../lib/storage';
 
 function memoryStorage(): Storage {
@@ -30,6 +32,7 @@ function draftPayload() {
   const input = defaultDiagnosisInput();
   return {
     step: 2,
+    questionId: 'experience',
     input: { ...input, goal: 'muscle' as const, body: { ...input.body, weightKg: 82 } },
     strengthMode: 'set' as const,
     setInputs: { ...emptySetInputs(), bench: { weight: '80', reps: '5' } },
@@ -43,10 +46,40 @@ describe('診断の途中保存', () => {
 
     const draft = readDiagnosisDraft(storage);
     expect(draft?.step).toBe(2);
+    expect(draft?.questionId).toBe('experience');
     expect(draft?.input.goal).toBe('muscle');
     expect(draft?.input.body.weightKg).toBe(82);
     expect(draft?.strengthMode).toBe('set');
     expect(draft?.setInputs.bench).toEqual({ weight: '80', reps: '5' });
+    expect(draftQuestionId(draft!)).toBe('experience');
+  });
+
+  it('回答を変えるたびに、下書きが上書きされる', () => {
+    const storage = memoryStorage();
+    writeDiagnosisDraft(draftPayload(), storage);
+    expect(readDiagnosisDraft(storage)?.questionId).toBe('experience');
+
+    const input = defaultDiagnosisInput();
+    writeDiagnosisDraft(
+      { step: 0, questionId: 'sleepDuration', input: { ...input, goal: 'strength' }, strengthMode: 'oneRm', setInputs: emptySetInputs() },
+      storage,
+    );
+
+    const updated = readDiagnosisDraft(storage);
+    expect(updated?.questionId).toBe('sleepDuration');
+    expect(updated?.input.goal).toBe('strength');
+  });
+
+  it('読み込み直しても同じ位置と回答から再開できる', () => {
+    const storage = memoryStorage();
+    const input = { ...defaultDiagnosisInput(), goal: 'muscle' as const, targets: { weightKg: 68, lifts: {} } };
+    writeDiagnosisDraft({ step: 0, questionId: 'bodySize', input, strengthMode: 'oneRm', setInputs: emptySetInputs() }, storage);
+
+    // 別のセッションとして読み直す
+    const reopened = readDiagnosisDraft(storage);
+    expect(reopened).not.toBeNull();
+    expect(draftQuestionId(reopened!)).toBe('bodySize');
+    expect(reopened!.input.targets.weightKg).toBe(68);
   });
 
   it('正式な保存データとは別のキーを使い、既存データを壊さない', () => {
@@ -149,14 +182,64 @@ describe('壊れた下書きへの耐性', () => {
       version: 1,
       savedAt: new Date().toISOString(),
       step: DIAGNOSIS_STEP_TITLES.length,
+      questionId: RESULT_STEP,
       input: defaultDiagnosisInput(),
     });
-    expect(draft?.step).toBe(DIAGNOSIS_STEP_TITLES.length);
+    expect(draftQuestionId(draft!)).toBe(RESULT_STEP);
     expect(draftStepLabel(draft!)).toBe('診断結果');
   });
 
-  it('途中のステップは何番目かが分かる文言になる', () => {
+  it('途中の位置は何問目かが分かる文言になる', () => {
     const draft = normalizeDiagnosisDraft({ version: 1, savedAt: new Date().toISOString(), step: 0, input: {} });
-    expect(draftStepLabel(draft!)).toBe(`1 / ${DIAGNOSIS_STEP_TITLES.length}・${DIAGNOSIS_STEP_TITLES[0]}`);
+    const total = visibleQuestions(defaultDiagnosisInput()).length;
+    expect(draftStepLabel(draft!)).toBe(`1 / ${total}問目`);
+  });
+});
+
+describe('1問1画面より前の下書きとの互換', () => {
+  it('questionId が無い下書きは、章の番号から位置を割り出す', () => {
+    const legacy = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      step: 2,
+      input: defaultDiagnosisInput(),
+      strengthMode: 'oneRm',
+      setInputs: emptySetInputs(),
+    };
+    const draft = normalizeDiagnosisDraft(legacy);
+    expect(draft).not.toBeNull();
+    expect(draft!.questionId).toBeNull();
+    // step 2 は「筋トレ状況」の章。その最初の質問へ移す。
+    expect(draftQuestionId(draft!)).toBe('experience');
+  });
+
+  it('旧下書きの回答内容はそのまま引き継ぐ', () => {
+    const input = { ...defaultDiagnosisInput(), goal: 'fat-loss' as const, body: { ...defaultDiagnosisInput().body, weightKg: 91 } };
+    const draft = normalizeDiagnosisDraft({ version: 1, savedAt: new Date().toISOString(), step: 1, input });
+    expect(draft!.input.goal).toBe('fat-loss');
+    expect(draft!.input.body.weightKg).toBe(91);
+    expect(draftQuestionId(draft!)).toBe('sex');
+  });
+
+  it('保存されたIDが今は出ない質問なら、章の番号へ落とす', () => {
+    // 目的が health のときは targetWeight を出さない
+    const draft = normalizeDiagnosisDraft({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      step: 1,
+      questionId: 'targetWeight',
+      input: defaultDiagnosisInput(),
+    });
+    expect(draftQuestionId(draft!)).toBe('sex');
+  });
+
+  it('壊れた questionId は無視する', () => {
+    for (const questionId of [42, {}, '', 'x'.repeat(200)]) {
+      const draft = normalizeDiagnosisDraft({
+        version: 1, savedAt: new Date().toISOString(), step: 0, questionId, input: {},
+      });
+      expect(draft!.questionId).toBeNull();
+      expect(draftQuestionId(draft!)).toBe('goal');
+    }
   });
 });

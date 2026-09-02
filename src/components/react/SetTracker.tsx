@@ -9,7 +9,7 @@
  */
 
 import { fmt } from '../../lib/format';
-import type { TrainingExerciseLog, TrainingSessionLog, TrainingSetLog } from '../../lib/training/log';
+import type { PreviousPerformance, TrainingExerciseLog, TrainingSessionLog, TrainingSetLog } from '../../lib/training/log';
 
 function clampWeight(value: number): number {
   if (!Number.isFinite(value)) return 0;
@@ -24,9 +24,12 @@ function clampReps(value: number): number {
 export function SetTracker({
   log,
   onChange,
+  previous,
 }: {
   log: TrainingSessionLog;
   onChange: (next: TrainingSessionLog) => void;
+  /** 種目ごとの前回実績。あくまで参考で、今日の提示重量には影響しない。 */
+  previous?: Map<string, PreviousPerformance>;
 }) {
   function updateExercise(index: number, next: TrainingExerciseLog) {
     onChange({ ...log, exercises: log.exercises.map((item, i) => (i === index ? next : item)) });
@@ -64,6 +67,18 @@ export function SetTracker({
                 {doneCount} / {exercise.sets.length}
               </span>
             </header>
+
+            {/* 前回の実績。Recordへ行かずにその場で見られるようにする。 */}
+            {(() => {
+              const last = previous?.get(exercise.exerciseId);
+              if (last == null) return null;
+              return (
+                <p className="set-tracker__previous">
+                  <span>前回</span>
+                  <span className="num">{fmt(last.weightKg, 1)}kg × {last.reps.join(', ')}</span>
+                </p>
+              );
+            })()}
 
             <ol className="set-tracker__sets">
               {exercise.sets.map((set, setIndex) => {

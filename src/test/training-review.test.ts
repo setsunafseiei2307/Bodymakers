@@ -4,6 +4,7 @@ import { buildWeeklyTrainingReview, liftProgressSummaries } from '../lib/trainin
 import { buildExport, parseImport } from '../lib/dataTransfer';
 import { emptyData, parseStoredData, type BodymakersData } from '../lib/storage';
 import { applySessionCompletion, emptyTrainingAdjustments, LIFT_STEP_KG, offsetFor } from '../lib/training/adaptive';
+import { buildNextSessionPreview } from '../lib/training/feedback';
 import { shiftDateKey } from '../lib/activity/days';
 import type { TrainingSessionLog } from '../lib/training/log';
 import type { ActiveProgram, ProgramSession } from '../lib/programLibrary';
@@ -148,6 +149,25 @@ describe('書き出しと読み込み', () => {
     expect(offsetFor(round.data.trainingAdjustments, 'squat')).toBe(LIFT_STEP_KG.squat);
     // 読み込んだデータからも同じ振り返りが作れる
     expect(buildWeeklyTrainingReview(round.data, NOW).sessions).toBe(1);
+  });
+
+  it('書き出して読み込んだあとも、次回の提示が同じになる（P8-J）', () => {
+    const sessions = [squatSession(ago(0), 100, [5, 5, 5, 5, 5], 'bodymakers-five-by-five:w1d1')];
+    const adjustments = applySessionCompletion(emptyTrainingAdjustments(), {
+      sessionKey: 'bodymakers-five-by-five:w1d1', date: ago(0),
+      session: programSession, log: sessions[0]!, outcome: 'completed',
+    }).adjustments;
+
+    const before = data({ trainingSessions: sessions, trainingAdjustments: adjustments, activeProgram });
+    const beforePreview = buildNextSessionPreview(before.activeProgram, before.trainingAdjustments);
+
+    const round = parseImport(JSON.stringify(buildExport(before)));
+    expect(round.ok).toBe(true);
+    if (!round.ok) return;
+
+    const afterPreview = buildNextSessionPreview(round.data.activeProgram, round.data.trainingAdjustments);
+    expect(afterPreview).toEqual(beforePreview);
+    expect(afterPreview).not.toBeNull();
   });
 
   it('実績を持たない古い書き出しも読み込める', () => {

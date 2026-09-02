@@ -44,8 +44,10 @@ import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { resolveTodayAction } from '../../lib/todayAction';
 import { LIFT_LABELS as ADAPTIVE_LIFT_LABELS, adjustSession, adjustmentSummaryLines, emptyTrainingAdjustments, recentAdjustments } from '../../lib/training/adaptive';
 import { blankLog, buildWeeklySummary, summarizeActivity, todayProgress, weeklyProgress } from '../../lib/activity';
-import { draftSessionFromProgram, findSessionLog, hasRecordedSets, type TrainingSessionLog } from '../../lib/training/log';
+import { draftSessionFromProgram, findSessionLog, hasRecordedSets, previousPerformance, type PreviousPerformance, type TrainingSessionLog } from '../../lib/training/log';
+import { buildNextSessionPreview, buildSessionFeedback, type SessionFeedback } from '../../lib/training/feedback';
 import SetTracker from './SetTracker';
+import SessionFeedbackCard from './SessionFeedbackCard';
 import { TodayProgressPanel, WeeklyProgressPanel } from './DailyLoop';
 import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
@@ -89,6 +91,8 @@ export default function TodayTool() {
   const [savedData, setSavedData] = useState<BodymakersData | null>(null);
   /** いま記録中のセッション。予定値から作り、押した内容をここへ入れていく。 */
   const [sessionLog, setSessionLog] = useState<TrainingSessionLog | null>(null);
+  /** 完了直後だけ出すまとめ。閉じたら消える一時的な表示。 */
+  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(null);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -220,6 +224,26 @@ export default function TodayTool() {
     });
   }, [activeProgram, activeProgramSession, savedData]);
 
+  /** 種目ごとの前回実績。今日の提示重量には影響させず、参考として横に出すだけ。 */
+  const previousByExercise = useMemo(() => {
+    const map = new Map<string, PreviousPerformance>();
+    if (savedData == null || sessionLog == null) return map;
+    for (const exercise of sessionLog.exercises) {
+      const last = previousPerformance(savedData.trainingSessions, exercise.exerciseId, sessionLog.sessionKey);
+      if (last != null) map.set(exercise.exerciseId, last);
+    }
+    return map;
+  }, [savedData, sessionLog]);
+
+  /**
+   * 次回の予定。Todayが出す重量と同じ経路で作るので、表示がずれない。
+   * 保存済みデータから毎回作り直すため、読み込み直しても同じ結果になる。
+   */
+  const nextPreview = useMemo(
+    () => buildNextSessionPreview(activeProgram, trainingAdjustments),
+    [activeProgram, trainingAdjustments],
+  );
+
   const adjustmentLines = useMemo(() => adjustmentSummaryLines(trainingAdjustments), [trainingAdjustments]);
   const adjustmentHistory = useMemo(() => recentAdjustments(trainingAdjustments, 5), [trainingAdjustments]);
   /**
@@ -315,7 +339,9 @@ export default function TodayTool() {
 
   function advanceProgram(action: 'complete' | 'skip') {
     // 押したセットの実績を一緒に渡す。あれば実績で、無ければ完了/スキップで判定される。
-    const result = advanceActiveProgram(action, sessionLog);
+    const finished = sessionLog;
+    const finishedKey = activeProgram == null ? '' : `${activeProgram.programId}:w${activeProgram.currentWeek}d${activeProgram.currentDay}`;
+    const result = advanceActiveProgram(action, finished);
     if (result == null) {
       setActiveProgramMessage('進行を保存できませんでした。ブラウザの保存設定を確認してください。');
       return;
@@ -324,6 +350,18 @@ export default function TodayTool() {
     // 調整結果を含めて読み直す。次回の提示重量がその場で変わる。
     setSavedData(readData());
     setSessionLog(null);
+
+    // 終わった直後のまとめ。判定結果をそのまま読むので、Todayの提示と食い違わない。
+    setSessionFeedback(buildSessionFeedback({
+      log: finished,
+      evaluations: result.evaluations,
+      adjustments: result.adjustments,
+      sessionKey: finishedKey,
+      source: result.source,
+      skipped: action === 'skip',
+      programCompleted: result.completed,
+      nextActiveProgram: result.activeProgram,
+    }));
     const recorded = result.source === 'sets' ? '記録した内容から次回の重量を決めました。' : '';
     setActiveProgramMessage(
       result.completed
@@ -473,9 +511,32 @@ export default function TodayTool() {
             <strong>Week {activeProgram.currentWeek} / Day {activeProgram.currentDay}</strong>
             {activeProgramSession ? <><p>{activeProgramSession.label}／{activeProgramSession.focus}</p><ul>{activeProgramSession.exercises.map((item) => <li key={item.exerciseId}><span>{item.label}</span><strong>{item.weightKg == null ? item.note ?? 'フォームを保てる負荷で' : `${fmt(item.weightKg, 1)}kg`}</strong><small>{item.sets}セット × {item.reps}回</small></li>)}</ul></> : <p>現在のDayを読み込めませんでした。Program Libraryで条件を確認してください。</p>}
             {/* 実際にやったセットをその場で押す。予定値が最初から入っている。 */}
-            {sessionLog && <SetTracker log={sessionLog} onChange={updateSessionLog} />}
+            {sessionLog && <SetTracker log={sessionLog} onChange={updateSessionLog} previous={previousByExercise} />}
             <div className="today__active-actions"><button type="button" className="button" onClick={() => advanceProgram('complete')}>セッションを完了</button><button type="button" className="button button--quiet" onClick={() => advanceProgram('skip')}>スキップ</button></div>
             {activeProgramMessage && <p className="tool__status" role="status">{activeProgramMessage}</p>}
+
+            {/* 終わった直後だけ出す。今日どうだったか・何を判断したか・次に何をするか。 */}
+            {sessionFeedback && (
+              <SessionFeedbackCard feedback={sessionFeedback} onDismiss={() => setSessionFeedback(null)} />
+            )}
+
+            {/* 次回の予定。完了カードを閉じたあとも、次にやることが見える。 */}
+            {sessionFeedback == null && nextPreview && (
+              <div className="today__next-session">
+                <p className="today__next-session-head"><span>NEXT</span><strong>{nextPreview.label}</strong></p>
+                <ul>
+                  {nextPreview.exercises.map((item) => (
+                    <li key={item.exerciseId}>
+                      <span>{item.label}</span>
+                      <strong className="num">{item.weightKg == null ? 'フォーム重視' : `${fmt(item.weightKg, 1)}kg`}</strong>
+                      <small className="num">{item.sets} × {item.reps}</small>
+                    </li>
+                  ))}
+                </ul>
+                {nextPreview.more > 0 && <p className="tool__note">ほか{nextPreview.more}種目</p>}
+              </div>
+            )}
+
             {/* なぜこの重量なのか。記録の結果が次回へどう返ったかを短く出す。 */}
             {adjustmentLines.length > 0 && (
               <div className="today__adaptive">

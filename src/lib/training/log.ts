@@ -364,3 +364,50 @@ export function findSessionLog(
 export function recentSessions(sessions: readonly TrainingSessionLog[], limit = 5): TrainingSessionLog[] {
   return [...sessions].reverse().slice(0, Math.max(0, limit));
 }
+
+export interface PreviousPerformance {
+  date: string;
+  /** その日いちばん多く使った重量。 */
+  weightKg: number;
+  /** 完了したセットの回数を、やった順に並べたもの。 */
+  reps: number[];
+}
+
+/**
+ * その種目の前回の実績。
+ *
+ * 入力中に「前回何kgで何回できたっけ」を探しにRecordへ行かなくて済むよう、
+ * Todayのその場で出すためのもの。
+ *
+ * ここで返すのはあくまで参考値で、今日の提示重量には影響しない。
+ * 提示重量はProgramとAdaptiveが決める。
+ */
+export function previousPerformance(
+  sessions: readonly TrainingSessionLog[],
+  exerciseId: string,
+  /** いま記録中のセッション。自分自身を前回として出さないために除く。 */
+  excludeSessionKey?: string,
+): PreviousPerformance | null {
+  for (const session of [...sessions].reverse()) {
+    if (excludeSessionKey != null && session.sessionKey === excludeSessionKey) continue;
+    const exercise = session.exercises.find((item) => item.exerciseId === exerciseId);
+    if (exercise == null) continue;
+    const doneSets = exercise.sets.filter((set) => set.done);
+    if (doneSets.length === 0) continue;
+
+    // いちばん多く出てきた重量を代表にする。ウォームアップより本番セットが残る。
+    const counts = new Map<number, number>();
+    for (const set of doneSets) counts.set(set.weightKg, (counts.get(set.weightKg) ?? 0) + 1);
+    let weightKg = doneSets[0]!.weightKg;
+    let best = 0;
+    for (const [candidate, count] of counts) {
+      if (count > best || (count === best && candidate > weightKg)) {
+        weightKg = candidate;
+        best = count;
+      }
+    }
+
+    return { date: session.date, weightKg, reps: doneSets.map((set) => set.reps) };
+  }
+  return null;
+}

@@ -1510,3 +1510,84 @@
 @media (prefers-reduced-motion: reduce) {
   .set-tracker__done { transition: none; }
 }
+
+/* ==========================================================================
+   トレーニング完了のまとめ
+   数秒で読める大きさに保つ。祝う気持ちは出すが、派手にはしない。
+   ========================================================================== */
+.session-feedback {
+  display: grid; gap: var(--s3);
+  margin-top: var(--s3); padding: var(--s4);
+  border-radius: var(--r-lg);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ok, #168b63) 12%, var(--surface)), var(--surface));
+  box-shadow: var(--shadow-sm);
+  animation: session-feedback-in .26s var(--ease) both;
+}
+@keyframes session-feedback-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.session-feedback__head { display: flex; align-items: center; gap: var(--s2); }
+.session-feedback__mark {
+  display: grid; place-items: center; flex: none;
+  width: 1.75rem; height: 1.75rem; border-radius: 50%;
+  background: var(--ok, #168b63); color: white; font-size: .9rem; font-weight: 900;
+}
+.session-feedback__head p { margin: 0; font-size: .95rem; font-weight: 800; line-height: 1.4; }
+
+.session-feedback__exercises { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.session-feedback__exercises > li {
+  display: grid; gap: var(--s1);
+  padding: var(--s3); border-radius: var(--r-md); background: var(--surface);
+}
+.session-feedback__exercise-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.session-feedback__exercise-head strong { font-size: .92rem; }
+.session-feedback__exercise-head span { color: var(--muted); font-size: .78rem; }
+.session-feedback__next { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s2); }
+.session-feedback__next > span { color: var(--muted); font-size: .72rem; font-weight: 800; }
+.session-feedback__next strong { font-size: 1.15rem; }
+/* 変化は色だけでなく、記号と文字でも分かるようにする */
+.session-feedback__delta { padding: 2px var(--s2); border-radius: 999px; font-size: .72rem; font-weight: 800; }
+.session-feedback__delta.is-up { background: color-mix(in srgb, var(--ok, #168b63) 16%, transparent); color: var(--ok, #168b63); }
+.session-feedback__delta.is-down { background: color-mix(in srgb, var(--recovery, #c66a12) 16%, transparent); color: var(--recovery, #c66a12); }
+.session-feedback__delta.is-hold { background: var(--inset); color: var(--muted); }
+.session-feedback__reason { margin: 0; color: var(--body); font-size: .8rem; line-height: 1.6; }
+
+.session-feedback__preview { display: grid; gap: var(--s2); padding: var(--s3); border-radius: var(--r-md); background: var(--inset); }
+.session-feedback__preview-head { display: flex; align-items: baseline; gap: var(--s2); margin: 0; }
+.session-feedback__preview-head span { color: var(--signal); font-size: .66rem; font-weight: 900; letter-spacing: .12em; }
+.session-feedback__preview-head strong { font-size: .9rem; }
+.session-feedback__preview ul { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.session-feedback__preview li { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s2); font-size: .82rem; }
+.session-feedback__preview li > span { flex: 1 1 8rem; min-width: 0; }
+.session-feedback__preview li strong { font-family: var(--f-mono); }
+.session-feedback__preview li small { color: var(--muted); font-size: .72rem; }
+.session-feedback__more { margin: 0; color: var(--muted); font-size: .74rem; }
+
+.session-feedback__actions { display: grid; gap: var(--s2); justify-items: center; }
+.session-feedback__actions .button { min-height: 2.75rem; }
+.session-feedback__link { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--signal); font-size: .82rem; font-weight: 700; }
+
+/* --- 次回の予定（完了カードを閉じたあと） --- */
+.today__next-session { display: grid; gap: var(--s2); margin-top: var(--s3); padding: var(--s3); border-radius: var(--r-md); background: var(--inset); }
+.today__next-session-head { display: flex; align-items: baseline; gap: var(--s2); margin: 0; }
+.today__next-session-head span { color: var(--signal); font-size: .66rem; font-weight: 900; letter-spacing: .12em; }
+.today__next-session-head strong { font-size: .88rem; }
+.today__next-session ul { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.today__next-session li { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s2); font-size: .82rem; }
+.today__next-session li > span { flex: 1 1 8rem; min-width: 0; }
+.today__next-session li strong { font-family: var(--f-mono); }
+.today__next-session li small { color: var(--muted); font-size: .72rem; }
+
+/* --- 前回の実績（セット入力の横） --- */
+.set-tracker__previous {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s2);
+  margin: 0; padding: var(--s1) var(--s2);
+  border-radius: var(--r-sm); background: var(--inset);
+}
+.set-tracker__previous > span:first-child { color: var(--muted); font-size: .68rem; font-weight: 800; }
+.set-tracker__previous > span:last-child { color: var(--body); font-size: .78rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .session-feedback { animation: none; }
+}

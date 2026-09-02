@@ -17,6 +17,8 @@
 - Plan page also shows how much of the plan is actually being carried out this week
 - Training Adaptive Loop v2: sets are logged in Today with one tap, the next session's suggested weight follows what was actually lifted, and Today and Record explain why
 - Training history: recent sessions, per-lift top sets, and an estimated 1RM trend from the existing 1RM utility
+- Finishing a session shows a short completion card — what was done, what Bodymakers decided, and the next session's weights — plus a next-session preview that stays after the card is dismissed
+- The previous performance for each exercise is shown next to the set inputs, so the last weight and reps do not need looking up in Record
 - User data export / import as JSON at `/data/`, with a one-slot pre-import backup in `bodymakers:data:backup:v1`
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
@@ -80,6 +82,8 @@ All user data remains in the browser unless a future product explicitly adds con
 - One session adjusts once. `lastSessionKey` (`programId:wNdM`) blocks a repeat for the same week and day.
 - Offsets are clamped to ±40kg and a displayed weight never drops below 20kg.
 - Today shows the reason ("スクワットは目標25回中25回を完了したので、次回は+5kgです。") and the last five adjustments behind a details toggle. Record shows this week's training review, per-lift latest set, estimated 1RM change, and recent sessions. Wording never blames the user for a missed session.
+- The completion card, the next-session preview, and Today's own suggested weight all come from the same path (`sessionForActiveProgram` → `adjustSession`), so they can never disagree.
+- Previous performance is reference only. It never overwrites the suggested weight — the program plus the adaptive offset stays the recommendation, and there is deliberately no "copy last time" button that would override it.
 - Estimated 1RM reuses the existing `estimateOneRM`; no new formula was introduced. Only facts that can be read straight from completed sets are shown — rep PRs across different weights are deliberately left out because they cannot be compared safely.
 
 ## Streak and weekly summary rules
@@ -120,15 +124,15 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (169 files)
-- `npm test`: 815 tests in 40 files passed
+- `npm run typecheck`: 0 errors (175 files)
+- `npm test`: 837 tests in 41 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 and v2 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 2 commits.
+- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1, v2, and v2.1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 3 commits.
 - The Training Adaptive Loop and set-level logging have not been verified in production and are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.

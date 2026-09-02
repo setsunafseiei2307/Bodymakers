@@ -1,22 +1,168 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArticleCard from '../components/ArticleCard.astro';
-import HomeExperience from '../components/react/HomeExperience';
-import { getFeaturedArticles } from '../lib/articles';
+import HomeHero from '../components/react/HomeHero';
 import { url } from '../lib/url';
 import '../styles/app-shell.css';
+import '../styles/home.css';
 
-const articles = await getFeaturedArticles(3);
+/*
+ * トップページ。
+ *
+ * 初回の人に見せる内容は、すべて静的HTMLとして出す。
+ * JavaScriptが動かなくても、ヒーローと入口はそのまま読める。
+ *
+ * 保存済みデータがある人のヒーローだけを、React側で差し替える。
+ * 状態の判定は src/lib/home/state.ts が一箇所で持っている。
+ */
 ---
+
 <BaseLayout>
+  {/*
+    保存済みデータが「あるかどうか」だけを、描画前に確かめる。
+    これは状態の判定ではなく、初回向けの内容を一瞬見せてしまうのを防ぐための目印。
+    A / B / C / D の区別は resolveHomeState だけが決める。
+    テーマのちらつき対策と同じく、head内で同期的に実行する必要がある。
+  */}
+  <script is:inline slot="head">
+    (function () {
+      try {
+        var hasData = localStorage.getItem('bodymakers:data:v1') !== null;
+        var hasDraft = localStorage.getItem('bodymakers:diagnosis:draft:v1') !== null;
+        if (hasData || hasDraft) document.documentElement.dataset.homeKnown = '1';
+      } catch (error) {
+        // localStorage が使えない環境では、初回の人と同じ表示にする
+      }
+    })();
+  </script>
+
   <div class="container home-page">
-    <HomeExperience client:load />
-    {articles.length > 0 && <section class="home-reading"><div><p class="app-kicker">READ & APPLY</p><h2>次の一歩が分かる記事</h2><a href={url('/articles')}>すべての記事を見る →</a></div><div class="card-grid">{articles.map((article) => <ArticleCard article={article} />)}</div></section>}
+    <section id="hero" class="home-hero-region">
+      {/* 保存済みデータがある人のヒーロー。状態が決まるまでは何も描かない。 */}
+      <HomeHero client:load />
+
+      {/* 初回の人のヒーロー。JSなしでもここが出る。 */}
+      <div class="home-hero home-hero--intro">
+        <h1>今日やることが決まる、身体づくり。</h1>
+        <p class="home-hero__sub">
+          身長・体重・目的・トレーニング歴から、あなた専用の計画をつくります。今日のメニューと食事の目安まで、毎日決まります。
+        </p>
+        <a class="button button--lg" href={url('/start')} data-home-cta="hero">3分でプランをつくる</a>
+        <p class="home-hero__micro">診断3分 ・ 無料 ・ 会員登録なし</p>
+        <a class="home-hero__secondary" href="#deliverables">できるプランの例を見る →</a>
+      </div>
+
+      {/* Todayの実物に合わせた表示例。数字は例であることを明記する。 */}
+      <div class="home-mock" aria-label="Todayの表示例">
+        <div class="home-mock__frame">
+          <p class="home-mock__date">10月14日 (火)</p>
+          <p class="home-mock__session">上半身プッシュ / 45分</p>
+          <ul class="home-mock__list">
+            <li><span>ベンチプレス</span><strong>47.5kg</strong><small>5セット × 5回</small></li>
+            <li><span>ダンベルショルダープレス</span><strong>12kg</strong><small>3セット × 10回</small></li>
+          </ul>
+          <div class="home-mock__nutrition">
+            <span>今日の目安</span>
+            <strong>2,340kcal ／ たんぱく質 128g</strong>
+          </div>
+          <span class="home-mock__cta">はじめる</span>
+        </div>
+        <p class="home-mock__note">表示例です。実際の数値は診断の内容から計算されます。</p>
+      </div>
+    </section>
+
+    <section id="personalization" class="home-section">
+      <h2>同じメニューを、全員に配りません。</h2>
+      <p>
+        なりたい身体、性別、年齢、身長と体重、トレーニング歴、週に何日できるか、1回にかけられる時間、
+        場所、いまの重量、ふだんの食事、睡眠、活動量、飲酒、喫煙、ストレス、痛みの有無。
+        この内容から、あなたの計画をつくります。
+      </p>
+      <p class="home-section__note">
+        1問1画面で、選ぶと自動で次に進みます。途中でやめても、続きから再開できます。
+      </p>
+    </section>
+
+    <section id="deliverables" class="home-section">
+      <h2>計画が出て、今日やることが出て、記録が残ります。</h2>
+      <ol class="home-deliverables">
+        <li>
+          <span>01</span>
+          <strong>Personal Plan</strong>
+          <p>週に何回、何を、どのくらいやるか。目標までの道筋が出ます。</p>
+        </li>
+        <li>
+          <span>02</span>
+          <strong>Today</strong>
+          <p>今日のメニューと食事の目安。開いた時点で決まっています。</p>
+        </li>
+        <li>
+          <span>03</span>
+          <strong>Record</strong>
+          <p>トレーニングと食事、身体の記録を残せます。</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="loop" class="home-section">
+      <h2>1回きりの診断で終わらせません。</h2>
+      <p>
+        プランに沿って今日やることが出て、終わったら記録する。
+        その繰り返しで、トレーニングと身体の記録が積み上がっていきます。
+      </p>
+      <ol class="home-loop" aria-label="診断 → プラン → 今日 → 記録">
+        <li>診断</li>
+        <li>プラン</li>
+        <li>今日</li>
+        <li>記録</li>
+      </ol>
+      <p class="home-section__note">プログラムに沿って、週ごとに負荷が上がっていきます。</p>
+    </section>
+
+    <section id="evidence" class="home-section">
+      <h2>数字の出どころを、はっきりさせています。</h2>
+      <dl class="home-evidence">
+        <div>
+          <dt>筋力の目安</dt>
+          <dd>
+            公式競技会の記録387,265人分（男性262,191人・女性125,074人）。
+            出典は OpenPowerlifting で、データはパブリックドメインとして公開されています。
+          </dd>
+        </div>
+        <div>
+          <dt>食事の目安</dt>
+          <dd>
+            栄養成分は日本食品標準成分表（八訂）増補2023年。
+            1日の基準値は厚生労働省「日本人の食事摂取基準（2025年版）」を使っています。
+          </dd>
+        </div>
+        <div>
+          <dt>プログラムの組み方</dt>
+          <dd>
+            線形進歩、上半身・下半身の分割、Push / Pull / Legs など、
+            広く知られた組み方をBodymakersの構成として実装しています。
+            有料テンプレートの複製は含みません。
+          </dd>
+        </div>
+      </dl>
+      <p class="home-section__note">
+        This page uses data from the OpenPowerlifting project, https://www.openpowerlifting.org.
+      </p>
+    </section>
+
+    <section id="who" class="home-section">
+      <h2>こんな状態からで大丈夫です。</h2>
+      <ul class="home-who">
+        <li>はじめてで、何をすればいいか分からない</li>
+        <li>自己流でやってきたが、伸び悩んでいる</li>
+        <li>減量したいが、食事の基準が分からない</li>
+      </ul>
+    </section>
+
+    <section id="cta-final" class="home-section home-section--cta">
+      <h2>まずは3分。今日やることまで出ます。</h2>
+      <a class="button button--lg" href={url('/start')} data-home-cta="final">3分でプランをつくる</a>
+      <p class="home-hero__micro">無料 ／ 会員登録なし ／ 途中でやめても続きから</p>
+      <p class="home-section__note">記録はこの端末に保存されます。</p>
+    </section>
   </div>
 </BaseLayout>
-<style>
-  .home-page { padding-bottom: 4rem; }
-  .home-reading { max-width: 68rem; margin: 0 auto; padding-top: var(--s7); }
-  .home-reading > div:first-child { display:flex; align-items:end; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s4); }
-  .home-reading > div:first-child a { color:var(--signal); font-size:.85rem; font-weight:800; }
-</style>

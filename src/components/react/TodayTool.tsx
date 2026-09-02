@@ -39,9 +39,11 @@ import {
 import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
-import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type SavedDietPlan } from '../../lib/storage';
+import { advanceActiveProgram, localDateKey, readData, saveDailyLog, todayLog, type BodymakersData, type DailyLog, type SavedDietPlan } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { resolveTodayAction } from '../../lib/todayAction';
+import { blankLog, buildWeeklySummary, summarizeActivity, todayProgress, weeklyProgress } from '../../lib/activity';
+import { TodayProgressPanel, WeeklyProgressPanel } from './DailyLoop';
 import { programById, sessionForActiveProgram, type ActiveProgram } from '../../lib/programLibrary';
 import type { SavedStrengthDiagnosis } from '../../lib/strength/history';
 import ShareCard from './ShareCard';
@@ -80,6 +82,8 @@ export default function TodayTool() {
   const [activeProgramMessage, setActiveProgramMessage] = useState('');
   const [nutritionMessage, setNutritionMessage] = useState('');
   const [strengthHistory, setStrengthHistory] = useState<SavedStrengthDiagnosis[]>([]);
+  /** 継続日数と直近7日の集計に使う、端末内データそのもの。 */
+  const [savedData, setSavedData] = useState<BodymakersData | null>(null);
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -115,6 +119,7 @@ export default function TodayTool() {
     setPersonalPlan(data.personalPlan);
     setActiveProgram(data.activeProgram);
     setStrengthHistory(data.strengthHistory);
+    setSavedData(data);
 
     const savedWeight =
       saved?.weightKg ??
@@ -200,6 +205,35 @@ export default function TodayTool() {
     }),
     [activeProgram, activeProgramDefinition, activeProgramSession, personalPlan, generatedPersonalPlan, doneExercises, muscles, meals],
   );
+
+  /**
+   * 画面で編集中の内容を、今日の1日分として組み立てる。
+   * 保存前でも「記録済み」に変わるので、入れた手応えがその場で返る。
+   */
+  const liveTodayLog = useMemo<DailyLog>(() => ({
+    ...blankLog(localDateKey()),
+    weightKg: weightKg ?? null,
+    meals,
+    exercises,
+    muscles,
+    doneExercises,
+    manualIntake: { kcal: manualKcalValue ?? null, protein: manualProteinValue ?? null },
+    steps: stepsValue ?? null,
+    sleepHours: sleepValue ?? null,
+  }), [weightKg, meals, exercises, muscles, doneExercises, manualKcalValue, manualProteinValue, stepsValue, sleepValue]);
+
+  /** 継続の集計は、保存済みの記録に「編集中の今日」を重ねてから数える。 */
+  const liveData = useMemo<BodymakersData | null>(() => {
+    if (savedData == null) return null;
+    const today = liveTodayLog.date;
+    return { ...savedData, dailyLogs: [...savedData.dailyLogs.filter((log) => log.date !== today), liveTodayLog] };
+  }, [savedData, liveTodayLog]);
+
+  const activitySummary = useMemo(() => liveData ? summarizeActivity(liveData) : null, [liveData]);
+  const dailyProgress = useMemo(() => liveData ? todayProgress(liveData, liveTodayLog) : null, [liveData, liveTodayLog]);
+  const week = useMemo(() => liveData ? weeklyProgress(liveData) : null, [liveData]);
+  const weeklySummary = useMemo(() => liveData ? buildWeeklySummary(liveData) : null, [liveData]);
+
   const referenceAge = parseNumber(age);
   const referenceSex = sex;
   const nutritionProgressItems = useMemo(
@@ -253,6 +287,7 @@ export default function TodayTool() {
       return;
     }
     setActiveProgram(result.activeProgram);
+    setSavedData(readData());
     setActiveProgramMessage(result.completed ? 'プログラムを完了しました。履歴に保存しました。' : action === 'complete' ? '完了を記録して、次のDayへ進みました。' : 'このDayをスキップして、次へ進みました。');
   }
 
@@ -356,6 +391,7 @@ export default function TodayTool() {
       sleepHours: sleepValue != null && sleepValue >= 0 && sleepValue <= 24 ? sleepValue : null,
     });
     setSaveMessage(saved ? '今日の記録を保存しました。' : '保存できませんでした。ブラウザの保存設定を確認してください。');
+    if (saved) setSavedData(readData());
   }
 
   /** 「今日の一手」の行き先。ページ内アンカーはそのまま、ページはベースパスを付ける。 */
@@ -375,6 +411,10 @@ export default function TodayTool() {
             <a className="today-action__secondary" href={actionHref(todayAction.secondary.href)}>{todayAction.secondary.label} →</a>
           )}
         </div>
+        {/* 今日の埋まり具合。上のCTAと競合しないよう、補助的な扱いにする。 */}
+        {dailyProgress && activitySummary && (
+          <TodayProgressPanel progress={dailyProgress} activity={activitySummary} />
+        )}
       </Slip>
 
       {activeProgram && activeProgramDefinition && (
@@ -409,6 +449,13 @@ export default function TodayTool() {
           </div>
           {generatedPersonalPlan.diagnosis.priorities[0] && <div className="today__next-action"><span>NEXT ACTION</span><strong>{generatedPersonalPlan.diagnosis.priorities[0].title}</strong><p>{generatedPersonalPlan.diagnosis.priorities[0].action}</p></div>}
           <p className="next"><a href={url('/plan')}>12週間Planを見る →</a><a href={url('/tools/one-rep-max')}>1RMを更新する →</a></p>
+        </Slip>
+      )}
+
+      {week && weeklySummary && (
+        <Slip code="STREAK" title="続いていること">
+          <WeeklyProgressPanel week={week} summary={weeklySummary} />
+          <p className="next"><a href={url('/record')}>今週の記録を詳しく見る →</a></p>
         </Slip>
       )}
 

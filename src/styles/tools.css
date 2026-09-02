@@ -1314,8 +1314,106 @@
 .data-manager__summary span { color: var(--muted); font-size: .74rem; font-weight: 700; }
 .data-manager__summary strong { font-size: .95rem; }
 .data-manager__text {
-  width: 100%; padding: var(--s3); border: 1px solid var(--rule); border-radius: var(--r-sm);
+  width: 100%; padding: var(--s3); border: 1px solid var(--hair); border-radius: var(--r-sm);
   background: var(--surface); color: var(--body); font-family: var(--f-mono); font-size: .74rem;
   line-height: 1.5; resize: vertical;
 }
 @media (min-width: 42rem) { .data-manager__summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ==========================================================================
+   Daily Loop — 今日の進捗と、直近7日の積み上げ
+   「今日の一手」の下に置く補助表示。数字を主役にしない。
+   ========================================================================== */
+
+.daily-loop {
+  display: grid; gap: var(--s2);
+  margin-top: var(--s4); padding-top: var(--s4);
+  border-top: 1px solid var(--hair);
+}
+.daily-loop__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.daily-loop__title { margin: 0; color: var(--muted); font-size: .74rem; font-weight: 700; letter-spacing: .06em; }
+.daily-loop__count { color: var(--muted); font-size: .78rem; }
+.daily-loop__count strong { color: var(--signal); font-size: 1rem; }
+.daily-loop__count.is-complete strong { color: var(--nutrition, #168b63); }
+
+.daily-loop__bar { height: 5px; border-radius: 999px; background: color-mix(in srgb, var(--signal) 12%, transparent); overflow: hidden; }
+.daily-loop__bar > span {
+  display: block; height: 100%; border-radius: 999px; background: var(--signal);
+  transition: width .28s var(--ease);
+}
+
+.daily-loop__tasks { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.daily-loop__task {
+  display: flex; align-items: center; gap: var(--s2);
+  /* 指で押せる高さを確保する */
+  min-height: 2.75rem;
+}
+.daily-loop__dot {
+  flex: none; width: .8rem; height: .8rem; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  transition: background-color .22s var(--ease), border-color .22s var(--ease);
+}
+.daily-loop__task.is-done .daily-loop__dot { border-color: var(--nutrition, #168b63); background: var(--nutrition, #168b63); }
+.daily-loop__label { flex: 1; font-size: .9rem; font-weight: 600; }
+.daily-loop__task.is-done .daily-loop__label { color: var(--muted); }
+.daily-loop__state { color: var(--nutrition, #168b63); font-size: .76rem; font-weight: 700; }
+.daily-loop__link {
+  padding: var(--s2) var(--s3); border-radius: var(--r-sm);
+  background: var(--signal-soft); color: var(--signal);
+  font-size: .78rem; font-weight: 700; text-decoration: none;
+}
+.daily-loop__streak, .daily-loop__done { margin: 0; font-size: .8rem; line-height: 1.55; }
+.daily-loop__streak { color: var(--muted); }
+.daily-loop__done { color: var(--nutrition, #168b63); font-weight: 600; animation: daily-loop-done .3s var(--ease) both; }
+@keyframes daily-loop-done {
+  from { opacity: 0; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- 直近7日 --- */
+.weekly-loop { display: grid; gap: var(--s3); }
+.weekly-loop__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); }
+.weekly-loop__title { margin: 0; font-size: .82rem; font-weight: 700; }
+.weekly-loop__count { color: var(--muted); font-size: .8rem; }
+.weekly-loop__count strong { color: var(--signal); font-size: 1.15rem; }
+
+.weekly-loop__days {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s1); margin: 0; padding: 0; list-style: none;
+}
+.weekly-loop__day { display: grid; justify-items: center; gap: 6px; padding: var(--s2) 0; border-radius: var(--r-sm); }
+.weekly-loop__day.is-today { background: var(--signal-soft); }
+.weekly-loop__weekday { color: var(--muted); font-size: .7rem; font-weight: 700; }
+.weekly-loop__mark {
+  width: 1.05rem; height: 1.05rem; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--muted) 32%, transparent);
+  transition: background-color .22s var(--ease), border-color .22s var(--ease);
+}
+.weekly-loop__day.is-active .weekly-loop__mark { border-color: var(--signal); background: var(--signal); }
+
+.weekly-loop__lines { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.weekly-loop__lines li { color: var(--body); font-size: .84rem; line-height: 1.6; }
+.weekly-loop__lines li::before { content: '・'; color: var(--muted); }
+.weekly-loop__breakdown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); margin-top: var(--s2); }
+.weekly-loop__breakdown > div { display: grid; gap: 2px; padding: var(--s2); border-radius: var(--r-sm); background: var(--inset); text-align: center; }
+.weekly-loop__breakdown span { color: var(--muted); font-size: .7rem; }
+.weekly-loop__breakdown strong { font-size: .9rem; }
+
+/* --- Planページの実行状況 --- */
+.plan-execution { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); }
+.plan-execution > div {
+  display: grid; gap: 2px; padding: var(--s3);
+  border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow-sm); text-align: center;
+}
+.plan-execution span { color: var(--muted); font-size: .7rem; font-weight: 700; }
+.plan-execution strong { font-size: 1rem; }
+.plan-execution--empty { grid-template-columns: 1fr; gap: var(--s3); justify-items: start; padding: var(--s4); background: var(--inset); }
+.plan-execution--empty p { margin: 0; color: var(--body); font-size: .86rem; line-height: 1.6; }
+.plan-execution__lines { display: grid; gap: var(--s1); margin: var(--s3) 0 0; padding: 0; list-style: none; }
+.plan-execution__lines li { color: var(--body); font-size: .84rem; line-height: 1.6; }
+.plan-execution__lines li::before { content: '・'; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-loop__bar > span, .daily-loop__dot, .weekly-loop__mark { transition: none; }
+  .daily-loop__done { animation: none; }
+}

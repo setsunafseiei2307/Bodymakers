@@ -5,10 +5,32 @@ import { fmt } from '../../lib/format';
 import { findExercise } from '../../lib/exercises';
 import { DATA_CHANGED_EVENT, readData, todayLog, type BodymakersData } from '../../lib/storage';
 import { summarizeIntake } from '../../lib/today';
+import {
+  buildWeeklySummary,
+  dateKey,
+  dateKeyFromISO,
+  daysBetweenKeys,
+  summarizeActivity,
+  weeklyProgress,
+} from '../../lib/activity';
 import { url } from '../../lib/url';
 
 function Progress({ value, max }: { value: number; max: number }) {
   return <progress value={Math.min(value, max)} max={max} aria-label={`${fmt(value, 0)} / ${fmt(max, 0)}`} />;
+}
+
+/**
+ * 次にPlanを見直す目安。
+ * 12週間Planは4週ごとにフェーズが変わるので、その区切りを次の見直し時期として出す。
+ */
+function nextReviewLabel(createdAt: string, now = new Date()): string {
+  const created = dateKeyFromISO(createdAt);
+  if (created == null) return '—';
+  const elapsed = daysBetweenKeys(created, dateKey(now));
+  if (elapsed < 0) return '—';
+  if (elapsed >= 84) return '見直し時期';
+  const nextMilestone = Math.ceil((elapsed + 1) / 28) * 28;
+  return `あと${nextMilestone - elapsed}日`;
 }
 
 export default function PersonalPlanDashboard() {
@@ -42,6 +64,10 @@ export default function PersonalPlanDashboard() {
   const nutrition = result.nutrition;
   const workout = result.todayWorkout;
   const action = result.diagnosis.priorities[0];
+  const activity = summarizeActivity(data);
+  const week = weeklyProgress(data);
+  const weekly = buildWeeklySummary(data);
+  const reviewLabel = nextReviewLabel(data.personalPlan.createdAt);
 
   return (
     <section className="personal-plan">
@@ -70,6 +96,36 @@ export default function PersonalPlanDashboard() {
         </div>
         {nutrition && <div className="personal-plan__nutrition-progress"><span>今日のカロリー</span><Progress value={calories} max={nutrition.calories} /><span>Protein</span><Progress value={protein} max={nutrition.protein} /></div>}
         {action && <div className="personal-plan__action"><span>NEXT ACTION</span><strong>{action.title}</strong><p>{action.action}</p></div>}
+      </section>
+
+      {/* 計画だけでなく、いまどこまで実行できているか。数字は3つまでに絞る。 */}
+      <section className="personal-plan__section">
+        <div className="personal-plan__section-head"><div><p>THIS WEEK</p><h2>実行できている量</h2></div><a href={url('/record')}>記録を見る →</a></div>
+        {activity.totalActiveDays === 0 ? (
+          <div className="plan-execution plan-execution--empty">
+            <p>まだ記録がありません。今日の食事や体重をひとつ記録すると、ここに実行状況がたまります。</p>
+            <a className="button" href={url('/tools/today')}>今日を記録する</a>
+          </div>
+        ) : (
+          <>
+            <div className="plan-execution">
+              <div><span>直近7日の活動日</span><strong className="num">{week.activeDays} / {week.total}</strong></div>
+              <div>
+                <span>Program</span>
+                <strong className="num">
+                  {data.activeProgram
+                    ? `W${data.activeProgram.currentWeek} / D${data.activeProgram.currentDay}`
+                    : '未選択'}
+                </strong>
+              </div>
+              <div><span>次の見直し</span><strong className="num">{reviewLabel}</strong></div>
+            </div>
+            {weekly.lines.length > 0 && (
+              <ul className="plan-execution__lines">{weekly.lines.map((line) => <li key={line.id}>{line.text}</li>)}</ul>
+            )}
+            {!data.activeProgram && <p className="next"><a href={url('/tools/programs')}>Programを選ぶ →</a></p>}
+          </>
+        )}
       </section>
 
       <section className="personal-plan__section">

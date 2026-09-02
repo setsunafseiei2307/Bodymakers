@@ -39,11 +39,21 @@ import {
 import { buildTodayCard, drawTodayCard } from '../../lib/todayCard';
 import { SITE_NAME } from '../../config/site';
 import { url } from '../../lib/url';
-import { advanceActiveProgram, localDateKey, readData, saveDailyLog, saveTrainingSession, todayLog, type BodymakersData, type DailyLog, type SavedDietPlan } from '../../lib/storage';
+import { advanceActiveProgram, applyNutritionAdjustment, localDateKey, readData, resetNutritionAdjustment, saveDailyLog, saveTrainingSession, setNutritionComplete as storeNutritionComplete, todayLog, type BodymakersData, type DailyLog } from '../../lib/storage';
 import type { SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { resolveTodayAction } from '../../lib/todayAction';
 import { LIFT_LABELS as ADAPTIVE_LIFT_LABELS, adjustSession, adjustmentSummaryLines, emptyTrainingAdjustments, recentAdjustments } from '../../lib/training/adaptive';
 import { blankLog, buildWeeklySummary, summarizeActivity, todayProgress, weeklyProgress } from '../../lib/activity';
+import {
+  directionFor,
+  nutritionAdherence,
+  nutritionTargetReason,
+  periodKeyFor,
+  recommendNutrition,
+  resolveNutritionTarget,
+  weightTrend,
+} from '../../lib/nutritionAdaptive';
+import NutritionReviewCard from './NutritionReviewCard';
 import { draftSessionFromProgram, findSessionLog, hasRecordedSets, previousPerformance, type PreviousPerformance, type TrainingSessionLog } from '../../lib/training/log';
 import { buildNextSessionPreview, buildSessionFeedback, type SessionFeedback } from '../../lib/training/feedback';
 import SetTracker from './SetTracker';
@@ -81,7 +91,6 @@ export default function TodayTool() {
   const [steps, setSteps] = useState('');
   const [sleepHours, setSleepHours] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
-  const [dietPlan, setDietPlan] = useState<SavedDietPlan | null>(null);
   const [personalPlan, setPersonalPlan] = useState<SavedPersonalPlan | null>(null);
   const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
   const [activeProgramMessage, setActiveProgramMessage] = useState('');
@@ -93,6 +102,9 @@ export default function TodayTool() {
   const [sessionLog, setSessionLog] = useState<TrainingSessionLog | null>(null);
   /** 完了直後だけ出すまとめ。閉じたら消える一時的な表示。 */
   const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(null);
+  /** その日の食事記録が揃ったという印。 */
+  const [nutritionComplete, setNutritionComplete] = useState(false);
+  const [nutritionMessage2, setNutritionMessage2] = useState('');
 
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -124,7 +136,6 @@ export default function TodayTool() {
       .sort((a, b) => b.date.localeCompare(a.date))
       .find((item) => item.weightKg != null);
     const profile = data.profile;
-    setDietPlan(data.dietPlan);
     setPersonalPlan(data.personalPlan);
     setActiveProgram(data.activeProgram);
     setStrengthHistory(data.strengthHistory);
@@ -145,6 +156,7 @@ export default function TodayTool() {
       setManualProtein(saved.manualIntake.protein == null ? '' : String(saved.manualIntake.protein));
       setSteps(saved.steps == null ? '' : String(saved.steps));
       setSleepHours(saved.sleepHours == null ? '' : String(saved.sleepHours));
+      setNutritionComplete(saved.nutritionComplete);
     }
     if (profile) {
       setDetailed(true);
@@ -302,21 +314,31 @@ export default function TodayTool() {
     () => referenceAge != null ? recommendFoods(intake.totals, referenceSex, referenceAge, 4) : [],
     [intake.totals, referenceSex, referenceAge],
   );
-  const nutritionTarget = useMemo(() => {
-    if (dietPlan) return {
-      calories: dietPlan.targetCalories,
-      protein: dietPlan.proteinGrams,
-      fat: dietPlan.fatGrams,
-      carbs: dietPlan.carbsGrams,
-    };
-    if (generatedPersonalPlan?.nutrition) return {
-      calories: generatedPersonalPlan.nutrition.calories,
-      protein: generatedPersonalPlan.nutrition.protein,
-      fat: generatedPersonalPlan.nutrition.fat,
-      carbs: generatedPersonalPlan.nutrition.carbs,
-    };
-    return null;
-  }, [dietPlan, generatedPersonalPlan]);
+  /**
+   * 1日の栄養目標。Plan・Record・Reviewと同じ resolver を使う。
+   * 画面ごとに別の計算を持たない。
+   */
+  const nutritionTarget = useMemo(
+    () => (savedData == null ? null : resolveNutritionTarget(savedData)),
+    [savedData],
+  );
+  const nutritionReason = useMemo(() => nutritionTargetReason(nutritionTarget), [nutritionTarget]);
+
+  /** 直近2週間の体重と、今週の食事記録から出す見直しの提案。 */
+  const nutritionReview = useMemo(() => {
+    if (savedData == null) return null;
+    const trend = weightTrend(savedData.dailyLogs);
+    const adherence = nutritionAdherence(savedData.dailyLogs, nutritionTarget);
+    const recommendation = recommendNutrition({
+      direction: directionFor(savedData),
+      trend,
+      adherence,
+      currentCalories: nutritionTarget?.calories ?? null,
+      currentOffsetKcal: nutritionTarget?.offsetKcal ?? 0,
+      alreadyAdjustedThisPeriod: savedData.nutritionAdjustments.lastPeriodKey === periodKeyFor(localDateKey()),
+    });
+    return { trend, adherence, recommendation };
+  }, [savedData, nutritionTarget]);
   const exercise = useMemo(
     () => (weightKg == null ? null : summarizeExercise(exercises, weightKg)),
     [exercises, weightKg],
@@ -370,6 +392,40 @@ export default function TodayTool() {
           ? `完了を記録して、次のDayへ進みました。${recorded}`
           : 'このDayをスキップして、次へ進みました。',
     );
+  }
+
+  function applyNutrition() {
+    if (nutritionReview == null) return;
+    const applied = applyNutritionAdjustment(
+      nutritionReview.recommendation.deltaKcal,
+      nutritionReview.recommendation.headline,
+    );
+    if (applied == null) {
+      setNutritionMessage2('保存できませんでした。ブラウザの保存設定を確認してください。');
+      return;
+    }
+    setSavedData(readData());
+    setNutritionMessage2(`次の7日間は${applied.calories}kcalを目安にします。`);
+  }
+
+  function keepNutrition() {
+    setNutritionMessage2('今の目標のまま続けます。次の7日間の記録を見て、また見直します。');
+  }
+
+  function resetNutrition() {
+    if (!resetNutritionAdjustment()) {
+      setNutritionMessage2('戻せる調整がありませんでした。');
+      return;
+    }
+    setSavedData(readData());
+    setNutritionMessage2('Planの目安に戻しました。');
+  }
+
+  /** その日の食事記録が揃ったという印。押しても記録は消えず、あとから外せる。 */
+  function toggleNutritionComplete() {
+    const next = !nutritionComplete;
+    setNutritionComplete(next);
+    if (storeNutritionComplete(localDateKey(), next)) setSavedData(readData());
   }
 
   /** 押した内容をその場で残す。完了を押す前に閉じても消えない。 */
@@ -476,6 +532,7 @@ export default function TodayTool() {
       },
       steps: stepsValue != null && stepsValue >= 0 ? stepsValue : null,
       sleepHours: sleepValue != null && sleepValue >= 0 && sleepValue <= 24 ? sleepValue : null,
+      nutritionComplete,
     });
     setSaveMessage(saved ? '今日の記録を保存しました。' : '保存できませんでした。ブラウザの保存設定を確認してください。');
     if (saved) setSavedData(readData());
@@ -586,6 +643,21 @@ export default function TodayTool() {
         </Slip>
       )}
 
+      {nutritionReview && nutritionTarget && (
+        <Slip code="REVIEW" title="今週の栄養">
+          <NutritionReviewCard
+            trend={nutritionReview.trend}
+            adherence={nutritionReview.adherence}
+            recommendation={nutritionReview.recommendation}
+            target={nutritionTarget}
+            message={nutritionMessage2}
+            onApply={applyNutrition}
+            onKeep={keepNutrition}
+            onReset={resetNutrition}
+          />
+        </Slip>
+      )}
+
       {week && weeklySummary && (
         <Slip code="STREAK" title="続いていること">
           <WeeklyProgressPanel week={week} summary={weeklySummary} />
@@ -648,6 +720,25 @@ export default function TodayTool() {
             <NumberField label="睡眠" unit="時間" value={sleepHours} onChange={setSleepHours} placeholder="7.5" error={sleepError} />
           </div>
         </details>
+        {/* この目標になった理由。調整が効いているときだけ小さく出す。 */}
+        {nutritionReason && <p className="today__nutrition-reason">{nutritionReason}</p>}
+
+        {/* 記録が揃ったことをBodymakersへ伝える印。完璧な記録を求める圧は出さない。 */}
+        {nutritionTarget && (
+          <button
+            type="button"
+            className={`today__nutrition-complete${nutritionComplete ? ' is-on' : ''}`}
+            aria-pressed={nutritionComplete}
+            onClick={toggleNutritionComplete}
+          >
+            <span className="today__nutrition-complete-mark" aria-hidden="true">{nutritionComplete ? '✓' : '　'}</span>
+            <span>
+              <strong>{nutritionComplete ? '今日の食事記録は完了' : '今日の食事記録を完了にする'}</strong>
+              <small>{nutritionComplete ? 'あとから外せます。' : '記録がだいたい揃ったら押してください。見直しの判断に使います。'}</small>
+            </span>
+          </button>
+        )}
+
         <button type="button" className="button button--block button--lg" onClick={saveTodayRecord}>
           今日の記録を保存
         </button>

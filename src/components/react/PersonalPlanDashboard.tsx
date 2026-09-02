@@ -13,6 +13,7 @@ import {
   summarizeActivity,
   weeklyProgress,
 } from '../../lib/activity';
+import { resolveNutritionTarget } from '../../lib/nutritionAdaptive';
 import { url } from '../../lib/url';
 
 function Progress({ value, max }: { value: number; max: number }) {
@@ -61,7 +62,8 @@ export default function PersonalPlanDashboard() {
   );
 
   const { input } = data.personalPlan;
-  const nutrition = result.nutrition;
+  // Today・Recordと同じ resolver。Adaptiveの調整もここに乗る。
+  const nutrition = resolveNutritionTarget(data);
   const workout = result.todayWorkout;
   const action = result.diagnosis.priorities[0];
   const activity = summarizeActivity(data);
@@ -142,7 +144,10 @@ export default function PersonalPlanDashboard() {
       {nutrition && <section className="personal-plan__section">
         <div className="personal-plan__section-head"><div><p>NUTRITION</p><h2>1日の目安</h2></div><a href={url('/tools/nutrition')}>PFCを詳しく調整する →</a></div>
         <div className="personal-plan__macros"><div><span>kcal</span><strong className="num">{nutrition.calories}</strong></div><div><span>P</span><strong className="num">{nutrition.protein}g</strong></div><div><span>F</span><strong className="num">{nutrition.fat}g</strong></div><div><span>C</span><strong className="num">{nutrition.carbs}g</strong></div></div>
-        <p className="tool__note">{nutrition.note}</p><p className="next"><a href={url('/tools/foods')}>食品を追加する →</a><a href={url('/tools/today')}>今日の食事を見る →</a></p>
+        {nutrition.offsetKcal !== 0 && (
+          <p className="tool__note">Planの目安は {nutrition.baselineCalories}kcal です。記録をもとに {nutrition.offsetKcal > 0 ? '+' : '−'}{Math.abs(nutrition.offsetKcal)}kcal を適用しています。</p>
+        )}
+        <p className="tool__note">{result.nutrition?.note ?? ''}</p><p className="next"><a href={url('/tools/foods')}>食品を追加する →</a><a href={url('/tools/today')}>今日の食事を見る →</a></p>
       </section>}
 
       {result.diagnosis.gaps.length > 0 && <section className="personal-plan__section"><div className="personal-plan__section-head"><div><p>GAP</p><h2>ゴールとの差</h2></div></div><div className="journey-gaps">{result.diagnosis.gaps.map((gap) => <div key={gap.id}><span>{gap.label}</span><strong>{gap.current} → {gap.target}</strong><small>{gap.difference}</small></div>)}</div></section>}

@@ -41,7 +41,7 @@ function sampleData(): BodymakersData {
       doneExercises: ['bench-press'],
       manualIntake: { kcal: null, protein: null },
       steps: 8000,
-      sleepHours: 7,
+      sleepHours: 7, nutritionComplete: false,
     }],
     recentFoodIds: ['01088'],
   };
@@ -76,8 +76,8 @@ describe('データの書き出し', () => {
   it('秘密情報を持たない項目だけを書き出す', () => {
     const keys = Object.keys(buildExport(emptyData()).data).sort();
     expect(keys).toEqual([
-      'activeProgram', 'dailyLogs', 'dietPlan', 'personalPlan', 'profile',
-      'programHistory', 'recentFoodIds', 'strengthHistory', 'strengthProfile',
+      'activeProgram', 'dailyLogs', 'dietPlan', 'nutritionAdjustments', 'personalPlan',
+      'profile', 'programHistory', 'recentFoodIds', 'strengthHistory', 'strengthProfile',
       'trainingAdjustments', 'trainingSessions', 'version',
     ]);
   });

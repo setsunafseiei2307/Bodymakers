@@ -1,4 +1,4 @@
-import { buildPersonalPlan } from './diagnosis/plan';
+import { resolveNutritionTarget } from './nutritionAdaptive/target';
 import { summarizeIntake } from './today';
 import type { BodymakersData, DailyLog } from './storage';
 
@@ -34,9 +34,9 @@ function hasWorkout(log: DailyLog): boolean {
   return log.exercises.length > 0 || log.doneExercises.length > 0 || log.muscles.length > 0;
 }
 
+/** 目標は共通の resolver から取る。画面ごとに別計算にしない。 */
 function proteinTarget(data: BodymakersData): number | null {
-  if (data.dietPlan) return data.dietPlan.proteinGrams;
-  return data.personalPlan ? buildPersonalPlan(data.personalPlan.input).nutrition?.protein ?? null : null;
+  return resolveNutritionTarget(data)?.protein ?? null;
 }
 
 export function buildWeeklyRecordSummary(data: BodymakersData, today = new Date()): WeeklyRecordSummary {

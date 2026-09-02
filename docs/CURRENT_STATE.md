@@ -19,6 +19,7 @@
 - Training history: recent sessions, per-lift top sets, and an estimated 1RM trend from the existing 1RM utility
 - Finishing a session shows a short completion card — what was done, what Bodymakers decided, and the next session's weights — plus a next-session preview that stays after the card is dismissed
 - The previous performance for each exercise is shown next to the set inputs, so the last weight and reps do not need looking up in Record
+- Nutrition Adaptive Loop v1: marking a day's food record complete, plus enough weight measurements, lets Bodymakers propose a small calorie change. Nothing is applied until the user chooses it.
 - User data export / import as JSON at `/data/`, with a one-slot pre-import backup in `bodymakers:data:backup:v1`
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
@@ -30,7 +31,7 @@
 - `bodymakers:diagnosis:draft:v1` — unfinished diagnosis input, plus `questionId` for the current question. Drafts written before the one-question-per-screen change have no `questionId`; their section-based `step` is mapped to the first question of that section. Deleted when the Plan is saved or the user restarts. Ignored when older than 30 days, malformed, or incomplete.
 - `bodymakers:data:backup:v1` — the previous `bodymakers:data:v1` value, kept so an import can be undone.
 
-No new key was added for the adaptive loop. `bodymakers:data:v1` gained two optional fields, `trainingAdjustments` and `trainingSessions`, which older saves simply do not have and which restore as an empty state.
+No new key was added for either adaptive loop. `bodymakers:data:v1` gained `trainingAdjustments`, `trainingSessions`, and `nutritionAdjustments`, plus `nutritionComplete` on each daily log. Older saves do not have them and restore as empty / false.
 
 All user data remains in the browser unless a future product explicitly adds consented sync.
 
@@ -86,6 +87,20 @@ All user data remains in the browser unless a future product explicitly adds con
 - Previous performance is reference only. It never overwrites the suggested weight — the program plus the adaptive offset stays the recommendation, and there is deliberately no "copy last time" button that would override it.
 - Estimated 1RM reuses the existing `estimateOneRM`; no new formula was introduced. Only facts that can be read straight from completed sets are shown — rep PRs across different weights are deliberately left out because they cannot be compared safely.
 
+## Nutrition Adaptive Loop v1
+- **One place decides the target.** `resolveNutritionTarget` in `src/lib/nutritionAdaptive/target.ts` is used by Today, Plan, Record, and the review. Target = the plan's baseline + `offsetKcal`. The plan's own calories are never rewritten.
+- **A day counts only when the user says so.** `DailyLog.nutritionComplete` is set by an explicit toggle in Today. Entering one food does not make a day count, and a day without the mark is never read as a low-intake day. The mark can be removed again.
+- **Weight is judged over 7 days vs the previous 7 days**, not day to day. Both windows need at least 4 measurements. Averages are recomputed from the raw logs every time, so correcting an old weight cannot leave a stale figure behind.
+- Under 0.4% of body weight over the week counts as flat. That is a noise threshold, not a recommended rate of change.
+- Adherence needs at least 4 completed days in the last 7, and at least 3 of them within ±10% of the target. Both figures are product heuristics, not medical standards.
+- **A proposal appears only when weight data and food records are both sufficient and the weight is not moving as intended.** Missing data gives "collecting data"; records that drift far from the target give "keep the current target" rather than a new number.
+- Goal drives direction: `fat-loss` → down, `muscle` → up, everything else (`recomp`, `health`, `strength`) holds, because weight alone cannot judge them. With no personal plan, `dietPlan.mode` is used.
+- One step is 100 kcal. The cumulative offset is capped at ±300 kcal. Only one adjustment per calendar week.
+- **Nothing is applied automatically.** The user picks "try −100kcal" or "keep the current target", and can return to the plan's baseline at any time.
+- Protein and fat stay at the plan's values; the calorie difference is absorbed by carbohydrate. Lowering protein would change the goal itself.
+- Re-running the diagnosis or changing the goal produces a new plan key, and the old offset stops applying. It is never carried silently onto a new baseline.
+- No medical judgement, and no wording that blames the user for what they ate.
+
 ## Streak and weekly summary rules
 - An active day is a day with at least one meaningful record: training, food, or a weight / steps / sleep check-in. A saved-but-empty day is not active. Page views are never counted.
 - Completed programs count as training on their completion date.
@@ -124,15 +139,15 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (175 files)
-- `npm test`: 837 tests in 41 files passed
+- `npm run typecheck`: 0 errors (179 files)
+- `npm test`: 893 tests in 42 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1, v2, and v2.1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 3 commits.
+- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 / v2 / v2.1 and the Nutrition Adaptive Loop v1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 4 commits.
 - The Training Adaptive Loop and set-level logging have not been verified in production and are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.

@@ -18,6 +18,14 @@ import {
   type TrainingAdjustments,
 } from './training/adaptive';
 import {
+  emptyNutritionAdjustments,
+  normalizeNutritionAdjustments,
+  periodKeyFor,
+  planKeyFor,
+  resolveNutritionTarget,
+  type NutritionAdjustments,
+} from './nutritionAdaptive/target';
+import {
   findSessionLog,
   isWorthSaving,
   normalizeTrainingSessions,
@@ -74,6 +82,12 @@ export interface DailyLog {
   manualIntake: ManualIntake;
   steps: number | null;
   sleepHours: number | null;
+  /**
+   * その日の食事記録が概ね揃っているか。
+   * 栄養の見直しは、この印が付いた日だけを見る。
+   * 旧データには存在しないため false として復元する。
+   */
+  nutritionComplete: boolean;
 }
 
 export interface BodymakersData {
@@ -102,6 +116,11 @@ export interface BodymakersData {
    * 旧v1データには存在しないため、空配列として復元する。
    */
   trainingSessions: TrainingSessionLog[];
+  /**
+   * Planのカロリーに足す調整。
+   * 旧v1データには存在しないため、調整なしとして復元する。
+   */
+  nutritionAdjustments: NutritionAdjustments;
 }
 
 export interface CompletedProgram extends ActiveProgram {
@@ -122,6 +141,7 @@ export function emptyData(): BodymakersData {
     recentFoodIds: [],
     trainingAdjustments: emptyTrainingAdjustments(),
     trainingSessions: [],
+    nutritionAdjustments: emptyNutritionAdjustments(),
   };
 }
 
@@ -208,6 +228,7 @@ function normalizeDailyLog(value: unknown): DailyLog | null {
     manualIntake: { kcal: finiteOrNull(manual.kcal), protein: finiteOrNull(manual.protein) },
     steps: finiteOrNull(value.steps),
     sleepHours: finiteOrNull(value.sleepHours),
+    nutritionComplete: value.nutritionComplete === true,
   };
 }
 
@@ -244,6 +265,7 @@ export function parseStoredData(raw: string | null): BodymakersData {
         : [],
       trainingAdjustments: normalizeTrainingAdjustments(parsed.trainingAdjustments),
       trainingSessions: normalizeTrainingSessions(parsed.trainingSessions),
+      nutritionAdjustments: normalizeNutritionAdjustments(parsed.nutritionAdjustments),
     };
   } catch {
     return emptyData();
@@ -379,6 +401,7 @@ export function addMealsToToday(
     manualIntake: { kcal: null, protein: null },
     steps: null,
     sleepHours: null,
+    nutritionComplete: false,
   };
   const nextMeals = [...log.meals, ...meals.map((meal) => ({ ...meal, mealType: meal.mealType ?? mealType }))];
   const recentFoodIds = [...new Set([...meals.map((meal) => meal.foodId), ...data.recentFoodIds])].slice(0, 12);
@@ -497,4 +520,113 @@ export function advanceActiveProgram(
   }
   const saved = writeData({ ...data, activeProgram: advanced, trainingAdjustments: applied.adjustments, trainingSessions }, storage);
   return saved ? { activeProgram: advanced, completed: false, ...result } : null;
+}
+
+/**
+ * 栄養の目標調整を適用する。
+ *
+ * 提案が出ても勝手には適用しない。本人が選んだときだけここを通る。
+ * Planのカロリーは書き換えず、足すぶんだけを残す。
+ * 同じ週に続けて調整しないよう、適用した週を覚えておく。
+ */
+export function applyNutritionAdjustment(
+  deltaKcal: number,
+  reason: string,
+  storage: Storage | null = browserStorage(),
+): { offsetKcal: number; calories: number } | null {
+  if (!Number.isFinite(deltaKcal) || deltaKcal === 0) return null;
+  const data = readData(storage);
+  const before = resolveNutritionTarget(data);
+  if (before == null) return null;
+
+  const planKey = planKeyFor(data);
+  if (planKey === '') return null;
+
+  // Planが変わっていれば、古い調整からではなく0から積み直す。
+  const current = data.nutritionAdjustments.planKey === planKey ? data.nutritionAdjustments.offsetKcal : 0;
+  const date = localDateKey();
+  const periodKey = periodKeyFor(date);
+
+  const next: NutritionAdjustments = {
+    version: 1,
+    offsetKcal: current + Math.round(deltaKcal),
+    planKey,
+    lastPeriodKey: periodKey,
+    history: [...(data.nutritionAdjustments.planKey === planKey ? data.nutritionAdjustments.history : [])],
+  };
+  const normalized = normalizeNutritionAdjustments(next);
+  const after = resolveNutritionTarget({ ...data, nutritionAdjustments: normalized });
+  if (after == null) return null;
+
+  normalized.history = [
+    ...normalized.history,
+    {
+      id: `${date}:${normalized.offsetKcal}`,
+      date,
+      fromCalories: before.calories,
+      toCalories: after.calories,
+      deltaKcal: after.calories - before.calories,
+      reason,
+      periodKey,
+    },
+  ].slice(-20);
+
+  const saved = writeData({ ...data, nutritionAdjustments: normalized }, storage);
+  return saved ? { offsetKcal: normalized.offsetKcal, calories: after.calories } : null;
+}
+
+/** 調整をやめて、Planの目安へ戻す。履歴は残す。 */
+export function resetNutritionAdjustment(storage: Storage | null = browserStorage()): boolean {
+  const data = readData(storage);
+  if (data.nutritionAdjustments.offsetKcal === 0) return false;
+  const date = localDateKey();
+  const before = resolveNutritionTarget(data);
+  const after = resolveNutritionTarget({ ...data, nutritionAdjustments: { ...data.nutritionAdjustments, offsetKcal: 0 } });
+  return writeData({
+    ...data,
+    nutritionAdjustments: {
+      ...data.nutritionAdjustments,
+      offsetKcal: 0,
+      lastPeriodKey: periodKeyFor(date),
+      history: [
+        ...data.nutritionAdjustments.history,
+        {
+          id: `${date}:reset`,
+          date,
+          fromCalories: before?.calories ?? 0,
+          toCalories: after?.calories ?? 0,
+          deltaKcal: (after?.calories ?? 0) - (before?.calories ?? 0),
+          reason: 'Planの目安に戻しました。',
+          periodKey: periodKeyFor(date),
+        },
+      ].slice(-20),
+    },
+  }, storage);
+}
+
+/** その日の食事記録が揃ったかどうかの印を切り替える。 */
+export function setNutritionComplete(
+  date: string,
+  complete: boolean,
+  storage: Storage | null = browserStorage(),
+): boolean {
+  const data = readData(storage);
+  const existing = data.dailyLogs.find((log) => log.date === date);
+  const log: DailyLog = existing ?? {
+    date,
+    savedAt: new Date().toISOString(),
+    weightKg: null,
+    meals: [],
+    exercises: [],
+    muscles: [],
+    doneExercises: [],
+    manualIntake: { kcal: null, protein: null },
+    steps: null,
+    sleepHours: null,
+    nutritionComplete: false,
+  };
+  const dailyLogs = [...data.dailyLogs.filter((item) => item.date !== date), { ...log, nutritionComplete: complete, savedAt: new Date().toISOString() }]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-366);
+  return writeData({ ...data, dailyLogs }, storage);
 }

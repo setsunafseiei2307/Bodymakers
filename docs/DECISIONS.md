@@ -47,3 +47,25 @@ When no set record exists for a session, the v1 rule (完了 / スキップ) run
 The v1 guards stay as they are: ±40kg offset limit, 20kg display floor, one adjustment per session key, and the program's own weights are never rewritten.
 
 Changing any of this requires updating this file with the reason.
+
+## 2026-09-03 Nutrition changes are proposed, never applied on their own
+
+Calorie targets move only when the user chooses. Bodymakers may show a proposal; it does not change a target in the background. Reverting to the plan's baseline is always available.
+
+Judgement uses the last 7 days against the previous 7 days, with at least 4 weight measurements in each window. A single day's weight never moves a target. Averages are recomputed from the raw logs so a corrected weight cannot leave a stale figure behind.
+
+A day counts toward the food record only when the user marks it complete (`DailyLog.nutritionComplete`). Entering one food does not make a day count, and an unmarked day is never treated as a low-intake day. Under-counting intake would push the target the wrong way, which is the more harmful error here.
+
+One step is 100 kcal, the cumulative offset is capped at ±300 kcal, and at most one adjustment per calendar week. These are deliberately conservative so the target cannot drift far from the plan.
+
+The plan's calories stay the baseline; only `offsetKcal` is stored. Re-running the diagnosis or changing the goal makes a new plan key and the old offset stops applying — an offset chosen for cutting must never carry onto a bulking plan.
+
+Protein and fat keep the plan's values and the calorie difference is absorbed by carbohydrate. Lowering protein to hit a calorie number would change the goal itself.
+
+`resolveNutritionTarget` is the only place that computes the daily target. Today, Plan, Record, and the weekly review all read it.
+
+Direction comes from the saved goal only. `recomp`, `health`, and `strength` hold, because body weight on its own cannot tell whether they are going well.
+
+No medical judgement is made, and copy never blames the user for what they ate.
+
+Changing any of this requires updating this file with the reason.

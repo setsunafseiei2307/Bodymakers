@@ -28,7 +28,7 @@ function log(date: string, weightKg: number | null): DailyLog {
     doneExercises: [],
     manualIntake: { kcal: null, protein: null },
     steps: null,
-    sleepHours: null,
+    sleepHours: null, nutritionComplete: false,
   };
 }
 

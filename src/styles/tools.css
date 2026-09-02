@@ -1591,3 +1591,70 @@
 @media (prefers-reduced-motion: reduce) {
   .session-feedback { animation: none; }
 }
+
+/* ==========================================================================
+   栄養の見直し
+   数字は事実だけ。増減の良し悪しは書かない。
+   ========================================================================== */
+.today__nutrition-reason {
+  margin: var(--s3) 0 0; padding: var(--s2) var(--s3);
+  border-radius: var(--r-sm); background: var(--inset);
+  color: var(--body); font-size: .78rem; line-height: 1.6;
+}
+
+.today__nutrition-complete {
+  display: flex; align-items: center; gap: var(--s3); width: 100%;
+  min-height: 3.25rem; margin-top: var(--s3); padding: var(--s3);
+  border: 2px solid var(--hair); border-radius: var(--r-md);
+  background: var(--surface); color: inherit; text-align: left; cursor: pointer;
+  transition: border-color .18s var(--ease), background-color .18s var(--ease);
+}
+.today__nutrition-complete.is-on { border-color: var(--nutrition, #168b63); background: color-mix(in srgb, var(--nutrition, #168b63) 8%, var(--surface)); }
+.today__nutrition-complete-mark {
+  display: grid; place-items: center; flex: none;
+  width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--muted) 40%, transparent);
+  font-size: .8rem; font-weight: 900;
+}
+.today__nutrition-complete.is-on .today__nutrition-complete-mark { border-color: var(--nutrition, #168b63); background: var(--nutrition, #168b63); color: white; }
+.today__nutrition-complete strong { display: block; font-size: .88rem; }
+.today__nutrition-complete small { display: block; margin-top: 2px; color: var(--muted); font-size: .74rem; line-height: 1.5; }
+
+.nutrition-review { display: grid; gap: var(--s3); }
+.nutrition-review__stats { display: grid; gap: var(--s2); }
+.nutrition-review__stats > div {
+  display: grid; gap: 2px; padding: var(--s3);
+  border-radius: var(--r-md); background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.nutrition-review__stats span { color: var(--muted); font-size: .72rem; font-weight: 800; }
+.nutrition-review__stats strong { font-size: 1rem; }
+.nutrition-review__stats small { color: var(--muted); font-size: .74rem; }
+
+.nutrition-review__verdict {
+  display: grid; gap: var(--s1); padding: var(--s4);
+  border-radius: var(--r-md); border-inline-start: 5px solid var(--muted); background: var(--inset);
+}
+.nutrition-review__verdict strong { font-size: .95rem; line-height: 1.45; }
+.nutrition-review__verdict p { margin: 0; color: var(--body); font-size: .82rem; line-height: 1.65; }
+/* 状態は帯の色だけでなく、必ず見出しの文言でも分かるようにしている */
+.nutrition-review__verdict.is-keep { border-color: var(--nutrition, #168b63); }
+.nutrition-review__verdict.is-adjust-down,
+.nutrition-review__verdict.is-adjust-up { border-color: var(--signal); background: var(--signal-soft); }
+.nutrition-review__verdict.is-collecting-data,
+.nutrition-review__verdict.is-consistency-first { border-color: var(--recovery, #c66a12); }
+
+.nutrition-review__choices { display: grid; gap: var(--s2); }
+.nutrition-review__choices .button { min-height: 3rem; }
+.nutrition-review__choices .button small { margin-inline-start: var(--s1); font-size: .74rem; font-weight: 600; }
+.nutrition-review__reset {
+  justify-self: start; min-height: 2.75rem; padding: var(--s2) var(--s3);
+  border: 0; background: none; color: var(--muted); font-size: .8rem; cursor: pointer;
+}
+.nutrition-review__reset:hover { color: var(--signal); }
+
+@media (min-width: 40rem) {
+  .nutrition-review__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .today__nutrition-complete { transition: none; }
+}

@@ -48,6 +48,7 @@ export function blankLog(date: string): DailyLog {
     manualIntake: { kcal: null, protein: null },
     steps: null,
     sleepHours: null,
+    nutritionComplete: false,
   };
 }
 

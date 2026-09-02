@@ -85,3 +85,29 @@ Coach output is never persisted. It is rebuilt from current records on every rea
 The 800 kcal clamp in `resolveNutritionTarget` is a technical floor, not a target Bodymakers may adjust down to. When a further decrease would land within one step of it, the engine returns `plan-review` and the coach routes to reviewing the plan. No generic medical minimum is introduced, and no target is ever described as dangerous — Bodymakers does not diagnose required intake.
 
 Changing any of this requires updating this file with the reason.
+
+## 2026-09-03 A day counts as logged only when it has something in it
+
+`nutritionComplete` marks intent; it is not on its own evidence that food was recorded. A day marked complete with no meals and no manual intake is excluded from adherence, because averaging it in as 0 kcal would understate intake and push the calorie target the wrong way. Under-counting intake is the more harmful error here, so the stricter rule wins.
+
+Weekly history counts the same way. The same label must not mean two different things on two screens.
+
+## 2026-09-03 The first week gets its own answer, not a smaller dashboard
+
+Adaptive needs history, so day 0-3 has nothing to show. `buildFirstWeekProgress` derives a stage from what already exists and Today hides the Weekly Coach, nutrition review, and streak panel until there is data behind them. Showing empty aggregates would teach people the app has nothing for them.
+
+The first action is satisfied by training, food, **or** weight — any one of them. Requiring all three would make day one a failure by default.
+
+Locked features are explained as the next action, never as a threshold. Returning after a gap leads with "おかえりなさい", never with a broken streak.
+
+## 2026-09-03 Suggestions are derived, never a second copy of the truth
+
+Frequent foods and previous amounts are computed from the logs on read. No favourites list is persisted, so a deleted record cannot leave a stale suggestion behind, and there is no second place where "what you eat" is recorded. The same reasoning already applies to weekly history and the 30-day review, none of which store a snapshot.
+
+Suggestions only fill in a value; adding food is always an explicit action, and it can be undone.
+
+## 2026-09-03 Import shows what will change before it changes anything
+
+Reading a backup file only parses and previews it. The device's current contents and the file's contents are shown side by side, and the overwrite happens after a separate confirmation, with the previous data saved first so it can be restored.
+
+Changing any of this requires updating this file with the reason.

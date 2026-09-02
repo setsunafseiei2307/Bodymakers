@@ -1701,3 +1701,25 @@
   font-size: .8rem; font-weight: 700; text-decoration: underline; cursor: pointer;
 }
 @media (prefers-reduced-motion: reduce) { .quick-food__add { transition: none; } }
+
+/* 読み込む前の内訳。何が置き換わるかを見てから決められるようにする。 */
+.import-confirm { display: grid; gap: var(--s3); margin-block: var(--s3); }
+.import-preview { display: grid; gap: var(--s2); padding: var(--s4); border-radius: var(--r-md); background: var(--inset); }
+.import-preview__head { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0; font-size: .84rem; font-weight: 700; }
+.import-preview__head span { color: var(--muted); font-weight: 500; font-size: .78rem; }
+.import-preview__rows { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.import-preview__rows li {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: baseline; gap: var(--s2);
+  padding: var(--s2) 0; border-bottom: 1px solid var(--hair); font-size: .82rem;
+}
+.import-preview__rows li:last-child { border-bottom: 0; }
+.import-preview__rows small { color: var(--muted); font-size: .68rem; }
+.import-preview__rows > li > span:nth-child(2) { color: var(--muted); }
+.import-preview__rows strong { color: var(--signal); }
+.import-preview__warn { margin: var(--s2) 0 0; color: var(--recovery, #c66a12); font-size: .8rem; font-weight: 700; line-height: 1.6; }
+.import-confirm .button { min-height: 3rem; }
+@media (max-width: 22rem) {
+  .import-preview__rows li { grid-template-columns: 1fr auto; }
+  .import-preview__rows li > span:nth-child(3) { display: none; }
+}

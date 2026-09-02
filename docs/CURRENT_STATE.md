@@ -21,6 +21,10 @@
 - The previous performance for each exercise is shown next to the set inputs, so the last weight and reps do not need looking up in Record
 - Nutrition Adaptive Loop v1: marking a day's food record complete, plus enough weight measurements, lets Bodymakers propose a small calorie change. Nothing is applied until the user chooses it.
 - Weekly Coach v1: once there is enough data, Today shows a compact "this week" card and Record shows the full weekly summary — training, nutrition, what changed, one recommendation, and next week
+- First week: a stage model (`new` → `plan-created` → `first-action-done` → `building-history` → `weekly-review-ready` → `established`) derived from existing records, so day 0-3 users get something useful before Adaptive can run
+- Quick food logging: "よく食べるもの" derived from the last 30 days of logs, one tap to add at the amount usually used, with undo
+- Weekly history (6 weeks) and a 30-day review with milestones, both recomputed from records
+- Import preview: what a backup contains, next to what is on the device now, before anything is overwritten
 - User data export / import as JSON at `/data/`, with a one-slot pre-import backup in `bodymakers:data:backup:v1`
 - MEXT food database, recipe data, and optional Open Food Facts product search
 - BIG3-first 1RM, RM map, strength standards, work sets, and warmups
@@ -117,6 +121,28 @@ All user data remains in the browser unless a future product explicitly adds con
 - The 800 kcal clamp in `resolveNutritionTarget` is a technical floor so the arithmetic cannot break. It is **not** a target Bodymakers may adjust down to.
 - When a further decrease would land within one step of that floor, the nutrition engine returns `plan-review` instead of a candidate, and the coach routes to reviewing the plan. No generic medical minimum (1200 / 1500 / 1800) is introduced, and the copy never calls a target dangerous.
 
+## First week
+- `buildFirstWeekProgress` in `src/lib/onboarding/firstWeek.ts` derives the stage from Plan, daily logs, and training sessions. Nothing is persisted for it.
+- The first action counts if it is training **or** food **or** weight. There is no "complete all of these" gate.
+- Locked features are described as the next action ("あと3回ほど体重を記録すると、7日ごとの動きを見られます"), never as a technical condition.
+- During the first week Today hides the Weekly Coach, the nutrition review, and the streak panel — there is not enough data behind them yet.
+- Returning after 4+ days shows "おかえりなさい / 今日からまた積み上げられます". A broken streak is never the headline.
+
+## Logging speed
+- `src/lib/foodHistory.ts` derives frequent foods and the last amount used from the last 30 days of logs. No favourites are persisted, so deleting a record also removes the suggestion.
+- Adding a food uses the amount most often used for it, not a fixed 100g. Suggestions never add anything on their own.
+- "元に戻す" removes exactly what the last action added, including bulk text entry and recipes.
+
+## Weekly history and 30-day progress
+- `src/lib/progressHistory.ts` recomputes both from records; no weekly snapshot is stored.
+- Weeks use the existing Monday-based week key, so weekly history and the nutrition adjustment period never disagree. Month and year boundaries are covered by tests.
+- A week with no records is marked `hasData: false` so the UI does not present 0 as an achievement.
+- The 30-day narrative is at most 4 sentences and compares the first and second half averages for weight. It never claims muscle was gained or fat was lost, and estimated 1RM is labelled a calculated value.
+- Milestones come only from what records can prove: first training, 10 sessions, 30 active days, program completion.
+
+## Counting a food-logged day
+A day counts as recorded only when it is marked complete **and** actually contains food data. A day marked complete with nothing in it would otherwise be averaged in as 0 kcal and push the target the wrong way. The weekly history uses the same rule, so the number means the same thing on every screen.
+
 ## Streak and weekly summary rules
 - An active day is a day with at least one meaningful record: training, food, or a weight / steps / sleep check-in. A saved-but-empty day is not active. Page views are never counted.
 - Completed programs count as training on their completion date.
@@ -155,15 +181,15 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (185 files)
-- `npm test`: 928 tests in 43 files passed
+- `npm run typecheck`: 0 errors (195 files)
+- `npm test`: 1010 tests in 48 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 / v2 / v2.1 the Nutrition Adaptive Loop v1, and the Weekly Coach v1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 5 commits.
+- Commits through `1180b7e` are on `origin/main` and live in production. The Training Adaptive Loop v1 / v2 / v2.1 the Nutrition Adaptive Loop v1, and the Weekly Coach v1 commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 6 commits.
 - The Training Adaptive Loop and set-level logging have not been verified in production and are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.

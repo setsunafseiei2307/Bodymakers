@@ -618,3 +618,38 @@ describe('保存データとの互換', () => {
     expect(baselineNutritionTarget(emptyData())).toBeNull();
   });
 });
+
+describe('中身の無い完了日を数えない', () => {
+  const target = { calories: 2400, protein: 140 };
+
+  it('印だけ付いて食事の記録が無い日は、判定に使わない', () => {
+    // 0kcalの日として平均に混ざると、目標を誤った方向へ押してしまう
+    const logs = [0, 1, 2, 3].map((d) => log(ago(d), { nutritionComplete: true }));
+    const adherence = nutritionAdherence(logs, target, NOW);
+    expect(adherence.completedDays).toBe(0);
+    expect(adherence.averageCalories).toBeNull();
+    expect(adherence.enoughData).toBe(false);
+  });
+
+  it('食品でも手入力でも、中身があれば数える', () => {
+    const withMeal = [log(ago(0), { nutritionComplete: true, meals: [{ foodId: '01088', grams: 100 }] })];
+    expect(nutritionAdherence(withMeal, target, NOW).completedDays).toBe(1);
+
+    const withManual = [log(ago(0), { nutritionComplete: true, manualIntake: { kcal: 2000, protein: null } })];
+    expect(nutritionAdherence(withManual, target, NOW).completedDays).toBe(1);
+
+    const proteinOnly = [log(ago(0), { nutritionComplete: true, manualIntake: { kcal: null, protein: 120 } })];
+    expect(nutritionAdherence(proteinOnly, target, NOW).completedDays).toBe(1);
+  });
+
+  it('中身の無い完了日が混ざっても、実のある日だけで平均する', () => {
+    const logs = [
+      ateDay(ago(0), 2400),
+      log(ago(1), { nutritionComplete: true }),
+      ateDay(ago(2), 2400),
+    ];
+    const adherence = nutritionAdherence(logs, target, NOW);
+    expect(adherence.completedDays).toBe(2);
+    expect(adherence.averageCalories).toBe(2400);
+  });
+});

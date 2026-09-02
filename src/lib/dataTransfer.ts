@@ -61,6 +61,22 @@ export interface ImportSummary {
   hasPersonalPlan: boolean;
   hasActiveProgram: boolean;
   exportedAt: string | null;
+  /** 記録したトレーニングのセッション数。 */
+  trainingSessions: number;
+  /** 食事記録を完了した日数。 */
+  nutritionCompleteDays: number;
+  /** 実績から積み上げた調整が入っているか。 */
+  hasTrainingAdjustments: boolean;
+  hasNutritionAdjustment: boolean;
+  /** 記録の期間。 */
+  firstDate: string | null;
+  lastDate: string | null;
+}
+
+/** 読み込む前に、いま入っているデータと並べて見せるための内訳。 */
+export interface ImportPreview {
+  incoming: ImportSummary;
+  current: ImportSummary;
 }
 
 export type ImportResult =
@@ -71,7 +87,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function summarize(data: BodymakersData, exportedAt: string | null): ImportSummary {
+export function summarize(data: BodymakersData, exportedAt: string | null = null): ImportSummary {
+  const dates = data.dailyLogs.map((log) => log.date).sort((a, b) => a.localeCompare(b));
   return {
     dailyLogs: data.dailyLogs.length,
     strengthHistory: data.strengthHistory.length,
@@ -79,6 +96,12 @@ function summarize(data: BodymakersData, exportedAt: string | null): ImportSumma
     hasPersonalPlan: data.personalPlan != null,
     hasActiveProgram: data.activeProgram != null,
     exportedAt,
+    trainingSessions: data.trainingSessions.length,
+    nutritionCompleteDays: data.dailyLogs.filter((log) => log.nutritionComplete).length,
+    hasTrainingAdjustments: Object.keys(data.trainingAdjustments.lifts).length > 0,
+    hasNutritionAdjustment: data.nutritionAdjustments.offsetKcal !== 0,
+    firstDate: dates[0] ?? null,
+    lastDate: dates.at(-1) ?? null,
   };
 }
 

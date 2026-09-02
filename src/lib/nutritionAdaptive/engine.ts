@@ -180,7 +180,14 @@ export function nutritionAdherence(
 ): NutritionAdherence {
   const today = dateKey(now);
   const window = new Set(recentDateKeys(today, TREND_WINDOW_DAYS));
-  const completed = logs.filter((log) => log.nutritionComplete && window.has(log.date));
+  /*
+   * 印は付いているが中身が空の日は数えない。
+   * 0kcalの日として平均に混ぜると、実際より少なく見えて
+   * 目標を誤った方向へ押してしまう。
+   */
+  const completed = logs.filter((log) => log.nutritionComplete
+    && window.has(log.date)
+    && (log.meals.length > 0 || log.manualIntake.kcal != null || log.manualIntake.protein != null));
 
   const intakes = completed.map(caloriesForLog);
   const averageCalories = average(intakes.map((item) => item.kcal));

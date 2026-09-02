@@ -75,7 +75,11 @@ export function weeklyHistory(
     for (const log of data.dailyLogs) {
       if (!days.has(log.date)) continue;
       if (dayActivity(log).active) activeDays += 1;
-      if (log.nutritionComplete) nutritionCompleteDays += 1;
+      // 「食事の記録があった日」の数え方は、見直しの判定と揃える。
+      // 画面ごとに違う数字が出ないようにする。
+      if (log.nutritionComplete && (log.meals.length > 0 || log.manualIntake.kcal != null || log.manualIntake.protein != null)) {
+        nutritionCompleteDays += 1;
+      }
       if (log.weightKg != null && Number.isFinite(log.weightKg) && log.weightKg > 20 && log.weightKg < 400) {
         weights.push(log.weightKg);
       }
@@ -187,7 +191,9 @@ export function monthlyProgress(data: BodymakersData, now = new Date()): Monthly
 
   const activeDays = activeDates.filter((date) => window.has(date)).length;
   const trainingSessions = data.trainingSessions.filter((session) => window.has(session.date)).length;
-  const nutritionCompleteDays = data.dailyLogs.filter((log) => log.nutritionComplete && window.has(log.date)).length;
+  const nutritionCompleteDays = data.dailyLogs.filter((log) => log.nutritionComplete
+    && window.has(log.date)
+    && (log.meals.length > 0 || log.manualIntake.kcal != null || log.manualIntake.protein != null)).length;
 
   // 期間の前半と後半で体重の平均を比べる。単日では見ない。
   const firstHalf = new Set(recentDateKeys(shiftDateKey(today, -Math.floor(MONTHLY_WINDOW_DAYS / 2)), Math.floor(MONTHLY_WINDOW_DAYS / 2)));

@@ -15,6 +15,7 @@ import {
   parseImport,
   readBackup,
   saveBackup,
+  summarize,
   type ImportSummary,
 } from '../../lib/dataTransfer';
 import { DATA_CHANGED_EVENT, readData, writeData, type BodymakersData } from '../../lib/storage';
@@ -28,6 +29,41 @@ function describe(data: BodymakersData): { label: string; value: string }[] {
     { label: '実行中Program', value: data.activeProgram ? '実行中' : 'なし' },
     { label: '筋力診断', value: `${data.strengthHistory.length}件` },
   ];
+}
+
+/** 読み込む前に、いま入っているものと並べて見せる。 */
+function SummaryTable({ incoming, current }: { incoming: ImportSummary; current: ImportSummary }) {
+  const rows: { label: string; from: string; to: string }[] = [
+    { label: '日々の記録', from: `${current.dailyLogs}日`, to: `${incoming.dailyLogs}日` },
+    { label: 'トレーニング', from: `${current.trainingSessions}回`, to: `${incoming.trainingSessions}回` },
+    { label: '食事の記録', from: `${current.nutritionCompleteDays}日`, to: `${incoming.nutritionCompleteDays}日` },
+    { label: '12週間Plan', from: current.hasPersonalPlan ? 'あり' : 'なし', to: incoming.hasPersonalPlan ? 'あり' : 'なし' },
+    { label: '重量の調整', from: current.hasTrainingAdjustments ? 'あり' : 'なし', to: incoming.hasTrainingAdjustments ? 'あり' : 'なし' },
+    { label: '食事の目安の調整', from: current.hasNutritionAdjustment ? 'あり' : 'なし', to: incoming.hasNutritionAdjustment ? 'あり' : 'なし' },
+  ];
+  return (
+    <div className="import-preview">
+      <p className="import-preview__head">
+        {incoming.exportedAt == null
+          ? 'このバックアップの中身'
+          : `${new Date(incoming.exportedAt).toLocaleDateString('ja-JP')} に書き出したバックアップ`}
+        {incoming.firstDate && incoming.lastDate && (
+          <span className="num">（{incoming.firstDate.replaceAll('-', '/')}〜{incoming.lastDate.replaceAll('-', '/')}）</span>
+        )}
+      </p>
+      <ul className="import-preview__rows">
+        {rows.map((row) => (
+          <li key={row.label}>
+            <span>{row.label}</span>
+            <span className="num"><small>いま</small> {row.from}</span>
+            <span aria-hidden="true">→</span>
+            <strong className="num">{row.to}</strong>
+          </li>
+        ))}
+      </ul>
+      <p className="import-preview__warn">読み込むと、いまのデータはこの内容に置き換わります。</p>
+    </div>
+  );
 }
 
 function summaryText(summary: ImportSummary): string {
@@ -47,6 +83,8 @@ export default function DataManager() {
   /** ファイルを選べない環境のための、貼り付け用の逃げ道。 */
   const [pasted, setPasted] = useState('');
   const [exportedText, setExportedText] = useState('');
+  /** 読み込む前に中身を見せる。確認するまで書き込まない。 */
+  const [pending, setPending] = useState<{ data: BodymakersData; summary: ImportSummary } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -94,36 +132,48 @@ export default function DataManager() {
     setMessage('この内容がバックアップです。すべて選択してコピーしてください。');
   }
 
-  /** 読み込みは上書き。実行前に必ず本人へ確認する。 */
-  function applyImport(raw: string) {
+  /**
+   * まず中身を読み取って見せるだけ。ここでは保存しない。
+   * 上書きは、内訳を見たうえで確認したときだけ起きる。
+   */
+  function previewImport(raw: string) {
     const result = parseImport(raw);
     if (!result.ok) {
       setMessage('');
+      setPending(null);
       setError(result.error);
       return;
     }
-    const confirmed = window.confirm(
-      `読み込むと、この端末の現在のBodymakersデータは上書きされます。\n\n読み込む内容: ${summaryText(result.summary)}\n\n続けますか？（元のデータは「元に戻す」用に一時保存します）`,
-    );
-    if (!confirmed) {
-      setError('');
-      setMessage('読み込みを取り消しました。現在のデータはそのままです。');
-      return;
-    }
+    setError('');
+    setMessage('');
+    setPending({ data: result.data, summary: result.summary });
+  }
+
+  /** 内訳を見たうえでの実行。元のデータは先に退避する。 */
+  function confirmImport() {
+    if (pending == null) return;
     const backedUp = saveBackup();
-    if (!writeData(result.data)) {
+    if (!writeData(pending.data)) {
       setMessage('');
       setError('保存できませんでした。ブラウザの保存設定を確認してください。');
       return;
     }
     setData(readData());
     setHasBackup(backedUp);
+    setPending(null);
+    setPasted('');
     setError('');
     setMessage(
       backedUp
-        ? `データを読み込みました（${summaryText(result.summary)}）。元のデータは一時保存してあります。`
-        : `データを読み込みました（${summaryText(result.summary)}）。`,
+        ? `データを読み込みました（${summaryText(pending.summary)}）。元のデータは一時保存してあるので、戻せます。`
+        : `データを読み込みました（${summaryText(pending.summary)}）。`,
     );
+  }
+
+  function cancelImport() {
+    setPending(null);
+    setError('');
+    setMessage('読み込みを取り消しました。現在のデータはそのままです。');
   }
 
   function importFromFile(file: File) {
@@ -133,7 +183,7 @@ export default function DataManager() {
       setError('ファイルを読めませんでした。もう一度選び直してください。');
     };
     reader.onload = () => {
-      applyImport(typeof reader.result === 'string' ? reader.result : '');
+      previewImport(typeof reader.result === 'string' ? reader.result : '');
       if (fileRef.current) fileRef.current.value = '';
     };
     reader.readAsText(file);
@@ -174,7 +224,10 @@ export default function DataManager() {
         {exportedText !== '' && (
           <textarea className="data-manager__text" readOnly value={exportedText} rows={8} aria-label="書き出したデータ" />
         )}
-        <p className="tool__note">書き出す内容は、この端末の記録・Plan・Programだけです。パスワードや連携用の鍵は含みません。</p>
+        <p className="tool__note">
+          書き出すのは、12週間Plan・日々の記録・トレーニングの記録・食事の記録・
+          実績から積み上げた重量と食事の目安の調整です。パスワードや連携用の鍵は含みません。
+        </p>
       </Slip>
 
       <Slip code="IMPORT" title="データを読み込む">
@@ -205,10 +258,23 @@ export default function DataManager() {
             placeholder='{"format":"bodymakers-export", ...}'
             aria-label="読み込むデータ"
           />
-          <button type="button" className="button button--block" onClick={() => applyImport(pasted)} disabled={pasted.trim() === ''}>
-            貼り付けた内容を読み込む
+          <button type="button" className="button button--block" onClick={() => previewImport(pasted)} disabled={pasted.trim() === ''}>
+            貼り付けた内容を確認する
           </button>
         </details>
+        {/* 中身を見せてから確認する。ここを通らずに上書きされることはない。 */}
+        {pending && (
+          <div className="import-confirm">
+            <SummaryTable incoming={pending.summary} current={summarize(data)} />
+            <button type="button" className="button button--block button--lg" onClick={confirmImport}>
+              この内容で読み込む
+            </button>
+            <button type="button" className="button button--ghost button--block" onClick={cancelImport}>
+              やめる
+            </button>
+          </div>
+        )}
+
         {hasBackup && (
           <button type="button" className="button button--ghost button--block" onClick={restore}>読み込む前のデータに戻す</button>
         )}

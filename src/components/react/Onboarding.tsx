@@ -46,7 +46,8 @@ import {
   type NumberQuestion,
   type Question,
 } from '../../lib/diagnosis/questions';
-import type { PersonalPlanInput } from '../../lib/diagnosis/types';
+import { comparePlanInputs, daysSincePlan, savedAtLabel } from '../../lib/diagnosis/rediagnosis';
+import type { PersonalPlanInput, SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { readData, savePersonalPlan, type SavedProfile } from '../../lib/storage';
 import type { LiftId } from '../../lib/strength/standards';
 import { url } from '../../lib/url';
@@ -86,6 +87,10 @@ export default function Onboarding() {
   const [ready, setReady] = useState(false);
   /** 前回の途中入力。どうするか選んでもらうまで、下書きには触らない。 */
   const [pendingDraft, setPendingDraft] = useState<DiagnosisDraft | null>(null);
+  /** 保存済みのPlan。2回目以降の診断かどうかはこれで分かる。 */
+  const [previousPlan, setPreviousPlan] = useState<SavedPersonalPlan | null>(null);
+  /** 2回目以降の人へ、始め方を選んでもらう画面を出すか。 */
+  const [showIntro, setShowIntro] = useState(false);
 
   const journeyRef = useRef<HTMLElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,6 +98,8 @@ export default function Onboarding() {
   const touchedRef = useRef(false);
   /** 端末の戻るボタン用に積んだ履歴の数。 */
   const pushedRef = useRef(0);
+  /** 前回のPlanを混ぜない、まっさらな入力。 */
+  const freshInputRef = useRef<PersonalPlanInput | null>(null);
 
   const setInput: typeof setInputState = (value) => {
     touchedRef.current = true;
@@ -110,17 +117,26 @@ export default function Onboarding() {
 
   useEffect(() => {
     const data = readData();
-    if (data.personalPlan) {
-      setInputState(data.personalPlan.input);
-    } else {
-      const lifts: Partial<Record<LiftId, number>> = {};
-      for (const lift of LIFT_IDS) {
-        const saved = data.strengthProfile?.lifts[lift];
-        if (saved) lifts[lift] = saved.oneRmKg;
-      }
-      setInputState(defaultInput(data.profile, lifts));
+    const lifts: Partial<Record<LiftId, number>> = {};
+    for (const lift of LIFT_IDS) {
+      const saved = data.strengthProfile?.lifts[lift];
+      if (saved) lifts[lift] = saved.oneRmKg;
     }
-    setPendingDraft(readDiagnosisDraft());
+    // 「最初から答え直す」で戻る先。前回のPlanは混ぜない。
+    const fresh = defaultInput(data.profile, lifts);
+    freshInputRef.current = fresh;
+
+    const draft = readDiagnosisDraft();
+    setPendingDraft(draft);
+
+    if (data.personalPlan) {
+      setPreviousPlan(data.personalPlan);
+      setInputState(data.personalPlan.input);
+      // 途中の下書きがある人には、そちらの案内を先に出す。
+      if (draft == null) setShowIntro(true);
+    } else {
+      setInputState(fresh);
+    }
     setReady(true);
   }, []);
 
@@ -136,10 +152,10 @@ export default function Onboarding() {
 
   /** 答えるたびに端末内へ下書きを残す。正式なPlanは最後に保存したときだけ。 */
   useEffect(() => {
-    if (!ready || pendingDraft != null || !touchedRef.current) return;
+    if (!ready || pendingDraft != null || showIntro || !touchedRef.current) return;
     if (questionId === RESULT_STEP) return;
     writeDiagnosisDraft({ step: 0, questionId, input, strengthMode, setInputs });
-  }, [ready, pendingDraft, questionId, input, strengthMode, setInputs]);
+  }, [ready, pendingDraft, showIntro, questionId, input, strengthMode, setInputs]);
 
   const questions = useMemo(() => visibleQuestions(input), [input]);
   const progress = useMemo(() => questionProgress(input, questionId), [input, questionId]);
@@ -148,13 +164,18 @@ export default function Onboarding() {
     [questions, questionId],
   );
   const result = useMemo(() => buildPersonalPlan(input), [input]);
+  /** 2回目以降だけ、前回の回答との差を出す。初回は null。 */
+  const planChanges = useMemo(
+    () => previousPlan == null ? null : comparePlanInputs(previousPlan.input, input),
+    [previousPlan, input],
+  );
 
   /** 画面が変わったら、質問の先頭が見えるところまで戻す。 */
   useEffect(() => {
-    if (!ready || pendingDraft != null) return;
+    if (!ready || pendingDraft != null || showIntro) return;
     const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     journeyRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-  }, [ready, pendingDraft, questionId, interstitial]);
+  }, [ready, pendingDraft, showIntro, questionId, interstitial]);
 
   const stepBack = useCallback(() => {
     clearAdvanceTimer();
@@ -168,14 +189,14 @@ export default function Onboarding() {
    * answers は下書きに残っているので、ここで失われることはない。
    */
   useEffect(() => {
-    if (!ready || pendingDraft != null || typeof window === 'undefined') return;
+    if (!ready || pendingDraft != null || showIntro || typeof window === 'undefined') return;
     function onPopState() {
       pushedRef.current = Math.max(0, pushedRef.current - 1);
       stepBack();
     }
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [ready, pendingDraft, stepBack]);
+  }, [ready, pendingDraft, showIntro, stepBack]);
 
   function goToQuestion(next: string) {
     if (typeof window !== 'undefined' && next !== questionId) {
@@ -270,6 +291,23 @@ export default function Onboarding() {
     touchedRef.current = false;
     setPendingDraft(null);
     setQuestionIdState(resolveQuestionId(input, null));
+    // 下書きを捨てたあとに保存済みPlanがあれば、始め方を選んでもらう。
+    if (previousPlan != null) setShowIntro(true);
+  }
+
+  /** 前回の回答を引き継いで見直す。 */
+  function reviewFromPreviousPlan() {
+    if (previousPlan != null) setInputState(previousPlan.input);
+    setQuestionIdState(resolveQuestionId(previousPlan?.input ?? input, null));
+    setShowIntro(false);
+  }
+
+  /** 前回の回答を引き継がず、最初から答え直す。 */
+  function restartFromScratch() {
+    const fresh = freshInputRef.current;
+    if (fresh != null) setInputState(fresh);
+    setQuestionIdState(resolveQuestionId(fresh ?? input, null));
+    setShowIntro(false);
   }
 
   function saveAndOpenPlan() {
@@ -284,6 +322,35 @@ export default function Onboarding() {
   }
 
   if (!ready) return <div className="journey journey--loading" aria-hidden="true" />;
+
+  // 2回目以降。前回の回答を引き継ぐか、最初からやるかを先に選んでもらう。
+  if (showIntro && previousPlan != null) {
+    const savedAt = savedAtLabel(previousPlan);
+    const days = daysSincePlan(previousPlan);
+    return (
+      <section ref={journeyRef} className="journey journey--resume quiz-appear" aria-live="polite">
+        <p className="journey-kicker">AGAIN</p>
+        <h2>もう一度、現在地を見直しますか？</h2>
+        <p className="journey-lead">
+          前回の回答はこの端末に残っています。変わったところだけ答え直せば、Planを今の自分に合わせ直せます。
+        </p>
+        <div className="journey-resume__meta">
+          <span>いまのPlan</span>
+          <strong>{savedAt == null ? '保存済み' : `${savedAt}に保存`}{days != null && days > 0 ? `（${days}日前）` : ''}</strong>
+        </div>
+        <button type="button" className="button button--block button--lg" onClick={reviewFromPreviousPlan}>
+          前回の回答から見直す
+        </button>
+        <button type="button" className="button button--ghost button--block" onClick={restartFromScratch}>
+          最初から答え直す
+        </button>
+        <p className="journey-privacy">
+          答え終えて保存すると、いまの12週間Planが新しい内容に置き換わります。保存するまで、今のPlanはそのままです。
+        </p>
+        <a className="journey-back-link" href={url('/plan')}>いまのPlanを見る →</a>
+      </section>
+    );
+  }
 
   if (pendingDraft != null) {
     return (
@@ -342,6 +409,23 @@ export default function Onboarding() {
           </article>
         </section>
 
+        {/* 2回目以降は、前回から何が変わったかを先に見せる。 */}
+        {planChanges != null && (
+          <section className="journey-panel quiz-changes">
+            <h2>前回からの変更</h2>
+            {planChanges.length === 0
+              ? <p className="tool__note">前回の回答から変わったところはありません。保存すると、今日の日付でPlanを作り直します。</p>
+              : <ul className="quiz-changes__list">
+                  {planChanges.map((change) => (
+                    <li key={change.id}>
+                      <span>{change.label}</span>
+                      <strong>{change.before} → {change.after}</strong>
+                    </li>
+                  ))}
+                </ul>}
+          </section>
+        )}
+
         <section className="journey-panel"><h2>今の5つの軸</h2>{result.diagnosis.axes.map((axis) => <AxisBar key={axis.id} label={axis.label} score={axis.score} reasons={axis.reasons} />)}</section>
         <section className="journey-panel"><h2>最初に整えるTOP 3</h2><ol className="journey-priorities">{result.diagnosis.priorities.map((item, index) => <li key={item.id}><span>{index + 1}</span><div><strong>{item.title}</strong><p>{item.action}</p><details><summary>なぜ？</summary><p>{item.why}</p></details></div></li>)}</ol></section>
         {result.diagnosis.gaps.length > 0 && <section className="journey-panel"><h2>ゴールとの差</h2><div className="journey-gaps">{result.diagnosis.gaps.map((gap) => <div key={gap.id}><span>{gap.label}</span><strong>{gap.current} → {gap.target}</strong><small>{gap.difference}</small></div>)}</div></section>}
@@ -354,7 +438,12 @@ export default function Onboarding() {
 
         {input.lifestyle.painOrInjury && <p className="note note--warn"><span className="note__title">痛みがある場合</span>無理に負荷を上げないでください。この診断は医療判断を行いません。</p>}
 
-        <button type="button" className="button button--block button--lg" onClick={saveAndOpenPlan}>このPlanを保存して12週間を見る</button>
+        <button type="button" className="button button--block button--lg" onClick={saveAndOpenPlan}>
+          {previousPlan == null ? 'このPlanを保存して12週間を見る' : 'Planを更新して12週間を見る'}
+        </button>
+        <p className="quiz-result-note">
+          保存すると、この端末にPlanが残ります。今日やることはTodayに毎日出ます。
+        </p>
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
         <p className="next">
           <a href={url('/tools/one-rep-max')}>1RMを詳しく計算する →</a>

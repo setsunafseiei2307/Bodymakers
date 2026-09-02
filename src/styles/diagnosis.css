@@ -305,3 +305,13 @@
   .quiz-choice__check { transition: none; }
   .quiz-choice:active { transform: none; }
 }
+
+/* 2回目以降の診断で出す、前回からの変更点。 */
+.quiz-changes__list { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.quiz-changes__list li {
+  display: grid; grid-template-columns: minmax(6rem, auto) 1fr; align-items: baseline; gap: var(--s2) var(--s3);
+  padding: var(--s3); border-radius: var(--r-sm); background: var(--inset);
+}
+.quiz-changes__list span { color: var(--muted); font-size: .78rem; font-weight: 700; }
+.quiz-changes__list strong { font-size: .9rem; }
+.quiz-result-note { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.6; text-align: center; }

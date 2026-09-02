@@ -10,6 +10,7 @@
 - Goal diagnosis: one question per screen (24-25 questions depending on the goal), choice answers auto-advance, progress is counted from the questions actually shown, and short interstitials appear at about 25% / 50% / 75%
 - Local 12-week Personal Plan, with a result screen showing current position, goal, direction, training, nutrition, and the next action
 - Diagnosis draft save and resume: every answer is written to `bodymakers:diagnosis:draft:v1`, and returning to `/start/` offers resume or restart
+- Re-diagnosis: a visitor who already has a saved Plan is asked first whether to review from their previous answers or start over, is told that saving replaces the current Plan, and sees a before → after list of what changed on the result screen. Nothing is written until they save.
 - Program Library with local active-program progression
 - Today: a single top priority action card, then today's progress, training, the last 7 days, food, nutrition targets/recommendations, recovery, and daily records
 - Daily loop: activity days, current / longest streak, last 7 and 30 active days, today's task checklist, and a rule-based weekly summary — all derived from existing records, with no new storage schema
@@ -91,15 +92,15 @@ Not measured. There is no Lighthouse or field-measurement setup in this reposito
 These are real-device checks, not something the current verification commands can pass or fail.
 
 ## Verification of the current commit
-- `npm run typecheck`: 0 errors (161 files)
-- `npm test`: 688 tests in 35 files passed
+- `npm run typecheck`: 0 errors (164 files)
+- `npm test`: 704 tests in 36 files passed
 - `npm run build`: 66 pages built
 - `npm run check:links`: all internal links resolved
 - `git diff --check`: clean
 - Local Node is 18.15.0 and cannot run this toolchain; the checks above were run with a throwaway Node 22.14.0 that is not installed into the system.
 
 ## Deployment status
-- The Home Phase 1, daily-loop, and diagnosis UX commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 5 commits.
+- The re-diagnosis, Home Phase 1, daily-loop, and diagnosis UX commits are **implemented locally and not pushed**. `main` is ahead of `origin/main` by 6 commits.
 - Nothing in this state file has been verified in production. The new Home, the daily loop, and the one-question diagnosis are not live.
 - The last commit that reached `origin/main` is `c03c734`, and its production deployment failed because the GitHub Actions secret `CLOUDFLARE_API_TOKEN` is not set. `CLOUDFLARE_ACCOUNT_ID` is also required by `.github/workflows/production.yml`.
 - CI: GitHub Actions is responsible for the production deploy after a `main` push.

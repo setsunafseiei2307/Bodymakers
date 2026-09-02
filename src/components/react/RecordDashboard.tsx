@@ -9,6 +9,8 @@ import { recentSessions, summarizeSession } from '../../lib/training/log';
 import { buildWeeklyCoach } from '../../lib/coach';
 import { recentDateKeys, dateKey } from '../../lib/activity/days';
 import WeeklyCoachCard from './WeeklyCoachCard';
+import { monthlyProgress, weeklyHistory } from '../../lib/progressHistory';
+import { MonthlyProgressCard, WeeklyHistoryList } from './ProgressHistory';
 
 export default function RecordDashboard() {
   const [data, setData] = useState<BodymakersData | null>(null);
@@ -24,6 +26,8 @@ export default function RecordDashboard() {
   const liftProgress = useMemo(() => data ? liftProgressSummaries(data) : [], [data]);
   const sessions = useMemo(() => data ? recentSessions(data.trainingSessions, 5) : [], [data]);
   const coach = useMemo(() => data ? buildWeeklyCoach(data) : null, [data]);
+  const weeks = useMemo(() => data ? weeklyHistory(data) : [], [data]);
+  const monthly = useMemo(() => data ? monthlyProgress(data) : null, [data]);
   /** 直近14日の体重。傾向が見える程度の軽い折れ線に使う。 */
   const weightPoints = useMemo(() => {
     if (data == null) return [];
@@ -113,6 +117,12 @@ export default function RecordDashboard() {
             </ol>
           </details>
         )}
+      </section>
+    )}
+    {monthly && (
+      <section className="record-dashboard__progress">
+        <MonthlyProgressCard progress={monthly} />
+        <WeeklyHistoryList weeks={weeks} />
       </section>
     )}
     <p className="record-dashboard__privacy">記録はこの端末にだけ残ります。<a href={url('/data')}>ファイルに書き出して保管する →</a></p>

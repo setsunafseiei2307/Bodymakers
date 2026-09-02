@@ -105,3 +105,29 @@
 .weekly-coach__line { margin: 0; color: var(--body); font-size: .84rem; line-height: 1.65; }
 .weekly-coach__more { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--signal); font-size: .82rem; font-weight: 700; }
 @media (min-width: 40rem) { .weekly-coach__domains { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* 過去数週と30日の振り返り。1週ごとに大きなカードを作らず、行で追う。 */
+.record-dashboard__progress { display: grid; gap: var(--s5); margin-top: var(--s6); }
+.monthly-progress, .weekly-history { display: grid; gap: var(--s3); padding: var(--s5); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+.monthly-progress h3, .weekly-history h3 { margin: 0; font-size: 1.02rem; }
+.monthly-progress h4 { margin: 0 0 var(--s2); font-size: .84rem; }
+.monthly-progress__narrative { display: grid; gap: var(--s2); }
+.monthly-progress__narrative p { margin: 0; color: var(--body); font-size: .9rem; line-height: 1.75; }
+.monthly-progress__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); }
+.monthly-progress__stats > div { display: grid; gap: 2px; padding: var(--s3); border-radius: var(--r-md); background: var(--inset); text-align: center; }
+.monthly-progress__stats span { color: var(--muted); font-size: .7rem; font-weight: 700; }
+.monthly-progress__stats strong { font-size: 1rem; }
+.monthly-progress__strength ul, .monthly-progress__milestones { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.monthly-progress__strength li, .monthly-progress__milestones li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s2); font-size: .84rem; }
+.monthly-progress__strength strong { font-family: var(--f-mono); }
+.monthly-progress__milestones { margin-top: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--hair); }
+.monthly-progress__milestones time { color: var(--muted); font-family: var(--f-mono); font-size: .74rem; }
+.weekly-history__rows { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.weekly-history__rows li { display: grid; gap: 2px; padding: var(--s2) var(--s3); border-radius: var(--r-sm); background: var(--inset); }
+.weekly-history__rows li.is-current { background: var(--signal-soft); }
+.weekly-history__rows li.is-empty { opacity: .72; }
+.weekly-history__label { color: var(--muted); font-size: .74rem; font-weight: 700; }
+.weekly-history__rows li.is-current .weekly-history__label { color: var(--signal); }
+.weekly-history__metrics { display: flex; flex-wrap: wrap; gap: var(--s2); font-size: .8rem; }
+.weekly-history__badge { padding: 0 var(--s2); border-radius: 999px; background: var(--surface); color: var(--signal); font-size: .7rem; font-weight: 700; }
+.weekly-history__none { color: var(--muted); font-size: .78rem; }
+@media (max-width: 22rem) { .monthly-progress__stats { grid-template-columns: 1fr; } }

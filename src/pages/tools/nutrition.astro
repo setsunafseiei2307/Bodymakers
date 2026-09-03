@@ -8,9 +8,52 @@ import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'PFC・カロリー計算';
 const description = '基礎代謝と活動量から1日の消費カロリーを求め、目標に応じたカロリーとPFC（たんぱく質・脂質・炭水化物）の配分を計算します。';
+
+/*
+ * 画面にはパンくずを出していたが、検索エンジンには伝えていなかった。
+ * ArticleLayout と同じ形で階層を渡す。
+ */
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { name: 'ホーム', path: '/' },
+    { name: 'ツール', path: '/tools' },
+    { name: title, path: Astro.url.pathname },
+  ].map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: new URL(url(item.path), Astro.site ?? Astro.url.origin).href,
+  })),
+};
+
+/* 画面に出している文と同じ内容だけを構造化データにする。 */
+const faqs = [
+  {
+    question: 'この数字どおりに食べれば必ず痩せますか？',
+    answer: '計算式はいずれも統計的な推定で、実際の代謝には個人差があります。2〜3週間続けて体重の変化を見ながら、増減がなければ少しずつ調整してください。',
+  },
+  {
+    question: '体脂肪率は入れないとだめですか？',
+    answer: '年齢・身長・体重の3つだけで計算できます。体脂肪率を入れると除脂肪体重が出せるので、Katch-McArdle式が選べるようになります。',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: { '@type': 'Answer', text: item.answer },
+  })),
+};
 ---
 
 <BaseLayout title={title} description={description}>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <div class="container tool-page">
     <nav class="breadcrumb" aria-label="パンくずリスト">
       <ol>
@@ -29,6 +72,20 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
     {/* client:load にしているのは、このページの主目的が計算そのもので、
         スクロール前にタップされて反応しない事故を避けるため。 */}
     <NutritionTool client:load />
+
+    <section class="nutri nutri-card nutri-faq" aria-labelledby="nutri-faq-title">
+      <h2 id="nutri-faq-title">よくある質問</h2>
+      <dl>
+        {faqs.map((item) => (
+          <div>
+            <dt>{item.question}</dt>
+            <dd>{item.answer}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <p class="nutri-related">計算の背景や、実際の食事への落とし込みは記事でも解説しています。</p>
 
     <ToolArticles toolKey="nutrition" />
 
@@ -85,5 +142,12 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
     margin-top: var(--s2);
     color: var(--muted);
     font-size: 0.75rem;
+  }
+
+  .nutri-related {
+    margin-top: var(--s6);
+    color: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
   }
 </style>

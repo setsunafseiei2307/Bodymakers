@@ -20,10 +20,10 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
     </nav>
 
     <header class="tool-page__header">
-      <p class="tool-page__code">MACROS</p>
+      <p class="tool-page__code">栄養ツール</p>
       <h1>{title}</h1>
       <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
+      <p class="tool-page__privacy">無料 ・ 登録不要 ・ 入力した内容は送信も保存もされません。</p>
     </header>
 
     {/* client:load にしているのは、このページの主目的が計算そのもので、
@@ -39,7 +39,7 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
 <style>
   .tool-page {
     padding-block: var(--s5) var(--s8);
-    max-width: 46rem;
+    max-width: 52rem;
   }
 
   .breadcrumb ol {
@@ -65,15 +65,13 @@ const description = '基礎代謝と活動量から1日の消費カロリーを�
   .tool-page__header {
     margin-bottom: var(--s5);
     padding-bottom: var(--s4);
-    border-bottom: 3px solid var(--rule);
   }
 
   .tool-page__code {
     color: var(--signal);
-    font-family: var(--f-mono);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
   }
 
   .tool-page__lead {

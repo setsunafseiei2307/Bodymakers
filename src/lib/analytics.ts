@@ -11,6 +11,7 @@
  * イベントの項目に入れない。数えるのは画面と操作だけ。
  */
 
+import type { GoalId } from './diagnosis/types';
 import type { HomeStateId } from './home/state';
 
 /** Homeで今回実際に発火させるイベント。 */
@@ -18,7 +19,11 @@ export type HomeEventName =
   | 'home_view'
   | 'hero_cta_click'
   | 'hero_secondary_click'
-  | 'draft_resume_click';
+  | 'draft_resume_click'
+  /** 「どんな身体になりたい？」の4択を押した */
+  | 'goal_select'
+  /** 保存済みの人の「Personalの続きへ」を押した */
+  | 'continue_click';
 
 /**
  * 契約として名前だけ決めておくイベント。
@@ -44,6 +49,11 @@ export type CtaPosition = 'hero' | 'final';
 export interface EventProperties {
   state?: HomeStateId;
   position?: CtaPosition;
+  /**
+   * 選ばれた目標。診断の GoalId と同じ5種類しか入らない。
+   * 目標は身体の情報ではなく、押されたボタンの種類として数える。
+   */
+  goal?: GoalId;
 }
 
 /**

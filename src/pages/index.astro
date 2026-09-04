@@ -1,168 +1,322 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HomeHero from '../components/react/HomeHero';
+import HeroVisual from '../components/home/HeroVisual.astro';
+import HomeContinue from '../components/react/HomeContinue';
+import {
+  ARTICLES_HREF,
+  CAPABILITIES,
+  FEATURED_ARTICLE_IDS,
+  GOAL_CHOICES,
+  HERO_GLOSS,
+  HERO_HEADLINE_LINES,
+  HERO_LEAD,
+  HERO_SUB,
+  HOME_DESCRIPTION,
+  HOME_TOOLS,
+  PRIMARY_CTA_HREF,
+  PRIMARY_CTA_LABEL,
+  PRIMARY_CTA_NOTE,
+  PROGRAM_ENTRIES,
+  PROGRAM_LIBRARY_HREF,
+  TOOLS_HREF,
+} from '../config/home';
+import { CATEGORIES, type CategoryKey } from '../config/site';
+import { findArticle, getPublishedArticles } from '../lib/articles';
+import { startHrefForGoal } from '../lib/home/goals';
 import { url } from '../lib/url';
-import '../styles/app-shell.css';
 import '../styles/home.css';
 
 /*
- * トップページ。
+ * Public Home v1。
  *
- * 初回の人に見せる内容は、すべて静的HTMLとして出す。
- * JavaScriptが動かなくても、ヒーローと入口はそのまま読める。
+ * この画面が答えるのは3つだけ。
+ *   1. 何のサイトか（5秒）
+ *   2. 何ができるか（10秒）
+ *   3. 次にどこへ行けばいいか
  *
- * 保存済みデータがある人のヒーローだけを、React側で差し替える。
- * 状態の判定は src/lib/home/state.ts が一箇所で持っている。
+ * 【Todayを主役にしない】
+ * 以前のHomeは、保存済みの人には今日のメニューを出し、初回の人向けの説明を隠していた。
+ * その結果、はじめて来た人が何のサイトか分からなかった。いまはHomeを公開ページに固定し、
+ * 保存済みの人には「続きから」の小さな案内だけを足す。ベンチの重量はHomeの主役にしない。
+ *
+ * 【JavaScriptが動かなくても読める】
+ * ヒーローも本文の区画も、すべて静的HTML。Reactの島は「続きから」の案内だけで、
+ * それが出なくても、ページの意味は変わらない。
+ *
+ * 文言・リンク先・出す記事は src/config/home.ts に集めてある。
  */
+
+const articles = await getPublishedArticles();
+// 設定に書いた記事が消えていた場合は、その1件だけ出さない（ページは壊さない）。
+const featured = FEATURED_ARTICLE_IDS.map((id) => findArticle(articles, id)).filter(
+  (article): article is NonNullable<typeof article> => article != null,
+);
 ---
 
-<BaseLayout>
+<BaseLayout description={HOME_DESCRIPTION}>
   {/*
-    保存済みデータが「あるかどうか」だけを、描画前に確かめる。
-    これは状態の判定ではなく、初回向けの内容を一瞬見せてしまうのを防ぐための目印。
-    A / B / C / D の区別は resolveHomeState だけが決める。
+    保存済みデータが「あるかどうか」だけを描画前に確かめる。
+    これは状態の判定ではなく、「続きから」の場所を先に空けておくための目印。
+    どの状態かは resolveHomeState だけが決める。
     テーマのちらつき対策と同じく、head内で同期的に実行する必要がある。
+
+    あわせて、区画の出現アニメーションを使ってよいかもここで決める。
+    JSが無い・動きを減らす設定の端末では最初から見えたままにする。
+    2秒たっても本体のスクリプトが動かなければ、目印を外して必ず見えるようにする。
   */}
   <script is:inline slot="head">
     (function () {
+      var root = document.documentElement;
       try {
         var hasData = localStorage.getItem('bodymakers:data:v1') !== null;
         var hasDraft = localStorage.getItem('bodymakers:diagnosis:draft:v1') !== null;
-        if (hasData || hasDraft) document.documentElement.dataset.homeKnown = '1';
+        if (hasData || hasDraft) root.dataset.homeKnown = '1';
       } catch (error) {
-        // localStorage が使えない環境では、初回の人と同じ表示にする
+        // localStorage が使えない環境では、はじめて来た人と同じ表示にする
+      }
+      try {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reduce && 'IntersectionObserver' in window) {
+          root.dataset.homeReveal = '1';
+          setTimeout(function () {
+            if (root.dataset.homeRevealReady !== '1') delete root.dataset.homeReveal;
+          }, 2000);
+        }
+      } catch (error) {
+        // 判定できなければ動かさない。内容が見えることを優先する。
       }
     })();
   </script>
 
-  <div class="container home-page">
-    <section id="hero" class="home-hero-region">
-      {/* 保存済みデータがある人のヒーロー。状態が決まるまでは何も描かない。 */}
-      <HomeHero client:load />
-
-      {/* 初回の人のヒーロー。JSなしでもここが出る。 */}
-      <div class="home-hero home-hero--intro">
-        <h1>今日やることが決まる、身体づくり。</h1>
-        <p class="home-hero__sub">
-          身長・体重・目的・トレーニング歴から、あなた専用の計画をつくります。今日のメニューと食事の目安まで、毎日決まります。
-        </p>
-        <a class="button button--lg" href={url('/start')} data-home-cta="hero">3分でプランをつくる</a>
-        <p class="home-hero__micro">診断3分 ・ 無料 ・ 会員登録なし</p>
-        <a class="home-hero__secondary" href="#deliverables">できるプランの例を見る →</a>
-      </div>
-
-      {/* Todayの実物に合わせた表示例。数字は例であることを明記する。 */}
-      <div class="home-mock" aria-label="Todayの表示例">
-        <div class="home-mock__frame">
-          <p class="home-mock__date">10月14日 (火)</p>
-          <p class="home-mock__session">上半身プッシュ / 45分</p>
-          <ul class="home-mock__list">
-            <li><span>ベンチプレス</span><strong>47.5kg</strong><small>5セット × 5回</small></li>
-            <li><span>ダンベルショルダープレス</span><strong>12kg</strong><small>3セット × 10回</small></li>
-          </ul>
-          <div class="home-mock__nutrition">
-            <span>今日の目安</span>
-            <strong>2,340kcal ／ たんぱく質 128g</strong>
+  <div class="home-page">
+    <!-- ============================================================
+         1. ヒーロー
+         何のサイトか・何ができるか・「カライイ」の意味まで、ここで完結させる。
+         ============================================================ -->
+    <section class="home-hero" aria-labelledby="home-headline">
+      <div class="container home-hero__inner">
+        <div class="home-hero__copy">
+          {/* サイト名はヘッダーが常に出している。ここで繰り返すと同じ語が二度並ぶので置かない。 */}
+          <h1 class="home-hero__headline" id="home-headline" data-reveal>
+            {HERO_HEADLINE_LINES.map((line) => <span>{line}</span>)}
+          </h1>
+          <p class="home-hero__gloss" data-reveal style="--reveal-delay:140ms">{HERO_GLOSS}</p>
+          <p class="home-hero__sub" data-reveal style="--reveal-delay:200ms">{HERO_SUB}</p>
+          <p class="home-hero__lead" data-reveal style="--reveal-delay:240ms">{HERO_LEAD}</p>
+          <div class="home-hero__actions" data-reveal style="--reveal-delay:300ms">
+            <a class="home-cta home-cta--lg home-cta--on-navy" href={url(PRIMARY_CTA_HREF)} data-home-cta="hero">
+              {PRIMARY_CTA_LABEL}
+            </a>
+            <p class="home-hero__note">{PRIMARY_CTA_NOTE}</p>
           </div>
-          <span class="home-mock__cta">はじめる</span>
         </div>
-        <p class="home-mock__note">表示例です。実際の数値は診断の内容から計算されます。</p>
+
+        <div class="home-hero__visual" data-reveal style="--reveal-delay:200ms">
+          <HeroVisual />
+        </div>
       </div>
     </section>
 
-    <section id="personalization" class="home-section">
-      <h2>同じメニューを、全員に配りません。</h2>
-      <p>
-        なりたい身体、性別、年齢、身長と体重、トレーニング歴、週に何日できるか、1回にかけられる時間、
-        場所、いまの重量、ふだんの食事、睡眠、活動量、飲酒、喫煙、ストレス、痛みの有無。
-        この内容から、あなたの計画をつくります。
-      </p>
-      <p class="home-section__note">
-        1問1画面で、選ぶと自動で次に進みます。途中でやめても、続きから再開できます。
-      </p>
-    </section>
+    <!-- ============================================================
+         2. 続きから（保存済みの人だけ）
+         Todayの再現はしない。「続きがある」ことだけを小さく置く。
+         ============================================================ -->
+    <div class="container home-continue-slot">
+      <HomeContinue client:load />
+    </div>
 
-    <section id="deliverables" class="home-section">
-      <h2>計画が出て、今日やることが出て、記録が残ります。</h2>
-      <ol class="home-deliverables">
-        <li>
-          <span>01</span>
-          <strong>Personal Plan</strong>
-          <p>週に何回、何を、どのくらいやるか。目標までの道筋が出ます。</p>
-        </li>
-        <li>
-          <span>02</span>
-          <strong>Today</strong>
-          <p>今日のメニューと食事の目安。開いた時点で決まっています。</p>
-        </li>
-        <li>
-          <span>03</span>
-          <strong>Record</strong>
-          <p>トレーニングと食事、身体の記録を残せます。</p>
-        </li>
-      </ol>
-    </section>
+    <div class="container home-page__body">
+      <!-- ============================================================
+           3. Bodymakersでできること
+           ============================================================ -->
+      <section class="home-section" id="can-do" aria-labelledby="can-do-title">
+        <h2 id="can-do-title" data-reveal>Bodymakersでできること</h2>
+        <ul class="home-can">
+          {CAPABILITIES.map((item, index) => (
+            <li data-reveal style={`--reveal-delay:${index * 90}ms`}>
+              <span class="home-can__icon" aria-hidden="true">
+                {item.code === 'TRAINING' && (
+                  <svg viewBox="0 0 32 32"><path d="M6 12v8M11 9v14M21 9v14M26 12v8M11 16h10" /></svg>
+                )}
+                {item.code === 'NUTRITION' && (
+                  <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" /><path d="M16 6v10l7 7" /></svg>
+                )}
+                {item.code === 'RECORD' && (
+                  <svg viewBox="0 0 32 32"><path d="M7 10h8M7 16h8M7 22h6M20 15l3 3 6-7" /></svg>
+                )}
+                {item.code === 'PROGRESS' && (
+                  <svg viewBox="0 0 32 32"><path d="M5 24l7-7 5 4 10-11" /><path d="M27 10h-6M27 10v6" /></svg>
+                )}
+              </span>
+              <strong>{item.title}</strong>
+              <p>{item.text}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-    <section id="loop" class="home-section">
-      <h2>1回きりの診断で終わらせません。</h2>
-      <p>
-        プランに沿って今日やることが出て、終わったら記録する。
-        その繰り返しで、トレーニングと身体の記録が積み上がっていきます。
-      </p>
-      <ol class="home-loop" aria-label="診断 → プラン → 今日 → 記録">
-        <li>診断</li>
-        <li>プラン</li>
-        <li>今日</li>
-        <li>記録</li>
-      </ol>
-      <p class="home-section__note">プログラムに沿って、週ごとに負荷が上がっていきます。</p>
-    </section>
+      <!-- ============================================================
+           4. どんな身体になりたい？ → 診断
+           選んだ目標は ?goal= で診断へ渡す。値の検証は src/lib/home/goals.ts。
+           ============================================================ -->
+      <section class="home-section" id="goal" aria-labelledby="goal-title">
+        <h2 id="goal-title" data-reveal>どんな身体になりたい？</h2>
+        <p class="home-section__lead" data-reveal>
+          近いものを選ぶと、その目標から診断が始まります。あとから変えられます。
+        </p>
+        <ul class="home-goals">
+          {GOAL_CHOICES.map((choice, index) => (
+            <li data-reveal style={`--reveal-delay:${index * 80}ms`}>
+              <a href={url(startHrefForGoal(PRIMARY_CTA_HREF, choice.goal))} data-home-goal={choice.goal}>
+                <strong>{choice.label}</strong>
+                <small>{choice.text}</small>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="home-section__note">
+          決まっていなくても大丈夫です。
+          <a href={url(PRIMARY_CTA_HREF)}>そのまま診断をはじめる →</a>
+        </p>
+      </section>
 
-    <section id="evidence" class="home-section">
-      <h2>数字の出どころを、はっきりさせています。</h2>
-      <dl class="home-evidence">
-        <div>
-          <dt>筋力の目安</dt>
-          <dd>
-            公式競技会の記録387,265人分（男性262,191人・女性125,074人）。
-            出典は OpenPowerlifting で、データはパブリックドメインとして公開されています。
-          </dd>
-        </div>
-        <div>
-          <dt>食事の目安</dt>
-          <dd>
-            栄養成分は日本食品標準成分表（八訂）増補2023年。
-            1日の基準値は厚生労働省「日本人の食事摂取基準（2025年版）」を使っています。
-          </dd>
-        </div>
-        <div>
-          <dt>プログラムの組み方</dt>
-          <dd>
-            線形進歩、上半身・下半身の分割、Push / Pull / Legs など、
-            広く知られた組み方をBodymakersの構成として実装しています。
-            有料テンプレートの複製は含みません。
-          </dd>
-        </div>
-      </dl>
-      <p class="home-section__note">
-        This page uses data from the OpenPowerlifting project, https://www.openpowerlifting.org.
-      </p>
-    </section>
+      <!-- ============================================================
+           5. 読む（記事）
+           集客と収益の柱なので、Homeから直接入れるようにしておく。
+           ============================================================ -->
+      <section class="home-section" id="learn" aria-labelledby="learn-title">
+        <h2 id="learn-title" data-reveal>身体づくりを、ちゃんと知る。</h2>
+        <ul class="home-articles">
+          {featured.map((article, index) => (
+            <li data-reveal style={`--reveal-delay:${index * 70}ms`}>
+              <a href={url(`/articles/${article.id}`)}>
+                <span class="home-articles__tag">
+                  {CATEGORIES[article.data.category as CategoryKey].label}
+                </span>
+                <strong>{article.data.title}</strong>
+                <p>{article.data.description}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a class="home-more" href={url(ARTICLES_HREF)}>記事をもっと読む<span aria-hidden="true"> →</span></a>
+      </section>
 
-    <section id="who" class="home-section">
-      <h2>こんな状態からで大丈夫です。</h2>
-      <ul class="home-who">
-        <li>はじめてで、何をすればいいか分からない</li>
-        <li>自己流でやってきたが、伸び悩んでいる</li>
-        <li>減量したいが、食事の基準が分からない</li>
-      </ul>
-    </section>
+      <!-- ============================================================
+           6. ツール
+           ============================================================ -->
+      <section class="home-section" id="tools" aria-labelledby="tools-title">
+        <h2 id="tools-title" data-reveal>無料で使える身体づくりツール</h2>
+        <p class="home-section__lead" data-reveal>登録なしで、その場で計算できます。</p>
+        <ul class="home-links">
+          {HOME_TOOLS.map((tool, index) => (
+            <li data-reveal style={`--reveal-delay:${index * 70}ms`}>
+              <a href={url(tool.href)}>
+                <strong>{tool.label}</strong>
+                <small>{tool.text}</small>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a class="home-more" href={url(TOOLS_HREF)}>ツールをすべて見る<span aria-hidden="true"> →</span></a>
+      </section>
 
-    <section id="cta-final" class="home-section home-section--cta">
-      <h2>まずは3分。今日やることまで出ます。</h2>
-      <a class="button button--lg" href={url('/start')} data-home-cta="final">3分でプランをつくる</a>
-      <p class="home-hero__micro">無料 ／ 会員登録なし ／ 途中でやめても続きから</p>
-      <p class="home-section__note">記録はこの端末に保存されます。</p>
+      <!-- ============================================================
+           7. プログラム
+           中身はProgram Libraryの担当。ここは入口だけ。
+           ============================================================ -->
+      <section class="home-section" id="programs" aria-labelledby="programs-title">
+        <h2 id="programs-title" data-reveal>自分に合う筋トレメニューを探す。</h2>
+        <ul class="home-links">
+          {PROGRAM_ENTRIES.map((entry, index) => (
+            <li data-reveal style={`--reveal-delay:${index * 70}ms`}>
+              <a href={url(entry.href)}>
+                <strong>{entry.label}</strong>
+                <small>{entry.text}</small>
+                <span aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a class="home-more" href={url(PROGRAM_LIBRARY_HREF)}>
+          プログラムを見る<span aria-hidden="true"> →</span>
+        </a>
+      </section>
+    </div>
+
+    <!-- ============================================================
+         8. 最後の入口
+         ============================================================ -->
+    <section class="home-final" aria-labelledby="final-title">
+      <div class="container home-final__inner">
+        <h2 id="final-title" data-reveal>考える時間を減らして、身体をつくる。</h2>
+        <p data-reveal style="--reveal-delay:80ms">目標・身体・記録から、今日やることをひとつに。</p>
+        <a
+          class="home-cta home-cta--lg home-cta--on-navy"
+          href={url(PRIMARY_CTA_HREF)}
+          data-home-cta="final"
+          data-reveal
+          style="--reveal-delay:140ms"
+        >
+          {PRIMARY_CTA_LABEL}
+        </a>
+        <p class="home-final__note" data-reveal style="--reveal-delay:180ms">
+          {PRIMARY_CTA_NOTE} ／ 記録はこの端末に保存されます
+        </p>
+        {/* 保存済みの人にだけ出す。CSSで出し分けるので、JSが無ければ出ない。 */}
+        <a class="home-final__continue" href={url('/tools/today')} data-home-continue>
+          Personalの続きへ<span aria-hidden="true"> →</span>
+        </a>
+      </div>
     </section>
   </div>
+
+  {/*
+    区画が画面に入ったところで出す。ライブラリは足さない。
+    head側で data-home-reveal が付いていないとき（JSなし・動きを減らす設定）は
+    最初から見えているので、ここは何もしない。
+  */}
+  <script is:inline>
+    (function () {
+      var root = document.documentElement;
+      if (root.dataset.homeReveal !== '1') return;
+      root.dataset.homeRevealReady = '1';
+      var targets = document.querySelectorAll('[data-reveal]');
+      function showAll() {
+        for (var i = 0; i < targets.length; i += 1) targets[i].classList.add('is-in');
+      }
+      try {
+        var observer = new IntersectionObserver(function () {
+          sweep();
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 });
+        for (var i = 0; i < targets.length; i += 1) observer.observe(targets[i]);
+        sweep();
+      } catch (error) {
+        // 監視できない環境では、隠したままにせず全部出す。
+        showAll();
+      }
+
+      /*
+       * 画面より上に来ているものを、まとめて出す。
+       *
+       * IntersectionObserver は、勢いよくスクロールして1フレームで通り過ぎた要素に
+       * ついては通知が来ないことがある。そのまま何もしないと、その区画だけ
+       * 見えないまま残ってしまう。監視の通知が来たときに毎回この掃除をすれば、
+       * 通り過ぎた分もそこで出る。
+       */
+      function sweep() {
+        var limit = window.innerHeight * 0.92;
+        for (var i = 0; i < targets.length; i += 1) {
+          var el = targets[i];
+          if (el.classList.contains('is-in')) continue;
+          if (el.getBoundingClientRect().top < limit) {
+            el.classList.add('is-in');
+            observer.unobserve(el);
+          }
+        }
+      }
+    })();
+  </script>
 </BaseLayout>

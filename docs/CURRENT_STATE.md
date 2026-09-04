@@ -1,6 +1,6 @@
 # Current state
 
-- Last verified: 2026-09-02
+- Last verified: 2026-09-04
 - Repository: `setsunafseiei2307/Bodymakers`
 - Production: <https://bodymakers.shushushu1990.workers.dev/>
 - Production Worker: `bodymakers`
@@ -40,31 +40,55 @@ No new key was added for either adaptive loop. `bodymakers:data:v1` gained `trai
 
 All user data remains in the browser unless a future product explicitly adds consented sync.
 
-## Home (`/`)
+## Home (`/`) — Public Home v1
+- Home is a **public page**, not a personal screen. It shows the same brand, explanation, and entry points to a first-time visitor and to someone who already saved a Plan. Today never takes over `/`.
 - Home is **read-only**. It never writes to localStorage and defines no storage key of its own. It reads `bodymakers:data:v1` and `bodymakers:diagnosis:draft:v1` only.
-- STATE is decided in exactly one place, `src/lib/home/state.ts` (`resolveHomeState`):
-  - `A` no plan, no diagnosis draft
-  - `B` no plan, diagnosis draft present
-  - `C` plan present, no activity in the last 7 days
-  - `D1` plan present, active in the last 7 days, nothing recorded today
-  - `D2` plan present, active in the last 7 days, already recorded today
-  - Any parse failure or unexpected shape falls back to `A`.
-- "Plan present" means a saved Personal Plan **or** an active Program. A user running a Program has not been shown the first-time explanation.
-- Recent activity and today's activity come from `src/lib/activity/` (`weeklyProgress`, `summarizeActivity`). Home does not define what an active day is.
-- `src/lib/todayAction.ts` stays separate: it answers "what is the single next action inside Today", which is about session progression. Home answers "which entry point to show". The only shared concept is "has a plan"; the activity test is shared through `src/lib/activity/`.
-- Sections by state: `A`/`B` show everything; `C` shows hero, loop, evidence, and the final CTA; `D1`/`D2` show the hero only.
-- Streak, today's progress, and the weekly summary are implemented and stay on Today and `/record/`. They are deliberately **not** shown on Home, so the same numbers do not appear on two screens. This is a placement decision, not a missing feature.
+- Sections, in order: hero → continuation (saved users only) → できること (4) → どんな身体になりたい？(4 goals) → 記事 (4) → ツール (4) → プログラム (3) → final CTA. Every section is static HTML and is shown in every state.
+- Wording, links, and the featured article ids live in `src/config/home.ts`. Editing copy or swapping a tool/article does not require touching the page or the stylesheet.
+- Brand line: 「カライイは、つくれる。」. 「カライイ」 is a coined word, so the gloss 「カライイ = カッコいい体 × 調子のいい身体」 is rendered directly under the headline and is never used alone.
+- Primary CTA is 「30秒で自分向けPlanを見る」 → `/start`, repeated in the hero and the final band. 「無料・登録不要」 sits under both.
+
+### What the state still decides
+- `resolveHomeState` (`src/lib/home/state.ts`) is unchanged and still returns `A` / `B` / `C` / `D1` / `D2`. What changed is what it is used for: it no longer hides sections. It only decides the small continuation notice.
+  - Plan or active Program (`C` / `D1` / `D2`) → a small 「続きから」 card and a 「Personalの続きへ」 link in the final band.
+  - Diagnosis draft only (`B`) → 「診断の続きから」 with 「n問目 / 全m問」.
+  - `A` → nothing extra.
+- `buildContinueCard` (`src/lib/home/continue.ts`) decides what that card says. It shows `Week N / Day M` from `ActiveProgram` and nothing else. **No weight, kcal, or completion rate is repeated on Home** — that stays in Today and `/record/`. A test asserts the card text contains no `kg` / `kcal` / `%`.
+- `showsMarketingSections` and `showsLoopAndEvidence` were removed; nothing decides section visibility any more.
+
+### Hero image
+- `HERO_IMAGE` in `src/config/home.ts` is `null`, so `src/components/home/HeroVisual.astro` renders a CSS-only phone showing an example Today screen, labelled as 表示例.
+- Setting `HERO_IMAGE` to `{ src, alt }` swaps in a photo. No other file changes. Pick an image without baked-in text: the headline and CTA are already in the HTML.
+
+### Goal handoff to the diagnosis
+- The four goal cards link to `/start?goal=<GoalId>`. `parseGoalParam` (`src/lib/home/goals.ts`) is the only place a query value becomes a `GoalId`; anything outside `GOAL_IDS` is ignored.
+- `Onboarding` applies it **only when there is neither a saved Plan nor a draft**. Someone reviewing their previous answers can never have their goal rewritten by a URL. Question order, progression, and plan building are unchanged — only the first question's initial value is set.
+
+### Motion
+- CSS plus one `IntersectionObserver`. No animation library.
+- `data-home-reveal` is set in `<head>` only when `IntersectionObserver` exists and `prefers-reduced-motion` is not `reduce`. Without it, everything is visible from the first paint, so no-JS and reduced-motion visitors see the full page.
+- The observer callback sweeps every remaining target instead of trusting one entry, because a fast scroll can skip an element's intersection notification entirely.
+- A 2-second failsafe in `<head>` clears `data-home-reveal` if the body script never ran, so content can never stay invisible.
 
 ### First paint
-- The first-time hero and all body sections are static HTML in `src/pages/index.astro` and need no JavaScript.
-- A synchronous inline script in `<head>` sets `data-home-known="1"` when either storage key exists. This is a presence check only — it carries no STATE meaning — and exists so returning visitors do not see the first-time hero flash before hydration. The same pattern is already used for the theme FOUC guard.
-- `HomeHero` (`client:load`) resolves the real STATE and stamps `data-home-state`, which decides the final section visibility.
-- Known trade-off: a visitor who has `bodymakers:data:v1` but no plan and no draft resolves to `A`, so the body sections appear after hydration rather than before. Content is added rather than removed, so nothing collapses. Needs a look on a real device.
+- Everything except the continuation notice is static HTML and needs no JavaScript.
+- A synchronous inline script in `<head>` sets `data-home-known="1"` when either storage key exists. This is a presence check only — it carries no STATE meaning — and is used to reserve the height of the continuation slot so it does not push the page down after hydration. The same pattern is already used for the theme FOUC guard.
+- `HomeContinue` (`client:load`) resolves the real STATE and stamps `data-home-state`, which is what shows 「Personalの続きへ」 in the final band.
+
+### Colour
+- Home does not use `--signal`: that token becomes red in the dark theme. Home's brand colours are `--hm-*`, scoped to `.home-page` in `src/styles/home.css` — Deep Navy, vivid blue (hue kept in 210–220 so it never reads purple), white, ice blue, and a small warm accent on the continuation card.
+- `.home-cta` replaces `.button` on this page for the same reason.
+- Site-wide `h1..h6` are `--ink`; the headings on the navy bands override that explicitly.
 
 ### Not on Home
 - No sticky CTA. `BottomNav` is already `position: fixed` on mobile across every page, so a second fixed bar would sit on top of it.
-- No article list, tool link list, carousel, or card grid in the Home body.
+- No streak, no today's progress, no weekly summary, no session weights. Those stay on Today and `/record/`.
 - No account, login, or cloud sync wording anywhere.
+
+### Verified on a real render
+- Chromium screenshots at 320 / 375 / 390 / 430 / 768 / 1440, light and dark, plus no-JS and `prefers-reduced-motion: reduce`.
+- No horizontal scroll at any width (`scrollWidth === clientWidth`), no link under 44px tall, and no element left at `opacity: 0` after scrolling.
+- Checked with a saved `activeProgram`: STATE `C`, the public hero is still the hero, and the continuation card reads `Week 1 / Day 2`.
 
 ## Training Adaptive Loop
 ### What is stored
@@ -153,22 +177,22 @@ A day counts as recorded only when it is marked complete **and** actually contai
 
 ## Claims used in Home copy (verified in this repo)
 Only these were written into the page. Anything not verifiable was left out.
-- Strength figures: 387,265 lifters = 262,191 male + 125,074 female, from `STRENGTH_STANDARDS.totalLifters` in `src/lib/strength/standardsData.ts`. Source OpenPowerlifting, public domain, attribution string from `STANDARDS_SOURCE.attribution`.
 - Nutrient values: 日本食品標準成分表（八訂）増補2023年 (`FOOD_SOURCE` in `src/lib/foods.ts`).
 - Daily reference values: 日本人の食事摂取基準（2025年版）, 厚生労働省 (`NUTRITION_REFERENCE_SOURCE`).
-- Programs: linear progression, upper/lower, PPL and similar named構成 exist in `PROGRAM_LIBRARY`; no paid template is copied.
-- Today does show a kcal and protein target, so the Home mock includes that line.
+- Strength figures: 387,265 lifters, from `STRENGTH_STANDARDS.totalLifters` in `src/lib/strength/standardsData.ts`. Source OpenPowerlifting, public domain. Public Home v1 links to 筋力レベル診断 but does not repeat the figure; the number and the attribution live on `/strength-standards/`.
+- Programs: linear progression, upper/lower, PPL and similar named構成 exist in `PROGRAM_LIBRARY`; no paid template is copied. Home's three program entries (初心者向け / 筋肥大 / 筋力アップ) all link to the existing `/tools/programs`.
+- Today does show a kcal and protein target, so the hero's example screen includes that line. It is labelled 表示例 and the numbers are not read from any record.
 - Diagnosis draft can report "n問目 / 全m問" via `questionProgress`.
 
 ### Deliberately absent from Home copy
 - "やったことが、翌週の内容に反映されます。" — `buildPersonalPlan` never reads `dailyLogs`, so recorded work does not change next week's menu.
 - "体重が思ったように動かなければ、食事の目安が変わります。" — nutrition targets come from the diagnosis-time `input.body`, not from logged weight.
 - "重量が上がれば、次回の提示重量も上がります。" — `ActiveProgram.trainingMaxes` is fixed when the program starts; `advanceActiveProgram` never updates it from records.
-- Instead Home says only "プログラムに沿って、週ごとに負荷が上がっていきます。", which the generated week-by-week sessions do support.
 
 ## Analytics
 - No vendor, no SDK, no snippet. `src/lib/analytics.ts` exposes a single `track()` that is a deliberate no-op, plus the event names and properties as types.
-- Fired on Home now: `home_view`, `hero_cta_click` (`position: hero | final`), `hero_secondary_click`, `draft_resume_click`, each carrying `state`.
+- Fired on Home now: `home_view`, `hero_cta_click` (`position: hero | final`), `goal_select` (carrying the chosen `goal`), `continue_click`, `draft_resume_click`, each carrying `state`. `hero_secondary_click` is still declared but no longer fired — Public Home v1 has no secondary hero link.
+- `goal` is one of the five `GoalId` values. It records which button was pressed, not anything about the visitor's body.
 - Reserved as types only, not fired: `quiz_start`, `quiz_question_view`, `quiz_abandon`, `quiz_complete`, `plan_view`, `today_start`, `today_complete`.
 - No `position: sticky` value exists, because there is no sticky CTA.
 - No personal data is ever passed to `track()`.

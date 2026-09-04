@@ -4,6 +4,13 @@
  * Homeは読むだけの画面にする。ここでもコンポーネント側でも、
  * localStorageへの書き込みはしない。Home専用の保存キーも作らない。
  *
+ * 【Public Home v1 での役割の変更】
+ * 以前は、この状態でHomeの区画そのものを出し分けていた（保存済みの人には
+ * ヒーローだけを出す、など）。いまはHomeを「はじめて来た人にも、続けている人にも
+ * 同じ入口として見せる公開ページ」にしたので、区画は状態によらず常に出る。
+ * この状態が決めるのは、Homeの中に小さく足す案内
+ * （診断の続き / Personalの続き）だけ。TodayでHomeを乗っ取らない。
+ *
  * 「直近7日に活動があったか」「今日はもう記録したか」は、
  * すでに src/lib/activity/ が持っている定義をそのまま使う。
  * Homeのためだけに活動日の定義を作り直さない。
@@ -123,13 +130,4 @@ export function readHomeState(now = new Date()): HomeState {
   } catch {
     return FALLBACK_HOME_STATE;
   }
-}
-
-/** Homeでその区画を出すか。STATE_Cは絞り、STATE_Dはヒーローだけにする。 */
-export function showsMarketingSections(state: HomeStateId): boolean {
-  return state === 'A' || state === 'B';
-}
-
-export function showsLoopAndEvidence(state: HomeStateId): boolean {
-  return state === 'A' || state === 'B' || state === 'C';
 }

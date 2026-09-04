@@ -1,0 +1,67 @@
+---
+/**
+ * ヒーローの絵。
+ *
+ * 【差し替え前提の作りにしてある理由】
+ * 本採用の写真がまだ決まっていない。決まるまでヒーローを止めないために、
+ * 画像が無いときはCSSだけで組んだ画面の実物（スマホの表示例）を出す。
+ *
+ * 画像を使うときは src/config/home.ts の HERO_IMAGE を書き換えるだけでよい。
+ * このファイルもindex.astroも触らなくてよい。
+ *
+ * 表示例の数字は実在の記録ではないので、必ずその旨を添える。
+ * スクリーンリーダーには読ませない（見た目の説明であって、本文ではない）。
+ */
+import { HERO_IMAGE } from '../../config/home';
+import { url } from '../../lib/url';
+---
+
+{HERO_IMAGE != null ? (
+  <figure class="hero-visual hero-visual--photo">
+    <img src={url(HERO_IMAGE.src)} alt={HERO_IMAGE.alt} width="800" height="1000" loading="eager" decoding="async" />
+  </figure>
+) : (
+  <div class="hero-visual hero-visual--mock">
+    <div class="hero-phone" aria-hidden="true">
+      <div class="hero-phone__screen">
+        <p class="hero-phone__day">Today<span>5月20日 (火)</span></p>
+
+        <div class="hero-phone__card hero-phone__card--training">
+          <p class="hero-phone__label">トレーニング</p>
+          <p class="hero-phone__name">ベンチプレス</p>
+          <p class="hero-phone__value num">90<small>kg</small> × 5 × 3</p>
+        </div>
+
+        <div class="hero-phone__card">
+          <p class="hero-phone__label">体重</p>
+          <p class="hero-phone__value num">72.4<small>kg</small></p>
+          <p class="hero-phone__delta num">−0.6kg（前回比）</p>
+          <svg class="hero-phone__spark" viewBox="0 0 120 32" preserveAspectRatio="none">
+            <polyline points="0,10 15,14 30,11 45,18 60,15 75,22 90,19 105,25 120,23" />
+          </svg>
+        </div>
+
+        <div class="hero-phone__card hero-phone__card--nutrition">
+          <p class="hero-phone__label">今日の栄養</p>
+          <div class="hero-phone__nutrition">
+            <div>
+              <p class="hero-phone__value num">2,310<small>kcal</small></p>
+              <ul class="hero-phone__pfc num">
+                <li><span class="is-p"></span>P 180g</li>
+                <li><span class="is-f"></span>F 70g</li>
+                <li><span class="is-c"></span>C 270g</li>
+              </ul>
+            </div>
+            <svg class="hero-phone__donut" viewBox="0 0 42 42">
+              <circle class="is-track" cx="21" cy="21" r="15.9" />
+              <circle class="is-p" cx="21" cy="21" r="15.9" stroke-dasharray="31 69" stroke-dashoffset="0" />
+              <circle class="is-f" cx="21" cy="21" r="15.9" stroke-dasharray="27 73" stroke-dashoffset="-31" />
+              <circle class="is-c" cx="21" cy="21" r="15.9" stroke-dasharray="42 58" stroke-dashoffset="-58" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hero-visual__note">画面は表示例です。数値は診断した内容から計算されます。</p>
+  </div>
+)}

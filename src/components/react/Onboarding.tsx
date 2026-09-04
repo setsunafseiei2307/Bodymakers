@@ -47,6 +47,7 @@ import {
   type Question,
 } from '../../lib/diagnosis/questions';
 import { comparePlanInputs, daysSincePlan, savedAtLabel } from '../../lib/diagnosis/rediagnosis';
+import { parseGoalParam, GOAL_PARAM } from '../../lib/home/goals';
 import type { PersonalPlanInput, SavedPersonalPlan } from '../../lib/diagnosis/types';
 import { readData, savePersonalPlan, type SavedProfile } from '../../lib/storage';
 import type { LiftId } from '../../lib/strength/standards';
@@ -100,6 +101,11 @@ export default function Onboarding() {
   const pushedRef = useRef(0);
   /** 前回のPlanを混ぜない、まっさらな入力。 */
   const freshInputRef = useRef<PersonalPlanInput | null>(null);
+  /**
+   * 保存済みPlanも診断の下書きも無い状態で来たか。
+   * HomeからURLで渡された目標を反映してよいのは、この場合だけ。
+   */
+  const firstVisitRef = useRef(false);
 
   const setInput: typeof setInputState = (value) => {
     touchedRef.current = true;
@@ -137,14 +143,25 @@ export default function Onboarding() {
     } else {
       setInputState(fresh);
     }
+    firstVisitRef.current = data.personalPlan == null && draft == null;
     setReady(true);
   }, []);
 
   useQueryDefaults((params) => {
     const weight = parseNumber(params.get('weight') ?? '');
     const target = parseNumber(params.get('target') ?? '');
+    /*
+     * Homeの「どんな身体になりたい？」から渡ってきた目標。
+     *
+     * 反映するのは、保存済みPlanも下書きも無い人だけ。
+     * 前回の回答を見直しに来た人の目標を、URLで書き換えてしまわないため。
+     * 値は GOAL_IDS にあるものだけを通す（URLは誰でも書き換えられる）。
+     * 質問の並びも進み方も変えていない。最初の質問の初期値が決まるだけ。
+     */
+    const goal = firstVisitRef.current ? parseGoalParam(params.get(GOAL_PARAM)) : null;
     setInputState((current) => ({
       ...current,
+      goal: goal ?? current.goal,
       body: weight != null && weight >= 30 && weight <= 300 ? { ...current.body, weightKg: weight } : current.body,
       targets: target != null && target >= 30 && target <= 300 ? { ...current.targets, weightKg: target } : current.targets,
     }));

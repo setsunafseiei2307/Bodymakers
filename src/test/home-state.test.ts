@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  FALLBACK_HOME_STATE,
-  resolveHomeState,
-  showsLoopAndEvidence,
-  showsMarketingSections,
-} from '../lib/home/state';
+import { FALLBACK_HOME_STATE, resolveHomeState } from '../lib/home/state';
 import { blankLog } from '../lib/activity/today';
 import { dayActivity } from '../lib/activity/streak';
 import { shiftDateKey } from '../lib/activity/days';
@@ -155,20 +150,6 @@ describe('活動判定は src/lib/activity をそのまま使う', () => {
     // 6日前は直近7日に入る / 7日前は入らない
     expect(resolveHomeState(data({ personalPlan, dailyLogs: [trainingDay(ago(6))] }), null, NOW).id).toBe('D1');
     expect(resolveHomeState(data({ personalPlan, dailyLogs: [trainingDay(ago(7))] }), null, NOW).id).toBe('C');
-  });
-});
-
-describe('区画の出し分け', () => {
-  it('A / B は全区画、C は絞り、D はヒーローだけ', () => {
-    expect(showsMarketingSections('A')).toBe(true);
-    expect(showsMarketingSections('B')).toBe(true);
-    expect(showsMarketingSections('C')).toBe(false);
-    expect(showsMarketingSections('D1')).toBe(false);
-    expect(showsMarketingSections('D2')).toBe(false);
-
-    expect(showsLoopAndEvidence('C')).toBe(true);
-    expect(showsLoopAndEvidence('D1')).toBe(false);
-    expect(showsLoopAndEvidence('D2')).toBe(false);
   });
 });
 

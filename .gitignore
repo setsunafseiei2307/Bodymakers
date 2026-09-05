@@ -56,3 +56,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# OpenPowerlifting Phase 0 調査用の生データ（巨大・再取得可能なのでcommitしない）
+scripts/opl-phase0/.cache/

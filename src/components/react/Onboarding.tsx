@@ -397,34 +397,42 @@ export default function Onboarding() {
           <span className="quiz-progress__count">COMPLETE</span>
           <div className="quiz-progress__bar"><span style={{ width: '100%' }} /></div>
         </div>
-        <p className="journey-kicker">YOUR RESULT</p>
-        <h2>いまの位置と、12週間後。</h2>
-        <p className="journey-lead">点数は優劣ではなく、選んだ目標に対して今どこを整えると進みやすいかの目安です。健康状態の判断はしません。</p>
+        {/*
+          結論を先に出す。
+          以前はここから「5つの軸」「TOP3」「ゴールとの差」「NEXT」が
+          カードで積み上がっていた。診断が返すべきは点数の一覧ではなく
+          「自分の場合はどうすればいいか」なので、
+          結論 → まずやること3つ → 次に気になること の順に絞った。
+          軸や差分は details の中に残してある（消してはいない）。
+        */}
+        <p className="journey-kicker">診断結果</p>
+        <h2>{result.phases[0]?.title ?? '土台づくりから'}</h2>
+        <p className="journey-lead">{result.phases[0]?.detail ?? 'まずは続く形を作ります。'}</p>
 
-        <div className="journey-result-map">
-          <div><span>現在</span><strong className="num">{fmt(input.body.weightKg, 1)}kg</strong></div>
+        <div className="quiz-result-headline">
+          <div>
+            <span>いまの体重</span>
+            <strong className="num">{fmt(input.body.weightKg, 1)}kg</strong>
+          </div>
           <span aria-hidden="true">→</span>
-          <div><span>12週間後の目標</span><strong className="num">{targetWeightText}</strong></div>
+          <div>
+            <span>12週間後</span>
+            <strong className="num">{targetWeightText}</strong>
+          </div>
         </div>
 
-        <section className="quiz-result-cards">
-          <article className="quiz-result-card quiz-result-card--training">
-            <span>TRAINING</span>
-            <strong>{input.training.daysPerWeek}日 / 週・{input.training.sessionMinutes}分</strong>
-            <p>{result.workouts.length > 0 ? result.workouts.map((day) => day.label).join('・') : '続けやすい頻度から組み立てます。'}</p>
-          </article>
-          <article className="quiz-result-card quiz-result-card--nutrition">
-            <span>NUTRITION</span>
-            {nutrition
-              ? <><strong className="num">{fmt(nutrition.calories, 0)} kcal / 日</strong><p className="num">P {fmt(nutrition.protein, 0)}g・F {fmt(nutrition.fat, 0)}g・C {fmt(nutrition.carbs, 0)}g</p></>
-              : <><strong>目安をこれから作ります</strong><p>身体の入力がそろうと、1日の目安を出せます。</p></>}
-          </article>
-          <article className="quiz-result-card quiz-result-card--direction">
-            <span>DIRECTION</span>
-            <strong>{result.phases[0]?.title ?? '土台づくりから'}</strong>
-            <p>{result.phases[0]?.detail ?? 'まずは続く形を作ります。'}</p>
-          </article>
-        </section>
+        <dl className="quiz-result-facts">
+          <div>
+            <dt>トレーニング</dt>
+            <dd>{input.training.daysPerWeek}日 / 週・{input.training.sessionMinutes}分</dd>
+          </div>
+          <div>
+            <dt>1日の食事</dt>
+            <dd className="num">
+              {nutrition ? `${fmt(nutrition.calories, 0)} kcal（P ${fmt(nutrition.protein, 0)} / F ${fmt(nutrition.fat, 0)} / C ${fmt(nutrition.carbs, 0)}g）` : '身体の入力がそろうと出せます'}
+            </dd>
+          </div>
+        </dl>
 
         {/* 2回目以降は、前回から何が変わったかを先に見せる。 */}
         {planChanges != null && (
@@ -443,15 +451,51 @@ export default function Onboarding() {
           </section>
         )}
 
-        <section className="journey-panel"><h2>今の5つの軸</h2>{result.diagnosis.axes.map((axis) => <AxisBar key={axis.id} label={axis.label} score={axis.score} reasons={axis.reasons} />)}</section>
-        <section className="journey-panel"><h2>最初に整えるTOP 3</h2><ol className="journey-priorities">{result.diagnosis.priorities.map((item, index) => <li key={item.id}><span>{index + 1}</span><div><strong>{item.title}</strong><p>{item.action}</p><details><summary>なぜ？</summary><p>{item.why}</p></details></div></li>)}</ol></section>
-        {result.diagnosis.gaps.length > 0 && <section className="journey-panel"><h2>ゴールとの差</h2><div className="journey-gaps">{result.diagnosis.gaps.map((gap) => <div key={gap.id}><span>{gap.label}</span><strong>{gap.current} → {gap.target}</strong><small>{gap.difference}</small></div>)}</div></section>}
+        {/* まずやること。最大3つ。ここがこの画面の答え。 */}
+        <section className="quiz-result-todo">
+          <h3>まずやること</h3>
+          <ol>
+            {result.diagnosis.priorities.slice(0, 3).map((item, index) => (
+              <li key={item.id}>
+                <span aria-hidden="true">{index + 1}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.action}</p>
+                  <details><summary>なぜ？</summary><p>{item.why}</p></details>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
 
-        <div className="quiz-result-next">
-          <span>NEXT</span>
-          <strong>{result.diagnosis.priorities[0]?.title ?? '今日から記録をはじめる'}</strong>
-          <p>{result.diagnosis.priorities[0]?.action ?? 'まずは今日の食事とトレーニングを記録してみましょう。'}</p>
-        </div>
+        {/* 点数と差分は、知りたい人だけが開く。結論の邪魔をしない。 */}
+        <details className="ux-details">
+          <summary>いまの5つの軸を見る</summary>
+          <div>
+            {result.diagnosis.axes.map((axis) => (
+              <AxisBar key={axis.id} label={axis.label} score={axis.score} reasons={axis.reasons} />
+            ))}
+            <p className="ux-note">
+              点数は優劣ではなく、選んだ目標に対して今どこを整えると進みやすいかの目安です。
+              健康状態の判断はしません。
+            </p>
+          </div>
+        </details>
+
+        {result.diagnosis.gaps.length > 0 && (
+          <details className="ux-details">
+            <summary>ゴールとの差を見る</summary>
+            <div className="journey-gaps">
+              {result.diagnosis.gaps.map((gap) => (
+                <div key={gap.id}>
+                  <span>{gap.label}</span>
+                  <strong>{gap.current} → {gap.target}</strong>
+                  <small>{gap.difference}</small>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
 
         {input.lifestyle.painOrInjury && <p className="note note--warn"><span className="note__title">痛みがある場合</span>無理に負荷を上げないでください。この診断は医療判断を行いません。</p>}
 
@@ -462,12 +506,26 @@ export default function Onboarding() {
           保存すると、この端末にPlanが残ります。今日やることはTodayに毎日出ます。
         </p>
         {saveMessage && <p className="tool__status" role="status">{saveMessage}</p>}
-        <p className="next">
-          <a href={url('/tools/one-rep-max')}>1RMを詳しく計算する →</a>
-          <a href={url('/strength-standards')}>競技リフター基準で診断する →</a>
-          <a href={url('/tools/programs')}>Programを選ぶ →</a>
-          <a href={url('/tools/today')}>今日の記録を見る →</a>
-        </p>
+        {/* 次に気になること。記事・ツールと同じ見た目で1列にする。 */}
+        <section className="ux-suggest quiz-result-suggest">
+          <h3>次に気になること</h3>
+          <ul>
+            {[
+              { label: '自分に合うプログラムを選ぶ', href: '/tools/programs', mark: '計' },
+              { label: '同じ体格の中でどのくらい強い？', href: '/strength-standards', mark: '計' },
+              { label: '1日の食事の目安を細かく出す', href: '/tools/nutrition', mark: '計' },
+              { label: '最初の1か月に何をやるか読む', href: '/articles/beginner-first-month', mark: '読' },
+            ].map((item) => (
+              <li key={item.href}>
+                <a href={url(item.href)}>
+                  <span className="ux-suggest__type" aria-hidden="true">{item.mark}</span>
+                  <span className="ux-suggest__label">{item.label}</span>
+                  <span className="ux-suggest__arrow" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
         <button type="button" className="journey-back-link" onClick={goBack}>← 回答を見直す</button>
       </section>
     );

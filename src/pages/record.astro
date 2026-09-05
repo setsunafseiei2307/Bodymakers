@@ -2,10 +2,19 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RecordDashboard from '../components/react/RecordDashboard';
 import '../styles/app-shell.css';
+import '../styles/ux.css';
+
+/*
+ * 記録。
+ *
+ * 個人の記録画面なので検索結果には出さない。
+ * 見出しはコンポーネント側が持つ（記録が無い人には別の文面を出すため）。
+ */
 
 const title = '記録';
-const description = '今週の食事・トレーニング・睡眠・体重の記録を、端末内のBodymakersデータからひとつにまとめます。';
+const description = 'これまでの食事・トレーニング・睡眠・体重の記録を、端末内のBodymakersデータからまとめます。';
 ---
-<BaseLayout title={title} description={description}>
-  <main class="container app-page"><RecordDashboard client:load /></main>
+
+<BaseLayout title={title} description={description} noindex>
+  <main class="container ux-page"><RecordDashboard client:load /></main>
 </BaseLayout>

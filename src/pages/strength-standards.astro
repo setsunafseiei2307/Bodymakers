@@ -4,12 +4,13 @@ import StrengthForm from '../components/react/StrengthForm';
 import { STRENGTH_STANDARDS } from '../lib/strength/standardsData';
 import { LEVELS, STANDARDS_SOURCE } from '../lib/strength/standards';
 import { getPublishedArticles } from '../lib/articles';
-import ArticleCard from '../components/ArticleCard.astro';
+import Suggestions from '../components/Suggestions.astro';
+import { suggestionsForTool } from '../lib/suggestions';
 import '../styles/tools.css';
 import '../styles/strength.css';
+import '../styles/ux.css';
 import AdSlot from '../components/AdSlot.astro';
 import { url } from '../lib/url';
-import ToolArticles from '../components/ToolArticles.astro';
 
 const totalLifters =
   STRENGTH_STANDARDS.totalLifters.M + STRENGTH_STANDARDS.totalLifters.F;
@@ -20,8 +21,10 @@ const description =
   Math.floor(totalLifters / 10000) +
   '万件が基準。登録不要・データ保存なし。';
 
-// 診断後の回遊先として最新記事を出す
-const articles = (await getPublishedArticles()).slice(0, 3);
+// 診断のあとに出す「次に気になること」。記事一覧を貼るのではなく、
+// 1RM計算・プログラム・解説記事を1つの列にまとめる。
+const articleIds = new Set((await getPublishedArticles()).map((article) => article.id));
+const suggestions = suggestionsForTool('strength', articleIds);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -96,33 +99,25 @@ const articles = (await getPublishedArticles()).slice(0, 3);
         </section>
 
         {/* 広告枠（サイドバー）。960px以上でのみ表示される。 */}
-        <ToolArticles toolKey="strength" />
-
         <AdSlot id="sidebar" variant="sidebar" />
       </aside>
     </div>
 
-    {
-      articles.length > 0 && (
-        <section class="page__related">
-          <div class="section-head">
-            <h2>関連する記事</h2>
-            <a href={url('/articles')}>記事一覧へ</a>
-          </div>
-          <div class="card-grid">
-            {articles.map((article) => (
-              <ArticleCard article={article} />
-            ))}
-          </div>
-        </section>
-      )
-    }
+    <div class="page__suggest">
+      <Suggestions items={suggestions} />
+    </div>
   </div>
 </BaseLayout>
 
 <style>
   .page {
     padding-block: var(--s6) var(--s8);
+  }
+
+  /* 診断のあとの導線。カードを並べず、1つの列だけを置く。 */
+  .page__suggest {
+    max-width: 44rem;
+    margin-top: var(--s8);
   }
 
   .page__header {

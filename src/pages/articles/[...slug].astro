@@ -2,49 +2,37 @@
 import { render } from 'astro:content';
 
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
-import {
-  getPublishedArticles,
-  getRelatedArticles,
-  findArticle,
-} from '../../lib/articles';
+import { getPublishedArticles } from '../../lib/articles';
+import { suggestionsForArticle } from '../../lib/suggestions';
 
 /**
  * 記事ページを静的に生成する。
  * src/content/articles/ にファイルを足せば、次のビルドでページが増える。
  * ファイル名（拡張子を除いた部分）がそのままURLになる。
+ *
+ * 記事末に出すのは「次に気になること」1つだけ。
+ * 以前は「次に読む」1件＋「関連記事」3件を別々に組み立てていたが、
+ * 読者から見ればどちらも同じ「次の一手」なので1本にまとめた。
+ * 組み立ては src/lib/suggestions.ts が持つ（記事・ツール・診断を横断する）。
  */
 export async function getStaticPaths() {
   const articles = await getPublishedArticles();
   return Promise.all(
-    articles.map(async (article) => {
-      // 書き手が nextArticle を指定していれば、それを「次に読む」に出す。
-      // 関連記事は自動なので、読む順番を決めたいときはこちらを使う。
-      const next = findArticle(articles, article.data.nextArticle);
-      return {
-        params: { slug: article.id },
-        props: {
-          article,
-          nextArticle: next,
-          // 「次に読む」に出した記事を関連記事にも出すと重複するので除く
-          // 1件多めに取り、「次に読む」に使ったぶんを抜いても3件残るようにする
-          related: (await getRelatedArticles(article, 4))
-            .filter((item) => item.id !== next?.id)
-            .slice(0, 3),
-        },
-      };
-    }),
+    articles.map(async (article) => ({
+      params: { slug: article.id },
+      props: {
+        article,
+        // 本文直後のTool CTAと同じ行き先を二度出さない
+        suggestions: await suggestionsForArticle(article, { excludePrimaryTool: true }),
+      },
+    })),
   );
 }
 
-const { article, related, nextArticle } = Astro.props;
+const { article, suggestions } = Astro.props;
 const { Content, headings } = await render(article);
 ---
 
-<ArticleLayout
-  article={article}
-  related={related}
-  headings={headings}
-  nextArticle={nextArticle}
->
+<ArticleLayout article={article} headings={headings} suggestions={suggestions}>
   <Content />
 </ArticleLayout>

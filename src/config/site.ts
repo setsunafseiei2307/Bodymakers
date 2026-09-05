@@ -41,7 +41,21 @@ export const SEARCH_INDEXING = true;
 export const SITE_LOCALE = 'ja-JP';
 export const SITE_LANG = 'ja';
 
-/** グローバルナビゲーション。診断への導線を最上位に置く。 */
+/**
+ * グローバルナビゲーション。
+ *
+ * 【なぜ Today / Plan / Record / Library をやめたか】
+ * あれは「すでに使っている人の作業画面」の名前で、はじめて来た人には
+ * 何のことか分からない。英語のまま最上位に置くと、初見の人はサイトが
+ * 何をするところなのか読み取れないまま迷う。
+ *
+ * いま最上位に置くのは、初見の人がやりたいことの言葉:
+ *   診断 … 自分向けの答えがほしい
+ *   ツール … いま計算したい
+ *   記事 … 知りたい・調べたい
+ * 個人の記録・Plan・Todayは「マイ」(/personal) の下へまとめる。
+ * URLは一切変えていないので、既存のリンクやブックマークはそのまま動く。
+ */
 export interface NavItem {
   href: string;
   label: string;
@@ -50,11 +64,10 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: '/tools/today', label: 'Today', primary: true },
-  { href: '/plan', label: 'Plan' },
-  { href: '/record', label: 'Record' },
-  { href: '/library', label: 'Library' },
+  { href: '/start', label: '診断', primary: true },
+  { href: '/tools', label: 'ツール' },
   { href: '/articles', label: '記事' },
+  { href: '/personal', label: 'マイ' },
 ] as const;
 
 /** フッターのリンク。 */

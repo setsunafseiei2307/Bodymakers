@@ -56,6 +56,31 @@ const articles = defineCollection({
      */
     nextArticle: z.string().optional(),
     /**
+     * 「次に気になること」。読み終えた人の頭に次に浮かぶ問いを、書き手が直接指定する。
+     *
+     * 【なぜ「関連記事」と別に持つのか】
+     * タグや本文が似ている記事を並べても、読者の次の行動にはならない。
+     * 「ベンチ100kgはすごい？」を読んだ人が次に思うのは
+     * 「自分の体重ならどのレベル？」「自分の1RMは？」であって、
+     * 似たテーマの記事一覧ではない。記事・ツール・診断をまたいで
+     * 次の一手を指せるよう、hrefは自由に書ける。
+     *
+     * 指定しなければ primaryTool / nextArticle / タグ から自動で組み立てる
+     * （src/lib/suggestions.ts）。存在しないページは出力時に落とす。
+     */
+    suggestions: z
+      .array(
+        z.object({
+          /** 読者の頭に浮かぶ問いの形で書く。「関連記事」的な名詞句にしない。 */
+          label: z.string().min(1).max(40),
+          /** サイト内の絶対パス。 */
+          href: z.string().startsWith('/'),
+          type: z.enum(['article', 'tool', 'diagnosis', 'personal']).default('article'),
+        }),
+      )
+      .max(5)
+      .default([]),
+    /**
      * 参考文献。健康・トレーニングの主張には根拠を添える方針のため、
      * 主張を含む記事では必ず埋める。
      */

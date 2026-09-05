@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import ArticleCard from '../components/ArticleCard.astro';
+import Suggestions from '../components/Suggestions.astro';
+import type { Suggestion } from '../lib/suggestions';
 import { CATEGORIES, SITE_NAME, type CategoryKey } from '../config/site';
 import { formatDate, toISODate, type Article } from '../lib/articles';
 import AdSlot from '../components/AdSlot.astro';
@@ -8,6 +9,7 @@ import ArticleToc from '../components/ArticleToc.astro';
 import ToolCta from '../components/ToolCta.astro';
 import { readingMinutes } from '../lib/readingTime';
 import { url } from '../lib/url';
+import '../styles/ux.css';
 
 interface Heading {
   depth: number;
@@ -17,14 +19,20 @@ interface Heading {
 
 interface Props {
   article: Article;
-  related: Article[];
   /** 目次に使う見出し。render() が返すものをそのまま渡す */
   headings: Heading[];
-  /** 書き手が指定した「次に読む」記事。無ければ関連記事だけ出す */
-  nextArticle?: Article;
+  /**
+   * 「次に気になること」。
+   *
+   * 以前はここが「次に読む」1枚＋「関連記事」カード3枚に分かれていて、
+   * 記事末が広告→ツールCTA→次に読む→関連記事とカードで4層に積み上がっていた。
+   * スマホだと読み終わりがカードの海になり、どれを押せばいいのか分からない。
+   * いまは記事・ツール・診断を1つの列にまとめ、リンクは1回だけ見せる。
+   */
+  suggestions: Suggestion[];
 }
 
-const { article, related, headings, nextArticle } = Astro.props;
+const { article, headings, suggestions } = Astro.props;
 const minutes = readingMinutes(article.body ?? '');
 const { data } = article;
 const category = CATEGORIES[data.category as CategoryKey];
@@ -183,41 +191,24 @@ const structuredData = {
         </p>
       </div>
 
+      {/* 記事ごとに行き先が変わる導線。primaryTool が無い記事では出ない。
+          ここに出したツールは suggestions からは除いてあるので、重複しない。 */}
+      <ToolCta toolKey={data.primaryTool} label={data.ctaLabel} query={data.toolQuery} />
+
+      {/* 読み終えた人の頭に次に浮かぶ問い。記事・ツール・診断を横断する。 */}
+      <div class="article-suggest">
+        <Suggestions items={suggestions} />
+      </div>
+
       {/* 広告枠（記事末尾）。現時点では広告タグを読み込まない。
           アフィリエイトリンク（書籍・器具・サプリメント等）を差し込む場合も、
           本文とは区別できるようこのブロック内に置き、PR表記を添えること。 */}
       <AdSlot id="article-end" />
-
-      {/* 記事ごとに行き先が変わる導線。primaryTool が無い記事では出ない。 */}
-      <ToolCta toolKey={data.primaryTool} label={data.ctaLabel} query={data.toolQuery} />
     </article>
 
-    {
-      nextArticle && (
-        <section class="next-up">
-          <h2 class="next-up__title">次に読む</h2>
-          <ArticleCard article={nextArticle} />
-        </section>
-      )
-    }
-
-    {
-      related.length > 0 && (
-        <section class="related">
-          <div class="section-head">
-            <h2>{nextArticle ? 'ほかの関連記事' : '関連記事'}</h2>
-            <a href={url(`/articles/category/${category.slug}`)}>
-              {category.label}の記事をもっと見る
-            </a>
-          </div>
-          <div class="card-grid">
-            {related.map((item) => (
-              <ArticleCard article={item} />
-            ))}
-          </div>
-        </section>
-      )
-    }
+    <p class="article-more">
+      <a href={url(`/articles/category/${category.slug}`)}>{category.label}の記事をもっと見る →</a>
+    </p>
   </div>
 </BaseLayout>
 
@@ -352,41 +343,22 @@ const structuredData = {
     font-size: 0.8125rem;
   }
 
-  .next-up {
+  /* 「次に気になること」。記事末で唯一の導線の塊なので、上に余白を大きく取る。 */
+  .article-suggest {
     margin-top: var(--s8);
-    padding-top: var(--s6);
-    border-top: 1px solid var(--hair);
   }
 
-  .next-up__title {
-    margin-bottom: var(--s4);
-    font-size: 1.125rem;
+  .article-more {
+    max-width: var(--w-prose);
+    margin: var(--s7) auto 0;
   }
 
-  .related {
-    margin-top: var(--s7);
-  }
-
-  /* 「次に読む」が無いときだけ、関連記事の上に区切り線を置く */
-  .next-up + .related {
-    padding-top: 0;
-    border-top: none;
-  }
-
-  .article-page > .related:not(.next-up + .related) {
-    margin-top: var(--s8);
-    padding-top: var(--s6);
-    border-top: 1px solid var(--hair);
-  }
-
-  .card-grid {
-    display: grid;
-    gap: var(--s4);
-  }
-
-  @media (min-width: 40rem) {
-    .card-grid {
-      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-    }
+  .article-more a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 </style>

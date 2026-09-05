@@ -1,0 +1,436 @@
+/*
+ * Bodymakers UX再構築の共通スタイル。
+ *
+ * 【方針】
+ * Public Home v1 の方向性（Deep Navy / 鮮やかな蒼 / 白 / 余白）を
+ * サイト全体へ広げる。ただしHomeをコピーして全部カードにはしない。
+ *
+ * 階層のつくり方は、この4つだけを使う:
+ *   1. 余白（section間を大きく空ける）
+ *   2. タイポグラフィ（見出しの大きさと太さ）
+ *   3. 罫線1本（--ux-line）
+ *   4. 開閉（details）で「今いらない情報」を畳む
+ *
+ * 使わないもの: 全項目のborder、box-shadowの多用、card in card、
+ * 大量のbadge/label、意味のないSlip。
+ *
+ * ブランド色は --ux-* に閉じ込める。サイト共通の --signal は
+ * ダークテーマで赤に変わるため、ここでは使わない。
+ */
+
+:root {
+  --ux-blue: #0057e6;
+  --ux-blue-ink: #0a3ea8;
+  --ux-navy: #061a3f;
+  --ux-ice: #eaf1ff;
+  --ux-line: #dde4f0;
+  --ux-ember: #e2600d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ux-blue: #4d93ff;
+    --ux-blue-ink: #7fb2ff;
+    --ux-ice: #101c33;
+    --ux-line: #24334e;
+    --ux-ember: #ff9a52;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ux-blue: #4d93ff;
+  --ux-blue-ink: #7fb2ff;
+  --ux-ice: #101c33;
+  --ux-line: #24334e;
+  --ux-ember: #ff9a52;
+}
+
+/* ==========================================================================
+   ページの骨格
+   ========================================================================== */
+
+.ux-page {
+  display: grid;
+  gap: clamp(2.25rem, 7vw, 3.25rem);
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-block: clamp(1.5rem, 5vw, 2.5rem);
+  /* 下部固定ナビの高さぶん。safe-areaも足す。 */
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 48rem) {
+  .ux-page { padding-bottom: 4rem; }
+}
+
+.ux-page__head { display: grid; gap: 0.6rem; }
+
+.ux-page__head h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 7vw, 2.1rem);
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.ux-page__head p {
+  margin: 0;
+  color: var(--body);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.ux-section { display: grid; gap: 1rem; }
+
+.ux-section > h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 5vw, 1.35rem);
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+/* 見出しの下の短い蒼い罫。区画の切れ目は線1本だけで示す。 */
+.ux-section > h2::after {
+  content: '';
+  display: block;
+  width: 2rem;
+  height: 3px;
+  margin-top: 0.5rem;
+  background: var(--ux-blue);
+}
+
+.ux-section > p { margin: 0; color: var(--body); font-size: 0.92rem; line-height: 1.75; }
+.ux-note { margin: 0; color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+.ux-note a { color: var(--ux-blue-ink); font-weight: 700; }
+
+/* ==========================================================================
+   Primary CTA。1画面に原則1つ。
+   ========================================================================== */
+
+.ux-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ux-blue);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ux-cta:hover { background: var(--ux-blue-ink); color: #fff; }
+
+.ux-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--ux-blue-ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.ux-link:hover { text-decoration: underline; }
+
+@media (min-width: 40rem) {
+  .ux-cta { width: auto; min-width: 18rem; }
+}
+
+/* ==========================================================================
+   行のリスト。カードの代わりにこれを使う。
+   区切りは罫線1本だけ。box-shadowもborderの箱も付けない。
+   ========================================================================== */
+
+.ux-rows { display: grid; margin: 0; padding: 0; list-style: none; }
+
+.ux-rows > a,
+.ux-rows > li > a,
+.ux-rows > button,
+.ux-rows > li > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.1rem 0.75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.9rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--ux-line);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ux-rows > a:first-child,
+.ux-rows > li:first-child > a,
+.ux-rows > button:first-child,
+.ux-rows > li:first-child > button { border-top: 1px solid var(--ux-line); }
+
+.ux-rows > a:hover,
+.ux-rows > li > a:hover,
+.ux-rows > button:hover,
+.ux-rows > li > button:hover { background: var(--ux-ice); color: var(--ink); }
+
+.ux-rows strong { font-size: 1rem; font-weight: 800; line-height: 1.5; }
+.ux-rows small { color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
+.ux-rows > a > span,
+.ux-rows > li > a > span,
+.ux-rows > button > span,
+.ux-rows > li > button > span {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  color: var(--ux-blue);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+/* 「何をしたい？」の選択肢。行より少しだけ強く見せる。 */
+.ux-picker { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+
+.ux-picker a,
+.ux-picker button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.15rem 0.75rem;
+  width: 100%;
+  min-height: 3.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ux-line);
+  border-left: 4px solid var(--ux-blue);
+  border-radius: 0.3rem;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ux-picker a:hover,
+.ux-picker button:hover { background: var(--ux-ice); color: var(--ink); }
+.ux-picker strong { font-size: 1rem; font-weight: 800; }
+.ux-picker small { color: var(--muted); font-size: 0.79rem; line-height: 1.5; }
+.ux-picker span { grid-row: 1 / 3; grid-column: 2; color: var(--ux-blue); font-weight: 900; }
+
+@media (min-width: 40rem) {
+  .ux-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ==========================================================================
+   「次に気になること」。記事・ツール共通のサジェスト。
+   ここはBodymakersの中心機能なので、他のリンク群より強く見せる。
+   ========================================================================== */
+
+.ux-suggest { display: grid; gap: 0.85rem; }
+
+.ux-suggest > h2 {
+  margin: 0;
+  font-size: clamp(1.1rem, 4.6vw, 1.3rem);
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.ux-suggest ul { display: grid; margin: 0; padding: 0; list-style: none; }
+
+.ux-suggest a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.85rem 0.25rem;
+  border-bottom: 1px solid var(--ux-line);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.ux-suggest li:first-child a { border-top: 1px solid var(--ux-line); }
+.ux-suggest a:hover { background: var(--ux-ice); color: var(--ink); }
+
+/* 行き先の種類。文字ではなく小さな印にして、読ませる情報を増やさない。 */
+.ux-suggest__type {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.3rem;
+  background: var(--ux-ice);
+  color: var(--ux-blue-ink);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.ux-suggest__label { font-size: 0.95rem; font-weight: 700; line-height: 1.5; }
+.ux-suggest__arrow { color: var(--ux-blue); font-weight: 900; }
+
+/* ==========================================================================
+   結果を先に見せる（ツール）
+   ========================================================================== */
+
+.ux-result {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem 0;
+  border-block: 2px solid var(--ux-blue);
+}
+
+.ux-result__label { margin: 0; color: var(--muted); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.06em; }
+.ux-result__value { margin: 0; font-family: var(--f-mono); font-size: clamp(2.25rem, 11vw, 3rem); font-weight: 700; line-height: 1.05; }
+.ux-result__value small { font-size: 0.4em; font-weight: 700; }
+.ux-result__sub { margin: 0; color: var(--body); font-size: 0.88rem; line-height: 1.6; }
+
+/* 詳細・理論・Advanced。初期状態では畳む。 */
+.ux-details { border-top: 1px solid var(--ux-line); }
+.ux-details > summary {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--ux-blue-ink);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.ux-details > summary::-webkit-details-marker { display: none; }
+.ux-details > summary::after { content: ' ＋'; }
+.ux-details[open] > summary::after { content: ' －'; }
+.ux-details > div { padding-bottom: 1rem; }
+
+/* ==========================================================================
+   Personal Hub
+   ========================================================================== */
+
+.hub { display: grid; gap: 1.5rem; }
+.hub__loading { min-height: 18rem; }
+.hub__head { display: grid; gap: 0.2rem; }
+.hub__date { margin: 0; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+.hub__head h1 { margin: 0; font-size: clamp(1.6rem, 7vw, 2rem); font-weight: 900; }
+
+/* 今日の入口。この画面で唯一の主役なので、ここだけ塗る。 */
+.hub__today {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(150deg, var(--ux-navy), #0a3a9c);
+  color: #fff;
+  text-decoration: none;
+}
+.hub__today:hover { color: #fff; }
+.hub__today-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; opacity: 0.85; }
+.hub__today strong { font-size: 1.2rem; font-weight: 900; line-height: 1.45; }
+.hub__today-note { font-size: 0.8rem; opacity: 0.85; }
+
+.hub__week { margin: 0; color: var(--muted); font-size: 0.88rem; }
+.hub__week strong { color: var(--ink); font-size: 1.15rem; }
+
+.hub__list { display: grid; }
+.hub__list a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.1rem 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.9rem 0.25rem;
+  border-bottom: 1px solid var(--ux-line);
+  color: var(--ink);
+  text-decoration: none;
+}
+.hub__list a:first-child { border-top: 1px solid var(--ux-line); }
+.hub__list a:hover { background: var(--ux-ice); color: var(--ink); }
+.hub__list strong { font-size: 1rem; font-weight: 800; }
+.hub__list small { color: var(--muted); font-size: 0.8rem; }
+.hub__list span { grid-row: 1 / 3; grid-column: 2; color: var(--ux-blue); font-weight: 900; }
+
+.hub__empty { display: grid; gap: 1rem; justify-items: start; }
+.hub__empty h1 { margin: 0; font-size: clamp(1.6rem, 7vw, 2rem); font-weight: 900; }
+.hub__empty p { margin: 0; color: var(--body); font-size: 0.95rem; line-height: 1.75; }
+.hub__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  background: var(--ux-blue);
+  color: #fff;
+  font-weight: 900;
+  text-decoration: none;
+}
+.hub__cta:hover { background: var(--ux-blue-ink); color: #fff; }
+.hub__note { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.7; }
+.hub__note a { color: var(--ux-blue-ink); font-weight: 700; }
+
+@media (min-width: 40rem) {
+  .hub__cta { width: auto; min-width: 18rem; }
+}
+
+/* ==========================================================================
+   プログラム
+   ========================================================================== */
+
+.prog { display: grid; gap: clamp(2rem, 6vw, 2.75rem); }
+
+/* 実行中。この画面で唯一塗る場所。 */
+.prog__active {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(150deg, var(--ux-navy), #0a3a9c);
+  color: #fff;
+}
+.prog__active-label { margin: 0; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; opacity: 0.85; }
+.prog__active strong { font-size: 1.15rem; font-weight: 900; line-height: 1.45; }
+.prog__active-pos { margin: 0; font-size: 0.95rem; opacity: 0.9; }
+.prog__active-note { margin: 0; font-size: 0.82rem; opacity: 0.85; }
+.prog__active .ux-cta { margin-top: 0.6rem; background: #fff; color: var(--ux-navy); }
+.prog__active .ux-cta:hover { background: #b8ccf0; color: var(--ux-navy); }
+
+.prog__detail { display: grid; gap: 0.85rem; scroll-margin-top: 4.5rem; }
+.prog__detail h2 { margin: 0; font-size: clamp(1.25rem, 5.5vw, 1.5rem); font-weight: 900; line-height: 1.4; }
+.prog__meta { margin: 0; color: var(--ux-blue-ink); font-size: 0.82rem; font-weight: 800; }
+.prog__summary { margin: 0; color: var(--body); font-size: 0.92rem; line-height: 1.75; }
+.prog__audience { margin: 0; color: var(--body); font-size: 0.88rem; line-height: 1.7; }
+.prog__list { margin: 0 0 0.75rem; padding-left: 1.2em; color: var(--body); font-size: 0.88rem; line-height: 1.8; }
+.prog__warn {
+  margin: 0;
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  border-left: 3px solid var(--ux-ember);
+  color: var(--body);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+.prog__maxes { display: grid; gap: 0.75rem; }
+
+/* Week1 Day1 の中身。表ではなく素の行にする。 */
+.prog__session { display: grid; gap: 0.5rem; padding: 1rem 0; border-block: 1px solid var(--ux-line); }
+.prog__session-head { margin: 0; color: var(--muted); font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em; }
+.prog__session > strong { font-size: 1rem; font-weight: 800; }
+.prog__session ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.prog__session li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ux-line);
+}
+.prog__session li:last-child { border-bottom: 0; padding-bottom: 0; }
+.prog__session li span { font-size: 0.92rem; font-weight: 700; }
+.prog__session li strong { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 1rem; }
+.prog__session li small { color: var(--muted); font-size: 0.76rem; }
+
+/* ツールページのFAQなど、detailsを連続で置く場所 */
+.tool-faq { display: grid; }

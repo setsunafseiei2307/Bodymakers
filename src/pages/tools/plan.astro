@@ -1,11 +1,8 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolLayout from '../../layouts/ToolLayout.astro';
 import PlanTool from '../../components/react/PlanTool';
 import '../../styles/strength.css';
 import '../../styles/tools.css';
-import AdSlot from '../../components/AdSlot.astro';
-import { url } from '../../lib/url';
-import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'ダイエット計画';
 const description =
@@ -22,85 +19,15 @@ const faqSchema = {
 };
 ---
 
-<BaseLayout title={title} description={description}>
+<ToolLayout title={title} description={description} toolKey="plan"
+  lead="目標体重と期日から、1日のカロリーとペースを逆算します。"
+  privacy="計算はこのブラウザの中だけ。保存ボタンを押した計画だけ、この端末に残ります。">
   <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
-  <div class="container tool-page">
-    <nav class="breadcrumb" aria-label="パンくずリスト">
-      <ol>
-        <li><a href={url('/')}>ホーム</a></li>
-        <li><a href={url('/tools')}>ツール</a></li>
-      </ol>
-    </nav>
 
-    <header class="tool-page__header">
-      <p class="tool-page__code">PLAN</p>
-      <h1>{title}</h1>
-      <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">計算は端末内だけ。保存ボタンを押した計画だけ、このブラウザに保存します。</p>
-    </header>
+  <PlanTool client:load />
 
-    {/* client:load にしているのは、このページの主目的が計算そのもので、
-        スクロール前にタップされて反応しない事故を避けるため。 */}
-    <PlanTool client:load />
-
-    <section class="note" aria-labelledby="plan-faq"><h2 id="plan-faq" class="note__title">よくある質問</h2><p><strong>速く落とすほど良いですか？</strong><br />{faqAnswer}</p></section>
-
-    <ToolArticles toolKey="plan" />
-
-    <AdSlot id="tool-bottom" />
-  </div>
-</BaseLayout>
-
-<style>
-  .tool-page {
-    padding-block: var(--s5) var(--s8);
-    max-width: 46rem;
-  }
-
-  .breadcrumb ol {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s2);
-    margin: 0 0 var(--s5);
-    padding: 0;
-    list-style: none;
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-
-  .breadcrumb li + li::before {
-    content: '/';
-    margin-right: var(--s2);
-    color: var(--hair);
-  }
-
-  .breadcrumb a { color: var(--muted); text-decoration: none; }
-  .breadcrumb a:hover { color: var(--signal); }
-
-  .tool-page__header {
-    margin-bottom: var(--s5);
-    padding-bottom: var(--s4);
-    border-bottom: 3px solid var(--rule);
-  }
-
-  .tool-page__code {
-    color: var(--signal);
-    font-family: var(--f-mono);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-  }
-
-  .tool-page__lead {
-    margin-top: var(--s3);
-    color: var(--body);
-    font-size: 0.9375rem;
-    line-height: 1.85;
-  }
-
-  .tool-page__privacy {
-    margin-top: var(--s2);
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-</style>
+  <details class="ux-details">
+    <summary>速く落とすほど良いですか？</summary>
+    <div><p class="ux-note">{faqAnswer}</p></div>
+  </details>
+</ToolLayout>

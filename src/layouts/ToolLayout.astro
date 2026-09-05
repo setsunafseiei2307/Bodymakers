@@ -1,0 +1,103 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Suggestions from '../components/Suggestions.astro';
+import { getPublishedArticles } from '../lib/articles';
+import { suggestionsForTool } from '../lib/suggestions';
+import { url } from '../lib/url';
+import '../styles/ux.css';
+
+/*
+ * ツールページ共通の枠。
+ *
+ * 【なぜ作り直したか】
+ * 以前は、どのツールも
+ *   パンくず → 大きなヘッダー（英字コード＋長いリード文＋プライバシー説明）
+ *   → ツール本体 → 関連記事カード → 広告枠
+ * という順だった。スマホだと入力欄が画面2枚目以降にあり、
+ * 「開いた瞬間に使える道具」ではなく「説明ページ」になっていた。
+ *
+ * いまは、
+ *   何を計算するか（1行） → ツール本体 → 次に気になること → 注記
+ * だけ。長い説明は読ませない。詳しい話はツール側のdetailsか記事に置く。
+ *
+ * Astroの静的表示のまま、追加のJSは持たない。
+ */
+
+interface Props {
+  /** ページの見出し。何を計算するかが一目で分かる短い言葉にする。 */
+  title: string;
+  /** <title>とmeta descriptionに使う説明。画面には出さない。 */
+  description: string;
+  /** 画面に出す1行。「何を計算するか」だけ書く。省略可。 */
+  lead?: string;
+  /** 「次に気になること」を引くためのツールキー（src/config/tools.ts のkey）。 */
+  toolKey?: string;
+  /** 末尾の注記。既定は入力が送信されないことの説明。 */
+  privacy?: string;
+  /** 検索結果に出さないページ（Todayなど個人向け）。 */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  lead,
+  toolKey,
+  privacy = '入力した内容はこのブラウザの中だけで計算され、サーバーへ送信されません。',
+  noindex = false,
+} = Astro.props;
+
+const articles = await getPublishedArticles();
+const articleIds = new Set(articles.map((article) => article.id));
+const suggestions = toolKey ? suggestionsForTool(toolKey, articleIds) : [];
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { name: 'ホーム', path: '/' },
+    { name: 'ツール', path: '/tools' },
+    { name: title, path: Astro.url.pathname },
+  ].map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: new URL(url(item.path), Astro.site ?? Astro.url.origin).href,
+  })),
+};
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  {/* ページ側が渡す構造化データ（FAQなど）をBaseLayoutのheadへ通す。 */}
+  <slot name="head" slot="head" />
+
+  {!noindex && (
+    <script
+      is:inline
+      slot="head"
+      type="application/ld+json"
+      set:html={JSON.stringify(breadcrumbSchema)}
+    />
+  )}
+
+  <main class="container ux-page tool-shell">
+    <header class="ux-page__head">
+      <h1>{title}</h1>
+      {lead && <p>{lead}</p>}
+    </header>
+
+    {/* ツール本体。ここが画面の1枚目に来るようにする。 */}
+    <div class="tool-shell__body">
+      <slot />
+    </div>
+
+    <Suggestions items={suggestions} />
+
+    <p class="ux-note">{privacy}</p>
+  </main>
+</BaseLayout>
+
+<style>
+  /* ツール本体は既存のtools.cssが持っているので、ここでは間隔だけ整える。 */
+  .tool-shell__body { display: grid; gap: var(--s4); }
+</style>

@@ -1,91 +1,13 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolLayout from '../../layouts/ToolLayout.astro';
 import SmolovTool from '../../components/react/SmolovTool';
 import '../../styles/tools.css';
-import AdSlot from '../../components/AdSlot.astro';
-import { url } from '../../lib/url';
-import ToolArticles from '../../components/ToolArticles.astro';
 
 const title = 'Smolov プログラム生成';
 const description = '1RMから Smolov（ロシア発の高頻度・高ボリュームなプログラム）の4週間分のメニューを生成します。';
 ---
 
-<BaseLayout title={title} description={description}>
-  <div class="container tool-page">
-    <nav class="breadcrumb" aria-label="パンくずリスト">
-      <ol>
-        <li><a href={url('/')}>ホーム</a></li>
-        <li><a href={url('/tools')}>ツール</a></li>
-      </ol>
-    </nav>
-
-    <header class="tool-page__header">
-      <p class="tool-page__code">SMOLOV</p>
-      <h1>{title}</h1>
-      <p class="tool-page__lead">{description}</p>
-      <p class="tool-page__privacy">入力した内容は送信も保存もされません。</p>
-    </header>
-
-    {/* client:load にしているのは、このページの主目的が計算そのもので、
-        スクロール前にタップされて反応しない事故を避けるため。 */}
-    <SmolovTool client:load />
-
-    <ToolArticles toolKey="smolov" />
-
-    <AdSlot id="tool-bottom" />
-  </div>
-</BaseLayout>
-
-<style>
-  .tool-page {
-    padding-block: var(--s5) var(--s8);
-    max-width: 46rem;
-  }
-
-  .breadcrumb ol {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s2);
-    margin: 0 0 var(--s5);
-    padding: 0;
-    list-style: none;
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-
-  .breadcrumb li + li::before {
-    content: '/';
-    margin-right: var(--s2);
-    color: var(--hair);
-  }
-
-  .breadcrumb a { color: var(--muted); text-decoration: none; }
-  .breadcrumb a:hover { color: var(--signal); }
-
-  .tool-page__header {
-    margin-bottom: var(--s5);
-    padding-bottom: var(--s4);
-    border-bottom: 3px solid var(--rule);
-  }
-
-  .tool-page__code {
-    color: var(--signal);
-    font-family: var(--f-mono);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-  }
-
-  .tool-page__lead {
-    margin-top: var(--s3);
-    color: var(--body);
-    font-size: 0.9375rem;
-    line-height: 1.85;
-  }
-
-  .tool-page__privacy {
-    margin-top: var(--s2);
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-</style>
+<ToolLayout title={title} description={description} toolKey="smolov"
+  lead="1RMを入れると、4週間ぶんのメニューが出ます。">
+  <SmolovTool client:load />
+</ToolLayout>

@@ -1,0 +1,46 @@
+---
+/*
+ * 「次に気になること」。
+ *
+ * 記事の末尾にも、ツールの結果のあとにも、同じ見た目で出す。
+ * カードにはしない。読者にとってはただの「次の一手の列」なので、
+ * 行のリスト1つで足りる。
+ *
+ * 行き先の種類（記事 / ツール / 診断 / マイ）は小さな印だけで示す。
+ * ここで説明文を足すと、読む量が増えて次の一手が遠のく。
+ */
+import type { Suggestion } from '../lib/suggestions';
+import { url } from '../lib/url';
+
+interface Props {
+  items: readonly Suggestion[];
+  /** 見出し。既定は「次に気になること」。 */
+  heading?: string;
+}
+
+const { items, heading = '次に気になること' } = Astro.props;
+
+const TYPE_MARK: Record<Suggestion['type'], string> = {
+  article: '読',
+  tool: '計',
+  diagnosis: '診',
+  personal: 'マイ',
+};
+---
+
+{items.length > 0 && (
+  <section class="ux-suggest" aria-labelledby="suggest-title">
+    <h2 id="suggest-title">{heading}</h2>
+    <ul>
+      {items.map((item) => (
+        <li>
+          <a href={url(item.href)}>
+            <span class="ux-suggest__type" aria-hidden="true">{TYPE_MARK[item.type]}</span>
+            <span class="ux-suggest__label">{item.label}</span>
+            <span class="ux-suggest__arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

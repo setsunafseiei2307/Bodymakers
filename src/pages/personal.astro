@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PersonalHub from '../components/react/PersonalHub';
+import '../styles/ux.css';
+
+/*
+ * Personal Hub。
+ *
+ * Public Web（Home / 診断 / ツール / 記事）と個人の記録領域を分ける境界。
+ * 初回訪問者にPersonalを強要せず、使いたい人だけがここから
+ * Today / Plan / 記録 / Program へ入る。
+ *
+ * 端末内のデータを見ないと何を出すか決まらないので、中身はReactの島。
+ * 検索結果に出す画面ではないため noindex。
+ */
+
+const title = 'マイ';
+const description = '保存したPlan、今日やること、これまでの記録をまとめた個人用の入口です。';
+---
+
+<BaseLayout title={title} description={description} noindex>
+  <main class="container ux-page">
+    <PersonalHub client:load />
+  </main>
+</BaseLayout>

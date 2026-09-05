@@ -1,24 +1,14 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolLayout from '../../layouts/ToolLayout.astro';
 import ProgramTool from '../../components/react/ProgramTool';
-import ToolArticles from '../../components/ToolArticles.astro';
 import '../../styles/tools.css';
 
-const title = 'PROGRAM LIBRARY';
-const description = '診断の目的・頻度・トレーニング歴から、自分に合うプログラムを選び、保存済み1RMを実際に組める重量へ変換します。';
+const title = 'プログラムを探す';
+const description = '目的・頻度・トレーニング歴から自分に合う筋トレプログラムを選び、保存済み1RMを実際に組める重量へ変換します。';
 ---
 
-<BaseLayout title={title} description={description}>
-  <div class="container tool-page">
-    <header class="tool-page__header">
-      <p class="tool-page__code">PROGRAM</p>
-      <h1>{title}</h1>
-      <p class="tool-page__lead">診断からおすすめを選び、保存済みの1RMを実際に組める重量へ変換します。特定の有料テンプレートはコピーせず、一般的な負荷管理の原則をBodymakers独自の構成にしています。</p>
-      <p class="tool-page__privacy">計算はブラウザ内だけで行います。</p>
-    </header>
-    <div class="tool-page__body">
-      <div class="tool-page__main"><ProgramTool client:load /></div>
-      <aside class="tool-page__aside"><ToolArticles toolKey="programs" /></aside>
-    </div>
-  </div>
-</BaseLayout>
+<ToolLayout title={title} description={description} toolKey="programs"
+  lead="やりたいことを選ぶと、それに合うメニューが出ます。"
+  privacy="計算はこのブラウザの中だけ。開始したプログラムだけ、この端末に残ります。">
+  <ProgramTool client:load />
+</ToolLayout>

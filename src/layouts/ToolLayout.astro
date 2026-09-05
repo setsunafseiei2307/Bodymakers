@@ -36,6 +36,12 @@ interface Props {
   privacy?: string;
   /** 検索結果に出さないページ（Todayなど個人向け）。 */
   noindex?: boolean;
+  /**
+   * ページ側の見出しを出さない。
+   * Todayのように、中身のコンポーネントが日付つきの見出しを持っている画面で使う。
+   * 同じ言葉のh1が2つ並ぶのを避けるため。
+   */
+  hideHeading?: boolean;
 }
 
 const {
@@ -45,6 +51,7 @@ const {
   toolKey,
   privacy = '入力した内容はこのブラウザの中だけで計算され、サーバーへ送信されません。',
   noindex = false,
+  hideHeading = false,
 } = Astro.props;
 
 const articles = await getPublishedArticles();
@@ -81,10 +88,12 @@ const breadcrumbSchema = {
   )}
 
   <main class="container ux-page tool-shell">
-    <header class="ux-page__head">
-      <h1>{title}</h1>
-      {lead && <p>{lead}</p>}
-    </header>
+    {!hideHeading && (
+      <header class="ux-page__head">
+        <h1>{title}</h1>
+        {lead && <p>{lead}</p>}
+      </header>
+    )}
 
     {/* ツール本体。ここが画面の1枚目に来るようにする。 */}
     <div class="tool-shell__body">

@@ -54,7 +54,7 @@ function isCurrent(href: string): boolean {
       <svg viewBox="0 0 24 24" aria-hidden="true">
         {item.icon === 'home' && <path d="M4 11l8-7 8 7M6 9.5V20h12V9.5" />}
         {item.icon === 'compass' && <><circle cx="12" cy="12" r="8.5" /><path d="M15.2 8.8l-2 4.4-4.4 2 2-4.4z" /></>}
-        {item.icon === 'tool' && <path d="M5 18l7-7M9.5 6.5L12 4l3 1 1 3-2.5 2.5M14 14l4 4" />}
+        {item.icon === 'tool' && <><rect x="5" y="3.5" width="14" height="17" rx="2" /><path d="M8.5 8h7M8.5 12h2M13.5 12h2M8.5 16h2M13.5 16h2" /></>}
         {item.icon === 'book' && <path d="M5 5h6v14H5zM13 5h6v14h-6" />}
         {item.icon === 'person' && <><circle cx="12" cy="8.5" r="3.5" /><path d="M5.5 19.5a6.5 6.5 0 0113 0" /></>}
       </svg>

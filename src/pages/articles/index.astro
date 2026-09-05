@@ -1,319 +1,105 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ArticleCard from '../../components/ArticleCard.astro';
 import {
   getArticlesGroupedByCategory,
   getFeaturedArticles,
   getPublishedArticles,
-  formatDate,
-  toISODate,
 } from '../../lib/articles';
 import { CATEGORIES, type CategoryKey } from '../../config/site';
-import { findTool } from '../../config/tools';
 import { readingMinutes } from '../../lib/readingTime';
-import AdSlot from '../../components/AdSlot.astro';
 import { url } from '../../lib/url';
+import '../../styles/ux.css';
 
 /**
- * 記事一覧。
+ * 記事の入口。
  *
- * 【なぜ単純な新着順の縦積みをやめたか】
- * 26本を等価なカードで縦に並べると、スマホで5,000pxを超える。
- * 100本になれば単純計算で2万px。目当ての記事にたどり着けない。
+ * 【なぜ作り直したか】
+ * 以前は「まず読むなら」3枚＋カテゴリごとに6枚ずつのカードで、
+ * スマホで8,700pxあった。カードが120個あり、どれも同じ強さなので、
+ * 読みたい記事にたどり着く前に指が疲れる。
  *
- * そこで、
- *   1. 先に「読むならこれ」を数本だけ大きく出す
- *   2. その下はカテゴリごとに分けて、必要なところだけ見てもらう
- * という順にしている。カテゴリは読む人の目的で切ってある。
+ * いまは、
+ *   1. 何を知りたい？（カテゴリ4つを選ぶ）
+ *   2. まず読むなら（数本だけ）
+ *   3. 新着（行のリスト）
+ * カテゴリの中身は、それぞれのカテゴリページが持っている。
+ * ここで全部を見せる必要はない。
  */
+
 const all = await getPublishedArticles();
-const featured = await getFeaturedArticles();
+const featured = await getFeaturedArticles(3);
 const groups = await getArticlesGroupedByCategory();
-
-/**
- * 一覧に出すのはカテゴリごとに数本まで。
- * 全部出すと26本でスマホ9,600px、100本になれば3万px を超える。
- * 続きはカテゴリページに任せる。
- */
-const PER_CATEGORY = 6;
 
 /** カテゴリごとの説明。何が置いてある棚なのかを1行で示す。 */
 const CATEGORY_LEAD: Record<CategoryKey, string> = {
-  strength: '自分の強さが競技会の記録と比べてどこにあるかを、実データで示します。',
-  training: '伸ばし方の原則と、メニューの組み方。',
-  nutrition: '何をどれだけ食べるか。数値はすべて食品成分表の収載値です。',
-  diet: '体重を落とすための考え方と、消費カロリーの実際。',
+  strength: '自分の強さが競技会の記録と比べてどこにあるか',
+  training: '伸ばし方の原則と、メニューの組み方',
+  nutrition: '何をどれだけ食べるか',
+  diet: '体重を落とすための考え方と、消費カロリーの実際',
 };
+
+/** 新着。全部は出さない。続きはカテゴリページへ。 */
+const recent = all.slice(0, 8);
 ---
 
 <BaseLayout
   title="記事一覧"
   description="筋力・トレーニング・栄養・ダイエットについて、出典を示しながら解説しています。記事から対応する計算ツールへそのまま進めます。"
 >
-  <div class="container list-page">
-    <header class="list-page__header">
-      <h1>記事</h1>
-      <p class="list-page__lead">
-        数値はすべて出典のあるものだけを使っています。推測した値は載せません。
-        記事を読んだあと、そのまま自分の数字を計算できるようにしてあります。
-      </p>
-      <p class="list-page__count">
-        全{all.length}本
-      </p>
+  <main class="container ux-page">
+    <header class="ux-page__head">
+      <h1>何を知りたい？</h1>
+      <p>数値はすべて出典のあるものだけを使っています。推測した値は載せません。</p>
     </header>
 
-    {/* 目的から探す。カテゴリはページ内のセクションに飛ばす */}
-    <nav class="goal-nav" aria-label="カテゴリ">
-      <ul>
-        {
-          groups.map(({ category, articles }) => (
+    <ul class="ux-picker">
+      {groups.map(({ category, articles }) => (
+        <li>
+          <a href={url(`/articles/category/${CATEGORIES[category].slug}`)}>
+            <strong>{CATEGORIES[category].label}</strong>
+            <small>{CATEGORY_LEAD[category]}</small>
+            <span class="num" aria-hidden="true">{articles.length}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {featured.length > 0 && (
+      <section class="ux-section">
+        <h2>まず読むなら</h2>
+        <ul class="ux-rows">
+          {featured.map((article) => (
             <li>
-              <a class="goal-nav__link" href={`#cat-${CATEGORIES[category].slug}`}>
-                {CATEGORIES[category].label}
-                <span class="goal-nav__count num">{articles.length}</span>
+              <a href={url(`/articles/${article.id}`)}>
+                <strong>{article.data.title}</strong>
+                <small>
+                  {CATEGORIES[article.data.category as CategoryKey].label} ・ 約{readingMinutes(article.body ?? '')}分
+                </small>
+                <span aria-hidden="true">→</span>
               </a>
             </li>
-          ))
-        }
-      </ul>
-    </nav>
+          ))}
+        </ul>
+      </section>
+    )}
 
-    {
-      featured.length > 0 && (
-        <section class="featured" aria-labelledby="featured-title">
-          <h2 class="featured__title" id="featured-title">
-            まず読むなら
-          </h2>
-          <ul class="featured__list">
-            {featured.map((article) => {
-              const tool = findTool(article.data.primaryTool);
-              return (
-                <li>
-                  <a class="featured__item" href={url(`/articles/${article.id}`)}>
-                    <span class="featured__meta">
-                      <span class="tag">{CATEGORIES[article.data.category as CategoryKey].label}</span>
-                      <time datetime={toISODate(article.data.publishedAt)}>
-                        {formatDate(article.data.publishedAt)}
-                      </time>
-                      <span>約{readingMinutes(article.body ?? '')}分</span>
-                    </span>
-                    <span class="featured__headline">{article.data.title}</span>
-                    <span class="featured__desc">{article.data.description}</span>
-                    {tool && (
-                      <span class="featured__tool">読んだあと → {tool.label}</span>
-                    )}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )
-    }
-
-    {
-      groups.map(({ category, articles }) => (
-        <section class="cat" id={`cat-${CATEGORIES[category].slug}`}>
-          <div class="section-head">
-            <h2>{CATEGORIES[category].label}</h2>
-            <a href={url(`/articles/category/${CATEGORIES[category].slug}`)}>
-              このカテゴリだけ見る
+    <section class="ux-section">
+      <h2>新着</h2>
+      <ul class="ux-rows">
+        {recent.map((article) => (
+          <li>
+            <a href={url(`/articles/${article.id}`)}>
+              <strong>{article.data.title}</strong>
+              <small>
+                {CATEGORIES[article.data.category as CategoryKey].label} ・ 約{readingMinutes(article.body ?? '')}分
+              </small>
+              <span aria-hidden="true">→</span>
             </a>
-          </div>
-          <p class="cat__lead">{CATEGORY_LEAD[category]}</p>
-          <div class="card-grid">
-            {articles.slice(0, PER_CATEGORY).map((article) => (
-              <ArticleCard article={article} />
-            ))}
-          </div>
-          {articles.length > PER_CATEGORY && (
-            <p class="cat__more">
-              <a href={url(`/articles/category/${CATEGORIES[category].slug}`)}>
-                {CATEGORIES[category].label}の記事をすべて見る（{articles.length}本）
-              </a>
-            </p>
-          )}
-        </section>
-      ))
-    }
+          </li>
+        ))}
+      </ul>
+    </section>
 
-    {
-      all.length === 0 && (
-        <div class="empty">
-          <strong class="empty__title">記事はまだありません</strong>
-          <p>src/content/articles/ に Markdown ファイルを置くと、ここに一覧が出ます。</p>
-        </div>
-      )
-    }
-
-    {/* 広告枠（一覧下部）。現時点では広告タグを読み込まない。 */}
-    <AdSlot id="list-bottom" />
-  </div>
+    <p class="ux-note">全{all.length}本。続きは上のカテゴリから読めます。</p>
+  </main>
 </BaseLayout>
-
-<style>
-  .list-page {
-    padding-block: var(--s6) var(--s8);
-  }
-
-  .list-page__header {
-    margin-bottom: var(--s5);
-  }
-
-  .list-page__lead {
-    margin-top: var(--s3);
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.85;
-  }
-
-  .list-page__count {
-    margin-top: var(--s3);
-    color: var(--signal);
-    font-family: var(--f-mono);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-  }
-
-  /* 目的から探す。件数を添えて、どこに厚みがあるか分かるようにする */
-  .goal-nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s2);
-    margin: 0 0 var(--s7);
-    padding: 0;
-    list-style: none;
-  }
-
-  .goal-nav__link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s2);
-    padding: var(--s2) var(--s4);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-full);
-    color: var(--body);
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  .goal-nav__link:hover {
-    border-color: var(--signal);
-    background: var(--signal-soft);
-    color: var(--signal);
-  }
-
-  .goal-nav__count {
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-
-  /* 「まず読むなら」。新着順ではなく、記事側の featured で選ぶ */
-  .featured {
-    margin-bottom: var(--s8);
-    padding-bottom: var(--s7);
-    border-bottom: 1px solid var(--hair);
-  }
-
-  .featured__title {
-    margin-bottom: var(--s4);
-    font-size: 1rem;
-  }
-
-  .featured__list {
-    display: grid;
-    gap: var(--s3);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .featured__item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2);
-    padding: var(--s5);
-    border: 1px solid var(--hair);
-    border-left: 3px solid var(--signal);
-    border-radius: 0 var(--r-md) var(--r-md) 0;
-    background: var(--surface);
-    color: inherit;
-    text-decoration: none;
-    box-shadow: var(--shadow-sm);
-    transition:
-      border-color var(--dur) var(--ease),
-      box-shadow var(--dur) var(--ease);
-  }
-
-  .featured__item:hover {
-    border-color: var(--signal);
-    box-shadow: var(--shadow-md);
-    color: inherit;
-  }
-
-  .featured__meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--s3);
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-
-  .featured__headline {
-    font-size: 1.125rem;
-    font-weight: 800;
-    line-height: 1.5;
-  }
-
-  .featured__item:hover .featured__headline {
-    color: var(--signal);
-  }
-
-  .featured__desc {
-    color: var(--muted);
-    font-size: 0.875rem;
-    line-height: 1.8;
-  }
-
-  /* 読んだあとにどこへ行けるかを、開く前に見せておく */
-  .featured__tool {
-    margin-top: var(--s1);
-    color: var(--signal);
-    font-size: 0.8125rem;
-    font-weight: 700;
-  }
-
-  .cat + .cat {
-    margin-top: var(--s8);
-  }
-
-  .cat__more {
-    margin-top: var(--s4);
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-
-  .cat__lead {
-    margin: var(--s2) 0 var(--s4);
-    color: var(--muted);
-    font-size: 0.875rem;
-  }
-
-  .card-grid {
-    display: grid;
-    gap: var(--s4);
-  }
-
-  @media (min-width: 40rem) {
-    .card-grid {
-      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-    }
-
-    .featured__list {
-      gap: var(--s4);
-    }
-  }
-</style>
